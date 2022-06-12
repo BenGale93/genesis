@@ -1,0 +1,19 @@
+[package]
+name = "genesis"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.htm
+
+[[bin]]
+name = "genesis"
+path = "src/main.rs"
+
+[lib]
+name = "genesis"
+path = "src/lib.rs"
+
+[dependencies]
+anyhow = "1.0.57"
+rand = "0.8.5"
+thiserror = "1.0.31"
