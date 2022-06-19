@@ -3,7 +3,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use crate::{errors::GenesisError, weight::Weight};
+use crate::{brain::BrainError, weight::Weight};
 
 #[derive(Debug)]
 pub struct Synapse {
@@ -15,9 +15,9 @@ pub struct Synapse {
 }
 
 impl Synapse {
-    pub fn new(from: usize, to: usize) -> Result<Self, GenesisError> {
+    pub fn new(from: usize, to: usize) -> Result<Self, BrainError> {
         if from == to {
-            return Err(GenesisError::InvalidFromTo);
+            return Err(BrainError::InvalidFromTo);
         }
         let innovation = Synapse::compute_innovation(from, to);
         let weight = Weight::random();
@@ -31,7 +31,7 @@ impl Synapse {
         })
     }
 
-    pub fn with_weight(from: usize, to: usize, weight: Weight) -> Result<Self, GenesisError> {
+    pub fn with_weight(from: usize, to: usize, weight: Weight) -> Result<Self, BrainError> {
         let mut synapse = Synapse::new(from, to)?;
         synapse.set_weight(weight);
         Ok(synapse)
@@ -112,7 +112,7 @@ impl SynapsesExt for Synapses {
     }
 }
 
-pub fn create_synapses(links: &[(usize, usize)]) -> Result<Vec<Synapse>, GenesisError> {
+pub fn create_synapses(links: &[(usize, usize)]) -> Result<Vec<Synapse>, BrainError> {
     links
         .iter()
         .map(|(from, to)| Synapse::new(*from, *to))
