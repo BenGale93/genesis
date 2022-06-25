@@ -5,7 +5,7 @@ use std::{
 
 use crate::{brain::BrainError, weight::Weight};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Synapse {
     from: usize,
     to: usize,

@@ -12,14 +12,14 @@ classDiagram
 
         + new(in_size, out_size)
         + create_random()
-        + mutate(probability, size)
         + activate(inputs)
 
         - add_synapse(in, out, weight)
         - add_synapse_unchecked(in, out, weight)
-        - deactivate_synapse(synapse_id)
-        - add_neuron(synapse_id)
-        - get_enabled_synapses()
+        - deactivate_synapse(synapse_index)
+        - deactivate_synapse_unchecked(synapse_index)
+        - add_neuron(synapse_index)
+        - remove_neuron(neuron_index)
     }
 
     class Neuron {

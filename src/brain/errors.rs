@@ -13,4 +13,7 @@ pub enum BrainError {
 
     #[error("A neuron cannot be added here.")]
     NeuronError,
+
+    #[error("This neuron cannot be remove")]
+    NeuronRemovalError,
 }
