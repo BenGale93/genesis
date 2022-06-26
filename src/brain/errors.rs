@@ -16,4 +16,7 @@ pub enum BrainError {
 
     #[error("This neuron cannot be remove")]
     NeuronRemovalError,
+
+    #[error("Input array is of incorrect length")]
+    InputArrayError,
 }

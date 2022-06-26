@@ -11,7 +11,6 @@ classDiagram
         Vec[Synapse] synapses
 
         + new(in_size, out_size)
-        + create_random()
         + activate(inputs)
 
         - add_synapse(in, out, weight)

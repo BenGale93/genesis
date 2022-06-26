@@ -7,7 +7,7 @@ pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 pub use synapse::{create_synapses, Synapse, Synapses};
 
-use crate::weight::Weight;
+use crate::{brain::graph::feed_forward_layers, weight::Weight};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Brain {
@@ -46,6 +46,38 @@ impl Brain {
 
     pub fn synapses(&self) -> &[Synapse] {
         self.synapses.as_ref()
+    }
+
+    pub fn activate(&self, input_values: Vec<f64>) -> Result<Vec<f64>, BrainError> {
+        if input_values.len() != self.inputs {
+            return Err(BrainError::InputArrayError);
+        }
+        let mut stored_values = vec![0.0; self.neurons.len()];
+        for (i, val) in input_values.iter().enumerate() {
+            stored_values[i] = *val;
+        }
+
+        let layers = feed_forward_layers(self.neurons(), self.synapses());
+
+        for layer in layers {
+            for neuron_index in layer {
+                let neuron = &self.neurons[neuron_index];
+                let incoming_values: Vec<f64> = self
+                    .synapses
+                    .iter()
+                    .filter(|syn| syn.to() == neuron_index)
+                    .map(|syn| {
+                        let incoming_value = stored_values[syn.from()];
+                        incoming_value * syn.weight().as_float()
+                    })
+                    .collect();
+                let final_value: f64 =
+                    incoming_values.iter().sum::<f64>() + neuron.bias().as_float();
+                stored_values[neuron_index] = neuron.activate(final_value);
+            }
+        }
+
+        Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
     }
 
     fn add_synapse(&mut self, from: usize, to: usize, weight: Weight) -> Result<usize, BrainError> {
@@ -429,5 +461,50 @@ mod tests {
         let mut test_brain = super::Brain::new(1, 1);
 
         test_brain.remove_neuron(0).unwrap();
+    }
+
+    #[test]
+    fn basic_activate() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 1, w).unwrap();
+
+        let result = test_brain.activate(vec![10.0]).unwrap();
+
+        assert_ne!(result, vec![0.0]);
+    }
+
+    #[test]
+    fn activate_with_hidden_node() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 1, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+
+        let result = test_brain.activate(vec![10.0]).unwrap();
+
+        assert_ne!(result, vec![0.0]);
+    }
+
+    #[test]
+    fn activate_with_unconnected_output() {
+        let mut test_brain = super::Brain::new(2, 2);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 2, w).unwrap();
+
+        let result = test_brain.activate(vec![10.0, -10.0]).unwrap();
+
+        assert_ne!(result[0], 0.0);
+        assert_eq!(result[1], 0.0);
+    }
+
+    #[test]
+    #[should_panic(expected = "value: InputArrayError")]
+    fn activate_with_wrong_length_input() {
+        let test_brain = super::Brain::new(2, 2);
+        test_brain.activate(vec![10.0]).unwrap();
     }
 }
