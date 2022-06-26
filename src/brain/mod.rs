@@ -403,6 +403,19 @@ mod tests {
     }
 
     #[test]
+    fn remove_node_after_synapse_re_activated() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 1, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_synapse(0, 1, w).unwrap();
+        test_brain.remove_neuron(2).unwrap();
+
+        assert_eq!(test_brain.synapses().get_active_indices().len(), 1);
+    }
+
+    #[test]
     #[should_panic(expected = "value: OutOfBounds")]
     fn remove_neuron_nonexistent() {
         let mut test_brain = super::Brain::new(1, 1);
