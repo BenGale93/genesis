@@ -101,6 +101,8 @@ pub type Synapses = [Synapse];
 pub trait SynapsesExt {
     fn get_active_indices(&self) -> HashSet<usize>;
     fn get_active_from_to(&self) -> Vec<(usize, usize)>;
+    fn num_outgoing_synapses(&self, from_index: usize) -> usize;
+    fn num_incoming_synapses(&self, from_index: usize) -> usize;
 }
 
 impl SynapsesExt for Synapses {
@@ -117,6 +119,18 @@ impl SynapsesExt for Synapses {
             .filter(|syn| syn.active())
             .map(|syn| (syn.from(), syn.to()))
             .collect()
+    }
+
+    fn num_outgoing_synapses(&self, from_index: usize) -> usize {
+        self.iter()
+            .filter(|syn| syn.from() == from_index && syn.active())
+            .count()
+    }
+
+    fn num_incoming_synapses(&self, to_index: usize) -> usize {
+        self.iter()
+            .filter(|syn| syn.to() == to_index && syn.active())
+            .count()
     }
 }
 

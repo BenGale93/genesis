@@ -123,6 +123,37 @@ impl Brain {
             .unwrap();
     }
 
+    pub fn deactivate_random_synapse(&mut self) {
+        let eligible_indexes: Vec<usize> = self
+            .synapses()
+            .iter()
+            .enumerate()
+            .filter(|(_, syn)| {
+                if !syn.active() {
+                    return false;
+                }
+                let from_index = syn.from();
+                let to_index = syn.to();
+
+                let num_outgoing_synapses = self.synapses.num_outgoing_synapses(from_index);
+                let num_incoming_synapses = self.synapses.num_incoming_synapses(to_index);
+
+                num_outgoing_synapses > 1 && num_incoming_synapses > 1
+            })
+            .map(|(i, _)| i)
+            .collect();
+
+        if eligible_indexes.is_empty() {
+            return;
+        }
+
+        let index = eligible_indexes
+            .get(random::<usize>() % eligible_indexes.len())
+            .unwrap();
+
+        self.deactivate_synapse(*index).unwrap();
+    }
+
     fn can_connect(&self, from: usize, to: usize) -> bool {
         let from_kind = match self.neurons.get(from) {
             Some(n) => n.kind(),
@@ -578,5 +609,32 @@ mod tests {
         test_brain.add_random_synapse();
 
         assert_eq!(3, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_synapse_no_changes() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_synapse();
+
+        assert_eq!(2, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_synapse_changes() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_synapse(1, 6, w).unwrap();
+        test_brain.add_synapse(6, 5, w).unwrap();
+        test_brain.add_synapse(0, 4, w).unwrap();
+        dbg!(&test_brain.synapses());
+        test_brain.deactivate_random_synapse();
+
+        assert_eq!(4, test_brain.synapses().get_active_indices().len());
     }
 }
