@@ -5,14 +5,14 @@ use crate::{
     brain::{NeuronKind, NeuronsExt},
 };
 
-pub fn creates_cycle(synapses: &brain::Synapses, test: &brain::Synapse) -> bool {
-    let mut visited = HashSet::from([test.to()]);
+pub fn creates_cycle(synapses: &brain::Synapses, from: usize, to: usize) -> bool {
+    let mut visited = HashSet::from([to]);
 
     loop {
         let mut num_added = 0;
         for synapse in synapses {
             if visited.contains(&synapse.from()) && !visited.contains(&synapse.to()) {
-                if synapse.to() == test.from() {
+                if synapse.to() == from {
                     return true;
                 }
 
@@ -75,20 +75,14 @@ mod tests {
     fn creates_a_cycle() {
         let synapses = brain::create_synapses(&[(0, 1), (1, 2), (2, 3)]).unwrap();
 
-        assert!(super::creates_cycle(
-            &synapses,
-            &brain::Synapse::new(1, 0).unwrap()
-        ));
+        assert!(super::creates_cycle(&synapses, 1, 0));
     }
 
     #[test]
     fn does_not_create_a_cycle() {
         let synapses = brain::create_synapses(&[(0, 1), (1, 2), (2, 3)]).unwrap();
 
-        assert!(!super::creates_cycle(
-            &synapses,
-            &brain::Synapse::new(0, 1).unwrap()
-        ));
+        assert!(!super::creates_cycle(&synapses, 0, 1));
     }
 
     #[test]

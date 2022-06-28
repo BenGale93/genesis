@@ -80,6 +80,26 @@ impl Brain {
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
     }
 
+    fn can_connect(&self, from: usize, to: usize) -> bool {
+        let from_kind = match self.neurons.get(from) {
+            Some(n) => n.kind(),
+            None => return false,
+        };
+        let to_kind = match self.neurons.get(to) {
+            Some(n) => n.kind(),
+            None => return false,
+        };
+
+        if matches!(from_kind, NeuronKind::Output)
+            || matches!(to_kind, NeuronKind::Input)
+            || (from_kind == to_kind && to_kind != &NeuronKind::Hidden)
+            || graph::creates_cycle(&self.synapses, from, to)
+        {
+            return false;
+        }
+        true
+    }
+
     fn add_synapse(&mut self, from: usize, to: usize, weight: Weight) -> Result<usize, BrainError> {
         let new_synapse = Synapse::with_weight(from, to, weight)?;
 
@@ -87,18 +107,7 @@ impl Brain {
             return Err(BrainError::SynapseError);
         }
 
-        let from_kind = self
-            .neurons
-            .get(from)
-            .ok_or(BrainError::OutOfBounds)?
-            .kind();
-        let to_kind = self.neurons.get(to).ok_or(BrainError::OutOfBounds)?.kind();
-
-        if matches!(from_kind, NeuronKind::Output)
-            || matches!(to_kind, NeuronKind::Input)
-            || (from_kind == to_kind && to_kind != &NeuronKind::Hidden)
-            || graph::creates_cycle(&self.synapses, &new_synapse)
-        {
+        if !self.can_connect(from, to) {
             return Err(BrainError::SynapseError);
         }
 
