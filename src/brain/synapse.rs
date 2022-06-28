@@ -100,6 +100,7 @@ pub type Synapses = [Synapse];
 
 pub trait SynapsesExt {
     fn get_active_indices(&self) -> HashSet<usize>;
+    fn get_active_from_to(&self) -> Vec<(usize, usize)>;
 }
 
 impl SynapsesExt for Synapses {
@@ -109,6 +110,13 @@ impl SynapsesExt for Synapses {
                 .enumerate()
                 .filter_map(|(i, synapse)| (synapse.active()).then(|| i)),
         )
+    }
+
+    fn get_active_from_to(&self) -> Vec<(usize, usize)> {
+        self.iter()
+            .filter(|syn| syn.active())
+            .map(|syn| (syn.from(), syn.to()))
+            .collect()
     }
 }
 

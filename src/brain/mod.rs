@@ -5,8 +5,10 @@ pub mod synapse;
 
 pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
+use rand::random;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
+use self::synapse::SynapsesExt;
 use crate::{brain::graph::feed_forward_layers, weight::Weight};
 
 #[derive(Debug, PartialEq, Eq)]
@@ -78,6 +80,47 @@ impl Brain {
         }
 
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
+    }
+
+    pub fn add_random_synapse(&mut self) {
+        let existing_from_to = self.synapses.get_active_from_to();
+
+        let mut possible_from_to: Vec<(usize, usize)> = (0..self.neurons.len())
+            .flat_map(|i| {
+                let mut inner = vec![];
+
+                (self.inputs..self.neurons.len()).for_each(|j| {
+                    if i != j {
+                        if !existing_from_to.contains(&(i, j)) {
+                            inner.push((i, j));
+                        };
+                        if !existing_from_to.contains(&(j, i)) {
+                            inner.push((j, i));
+                        };
+                    }
+                });
+
+                inner
+            })
+            .collect();
+
+        possible_from_to.sort_unstable();
+        possible_from_to.dedup();
+
+        possible_from_to = possible_from_to
+            .into_iter()
+            .filter(|(i, j)| self.can_connect(*i, *j))
+            .collect();
+        if possible_from_to.is_empty() {
+            return;
+        }
+
+        let picked_from_to = possible_from_to
+            .get(random::<usize>() % possible_from_to.len())
+            .unwrap();
+
+        self.add_synapse(picked_from_to.0, picked_from_to.1, Weight::random())
+            .unwrap();
     }
 
     fn can_connect(&self, from: usize, to: usize) -> bool {
@@ -515,5 +558,25 @@ mod tests {
     fn activate_with_wrong_length_input() {
         let test_brain = super::Brain::new(2, 2);
         test_brain.activate(vec![10.0]).unwrap();
+    }
+
+    #[test]
+    fn add_random_synapse_basic() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+
+        assert_eq!(1, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn add_random_synapse_hidden_present() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_random_synapse();
+
+        assert_eq!(3, test_brain.synapses().get_active_indices().len());
     }
 }
