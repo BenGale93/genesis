@@ -216,11 +216,8 @@ impl Brain {
         {
             let start_neuron = self.neurons.get(start_neuron_index).unwrap();
             if matches!(start_neuron.kind(), NeuronKind::Hidden) {
-                let num_outgoing_synapses: usize = self
-                    .synapses
-                    .iter()
-                    .filter(|syn| syn.from() == start_neuron_index && syn.active())
-                    .count();
+                let num_outgoing_synapses: usize =
+                    self.synapses.num_outgoing_synapses(start_neuron_index);
                 if num_outgoing_synapses == 0 {
                     self.remove_neuron(start_neuron_index)?;
                 }
@@ -229,11 +226,8 @@ impl Brain {
         {
             let end_neuron = self.neurons.get(end_neuron_index).unwrap();
             if matches!(end_neuron.kind(), NeuronKind::Hidden) {
-                let num_incoming_synapses: usize = self
-                    .synapses
-                    .iter()
-                    .filter(|syn| syn.to() == end_neuron_index && syn.active())
-                    .count();
+                let num_incoming_synapses: usize =
+                    self.synapses.num_incoming_synapses(end_neuron_index);
                 if num_incoming_synapses == 0 {
                     self.remove_neuron(end_neuron_index)?;
                 }
