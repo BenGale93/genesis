@@ -153,6 +153,29 @@ impl Brain {
         }
     }
 
+    pub fn deactivate_random_neuron(&mut self) {
+        let hidden_neurons: Vec<usize> = self
+            .neurons
+            .iter()
+            .enumerate()
+            .filter(|(i, neuron)| {
+                if !matches!(neuron.kind(), NeuronKind::Hidden) {
+                    return false;
+                }
+                let outgoing_count = self.synapses.num_outgoing_synapses(*i);
+                let incoming_count = self.synapses.num_incoming_synapses(*i);
+
+                incoming_count > 0 && outgoing_count > 0
+            })
+            .map(|(i, _)| i)
+            .collect();
+
+        let index = hidden_neurons.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.remove_neuron(*i).unwrap();
+        }
+    }
+
     fn can_connect(&self, from: usize, to: usize) -> bool {
         let from_kind = match self.neurons.get(from) {
             Some(n) => n.kind(),
@@ -662,5 +685,41 @@ mod tests {
 
         assert_eq!(7, test_brain.neurons().len());
         assert_eq!(4, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_no_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(6, test_brain.neurons().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_single_option() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(3, test_brain.synapses().len());
+        assert_eq!(1, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_multiple_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_synapse(1, 4, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_neuron(1).unwrap();
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(6, test_brain.synapses().len());
+        assert_eq!(3, test_brain.synapses().get_active_indices().len());
     }
 }
