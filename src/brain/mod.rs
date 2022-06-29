@@ -5,7 +5,7 @@ pub mod synapse;
 
 pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
-use rand::random;
+use rand::{random, seq::SliceRandom};
 pub use synapse::{create_synapses, Synapse, Synapses};
 
 use self::synapse::SynapsesExt;
@@ -152,6 +152,14 @@ impl Brain {
             .unwrap();
 
         self.deactivate_synapse(*index).unwrap();
+    }
+
+    pub fn add_random_neuron(&mut self) {
+        let active_synapse_indices = self.synapses.get_active_indices();
+        let index = active_synapse_indices.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.add_neuron(*i).unwrap();
+        }
     }
 
     fn can_connect(&self, from: usize, to: usize) -> bool {
@@ -630,5 +638,38 @@ mod tests {
         test_brain.deactivate_random_synapse();
 
         assert_eq!(4, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn add_random_node_no_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        test_brain.add_random_neuron();
+
+        assert_eq!(6, test_brain.neurons().len());
+    }
+
+    #[test]
+    fn add_random_node_single_option() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_random_neuron();
+
+        assert_eq!(7, test_brain.neurons().len());
+        assert_eq!(3, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn add_random_node_multiple_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_synapse(1, 4, w).unwrap();
+        test_brain.add_random_neuron();
+
+        assert_eq!(7, test_brain.neurons().len());
+        assert_eq!(4, test_brain.synapses().len());
     }
 }
