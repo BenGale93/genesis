@@ -5,7 +5,7 @@ pub mod synapse;
 
 pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
-use rand::{random, seq::SliceRandom};
+use rand::seq::SliceRandom;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
 use self::synapse::SynapsesExt;
@@ -111,16 +111,12 @@ impl Brain {
             .into_iter()
             .filter(|(i, j)| self.can_connect(*i, *j))
             .collect();
-        if possible_from_to.is_empty() {
-            return;
+
+        let picked_from_to = possible_from_to.choose(&mut rand::thread_rng());
+        if let Some(from_to) = picked_from_to {
+            self.add_synapse(from_to.0, from_to.1, Weight::random())
+                .unwrap();
         }
-
-        let picked_from_to = possible_from_to
-            .get(random::<usize>() % possible_from_to.len())
-            .unwrap();
-
-        self.add_synapse(picked_from_to.0, picked_from_to.1, Weight::random())
-            .unwrap();
     }
 
     pub fn deactivate_random_synapse(&mut self) {
@@ -143,15 +139,10 @@ impl Brain {
             .map(|(i, _)| i)
             .collect();
 
-        if eligible_indexes.is_empty() {
-            return;
+        let index = eligible_indexes.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.deactivate_synapse(*i).unwrap();
         }
-
-        let index = eligible_indexes
-            .get(random::<usize>() % eligible_indexes.len())
-            .unwrap();
-
-        self.deactivate_synapse(*index).unwrap();
     }
 
     pub fn add_random_neuron(&mut self) {
