@@ -397,7 +397,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_node_no_incoming() {
+    fn deactivate_synapse_isolated_neuron_no_incoming() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -409,7 +409,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_node_no_outgoing() {
+    fn deactivate_synapse_isolated_neuron_no_outgoing() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -421,7 +421,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_nodes() {
+    fn deactivate_synapse_isolated_neurons() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -511,7 +511,7 @@ mod tests {
     }
 
     #[test]
-    fn remove_node_after_synapse_re_activated() {
+    fn remove_neuron_after_synapse_re_activated() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -552,7 +552,7 @@ mod tests {
     }
 
     #[test]
-    fn activate_with_hidden_node() {
+    fn activate_with_hidden_neuron() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -632,7 +632,7 @@ mod tests {
     }
 
     #[test]
-    fn add_random_node_no_options() {
+    fn add_random_neuron_no_options() {
         let mut test_brain = super::Brain::new(3, 3);
         test_brain.add_random_neuron();
 
@@ -640,7 +640,7 @@ mod tests {
     }
 
     #[test]
-    fn add_random_node_single_option() {
+    fn add_random_neuron_single_option() {
         let mut test_brain = super::Brain::new(3, 3);
         let w = Weight::new(1.0).unwrap();
 
@@ -652,7 +652,7 @@ mod tests {
     }
 
     #[test]
-    fn add_random_node_multiple_options() {
+    fn add_random_neuron_multiple_options() {
         let mut test_brain = super::Brain::new(3, 3);
         let w = Weight::new(1.0).unwrap();
 
