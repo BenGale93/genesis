@@ -1,7 +1,4 @@
-use std::{
-    collections::HashSet,
-    hash::{Hash, Hasher},
-};
+use std::hash::{Hash, Hasher};
 
 use crate::{brain::BrainError, weight::Weight};
 
@@ -99,16 +96,37 @@ impl Hash for Synapse {
 pub type Synapses = [Synapse];
 
 pub trait SynapsesExt {
-    fn get_active_indices(&self) -> HashSet<usize>;
+    fn get_active_indices(&self) -> Vec<usize>;
+    fn get_active_from_to(&self) -> Vec<(usize, usize)>;
+    fn num_outgoing_synapses(&self, from_index: usize) -> usize;
+    fn num_incoming_synapses(&self, from_index: usize) -> usize;
 }
 
 impl SynapsesExt for Synapses {
-    fn get_active_indices(&self) -> HashSet<usize> {
-        HashSet::from_iter(
-            self.iter()
-                .enumerate()
-                .filter_map(|(i, synapse)| (synapse.active()).then(|| i)),
-        )
+    fn get_active_indices(&self) -> Vec<usize> {
+        self.iter()
+            .enumerate()
+            .filter_map(|(i, synapse)| (synapse.active()).then(|| i))
+            .collect()
+    }
+
+    fn get_active_from_to(&self) -> Vec<(usize, usize)> {
+        self.iter()
+            .filter(|syn| syn.active())
+            .map(|syn| (syn.from(), syn.to()))
+            .collect()
+    }
+
+    fn num_outgoing_synapses(&self, from_index: usize) -> usize {
+        self.iter()
+            .filter(|syn| syn.from() == from_index && syn.active())
+            .count()
+    }
+
+    fn num_incoming_synapses(&self, to_index: usize) -> usize {
+        self.iter()
+            .filter(|syn| syn.to() == to_index && syn.active())
+            .count()
     }
 }
 

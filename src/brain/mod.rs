@@ -5,9 +5,16 @@ pub mod synapse;
 
 pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
+use rand::{prelude::*, seq::SliceRandom};
+use rand_distr::StandardNormal;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
-use crate::{brain::graph::feed_forward_layers, weight::Weight};
+use self::synapse::SynapsesExt;
+use crate::{
+    activation::ActivationFunctionKind,
+    brain::graph::feed_forward_layers,
+    weight::{Bias, Weight},
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Brain {
@@ -80,6 +87,166 @@ impl Brain {
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
     }
 
+    pub fn add_random_synapse(&mut self) {
+        let existing_from_to = self.synapses.get_active_from_to();
+
+        let mut possible_from_to: Vec<(usize, usize)> = (0..self.neurons.len())
+            .flat_map(|i| {
+                let mut inner = vec![];
+
+                (self.inputs..self.neurons.len()).for_each(|j| {
+                    if i != j {
+                        if !existing_from_to.contains(&(i, j)) {
+                            inner.push((i, j));
+                        };
+                        if !existing_from_to.contains(&(j, i)) {
+                            inner.push((j, i));
+                        };
+                    }
+                });
+
+                inner
+            })
+            .collect();
+
+        possible_from_to.sort_unstable();
+        possible_from_to.dedup();
+
+        possible_from_to = possible_from_to
+            .into_iter()
+            .filter(|(i, j)| self.can_connect(*i, *j))
+            .collect();
+
+        let picked_from_to = possible_from_to.choose(&mut rand::thread_rng());
+        if let Some(from_to) = picked_from_to {
+            self.add_synapse(from_to.0, from_to.1, Weight::random())
+                .unwrap();
+        }
+    }
+
+    pub fn deactivate_random_synapse(&mut self) {
+        let eligible_indexes: Vec<usize> = self
+            .synapses()
+            .iter()
+            .enumerate()
+            .filter(|(_, syn)| {
+                if !syn.active() {
+                    return false;
+                }
+                let from_index = syn.from();
+                let to_index = syn.to();
+
+                let num_outgoing_synapses = self.synapses.num_outgoing_synapses(from_index);
+                let num_incoming_synapses = self.synapses.num_incoming_synapses(to_index);
+
+                num_outgoing_synapses > 1 && num_incoming_synapses > 1
+            })
+            .map(|(i, _)| i)
+            .collect();
+
+        let index = eligible_indexes.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.deactivate_synapse(*i).unwrap();
+        }
+    }
+
+    pub fn add_random_neuron(&mut self) {
+        let active_synapse_indices = self.synapses.get_active_indices();
+        let index = active_synapse_indices.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.add_neuron(*i).unwrap();
+        }
+    }
+
+    pub fn deactivate_random_neuron(&mut self) {
+        let hidden_neurons: Vec<usize> = self
+            .neurons
+            .iter()
+            .enumerate()
+            .filter(|(i, neuron)| {
+                if !matches!(neuron.kind(), NeuronKind::Hidden) {
+                    return false;
+                }
+                let outgoing_count = self.synapses.num_outgoing_synapses(*i);
+                let incoming_count = self.synapses.num_incoming_synapses(*i);
+
+                incoming_count > 0 && outgoing_count > 0
+            })
+            .map(|(i, _)| i)
+            .collect();
+
+        let index = hidden_neurons.choose(&mut rand::thread_rng());
+        if let Some(i) = index {
+            self.remove_neuron(*i).unwrap();
+        }
+    }
+
+    pub fn mutate_synapse_weight(&mut self) {
+        let random_synapse = self.synapses.choose_mut(&mut rand::thread_rng());
+        if let Some(syn) = random_synapse {
+            let offset: f64 = thread_rng().sample(StandardNormal);
+            let new_weight =
+                Weight::new((syn.weight().as_float() + offset).min(1.0).max(-1.0)).unwrap();
+            syn.set_weight(new_weight);
+        }
+    }
+
+    pub fn mutate_neuron_bias(&mut self) {
+        let mut non_input_neurons: Vec<&mut Neuron> = self
+            .neurons
+            .iter_mut()
+            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .collect();
+
+        let random_neuron = non_input_neurons
+            .choose_mut(&mut rand::thread_rng())
+            .unwrap();
+
+        let offset: f64 = thread_rng().sample(StandardNormal);
+        let new_bias = Bias::new(
+            (random_neuron.bias().as_float() + offset)
+                .min(1.0)
+                .max(-1.0),
+        )
+        .unwrap();
+
+        random_neuron.set_bias(new_bias);
+    }
+
+    pub fn mutate_neuron_activation(&mut self) {
+        let mut non_input_neurons: Vec<&mut Neuron> = self
+            .neurons
+            .iter_mut()
+            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .collect();
+
+        let random_neuron = non_input_neurons
+            .choose_mut(&mut rand::thread_rng())
+            .unwrap();
+
+        random_neuron.set_activation(random::<ActivationFunctionKind>());
+    }
+
+    fn can_connect(&self, from: usize, to: usize) -> bool {
+        let from_kind = match self.neurons.get(from) {
+            Some(n) => n.kind(),
+            None => return false,
+        };
+        let to_kind = match self.neurons.get(to) {
+            Some(n) => n.kind(),
+            None => return false,
+        };
+
+        if matches!(from_kind, NeuronKind::Output)
+            || matches!(to_kind, NeuronKind::Input)
+            || (from_kind == to_kind && to_kind != &NeuronKind::Hidden)
+            || graph::creates_cycle(&self.synapses, from, to)
+        {
+            return false;
+        }
+        true
+    }
+
     fn add_synapse(&mut self, from: usize, to: usize, weight: Weight) -> Result<usize, BrainError> {
         let new_synapse = Synapse::with_weight(from, to, weight)?;
 
@@ -87,18 +254,7 @@ impl Brain {
             return Err(BrainError::SynapseError);
         }
 
-        let from_kind = self
-            .neurons
-            .get(from)
-            .ok_or(BrainError::OutOfBounds)?
-            .kind();
-        let to_kind = self.neurons.get(to).ok_or(BrainError::OutOfBounds)?.kind();
-
-        if matches!(from_kind, NeuronKind::Output)
-            || matches!(to_kind, NeuronKind::Input)
-            || (from_kind == to_kind && to_kind != &NeuronKind::Hidden)
-            || graph::creates_cycle(&self.synapses, &new_synapse)
-        {
+        if !self.can_connect(from, to) {
             return Err(BrainError::SynapseError);
         }
 
@@ -133,11 +289,8 @@ impl Brain {
         {
             let start_neuron = self.neurons.get(start_neuron_index).unwrap();
             if matches!(start_neuron.kind(), NeuronKind::Hidden) {
-                let num_outgoing_synapses: usize = self
-                    .synapses
-                    .iter()
-                    .filter(|syn| syn.from() == start_neuron_index && syn.active())
-                    .count();
+                let num_outgoing_synapses: usize =
+                    self.synapses.num_outgoing_synapses(start_neuron_index);
                 if num_outgoing_synapses == 0 {
                     self.remove_neuron(start_neuron_index)?;
                 }
@@ -146,11 +299,8 @@ impl Brain {
         {
             let end_neuron = self.neurons.get(end_neuron_index).unwrap();
             if matches!(end_neuron.kind(), NeuronKind::Hidden) {
-                let num_incoming_synapses: usize = self
-                    .synapses
-                    .iter()
-                    .filter(|syn| syn.to() == end_neuron_index && syn.active())
-                    .count();
+                let num_incoming_synapses: usize =
+                    self.synapses.num_incoming_synapses(end_neuron_index);
                 if num_incoming_synapses == 0 {
                     self.remove_neuron(end_neuron_index)?;
                 }
@@ -261,7 +411,7 @@ impl Brain {
 
 #[cfg(test)]
 mod tests {
-    use crate::{brain::synapse::SynapsesExt, weight::Weight};
+    use crate::{activation::ActivationFunctionKind, brain::synapse::SynapsesExt, weight::Weight};
 
     #[test]
     fn add_new_synapse_from_out_to_in() {
@@ -321,7 +471,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_node_no_incoming() {
+    fn deactivate_synapse_isolated_neuron_no_incoming() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -333,7 +483,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_node_no_outgoing() {
+    fn deactivate_synapse_isolated_neuron_no_outgoing() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -345,7 +495,7 @@ mod tests {
     }
 
     #[test]
-    fn deactivate_synapse_isolated_nodes() {
+    fn deactivate_synapse_isolated_neurons() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -435,7 +585,7 @@ mod tests {
     }
 
     #[test]
-    fn remove_node_after_synapse_re_activated() {
+    fn remove_neuron_after_synapse_re_activated() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -476,7 +626,7 @@ mod tests {
     }
 
     #[test]
-    fn activate_with_hidden_node() {
+    fn activate_with_hidden_neuron() {
         let mut test_brain = super::Brain::new(1, 1);
         let w = Weight::new(1.0).unwrap();
 
@@ -506,5 +656,159 @@ mod tests {
     fn activate_with_wrong_length_input() {
         let test_brain = super::Brain::new(2, 2);
         test_brain.activate(vec![10.0]).unwrap();
+    }
+
+    #[test]
+    fn add_random_synapse_basic() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+
+        assert_eq!(1, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn add_random_synapse_hidden_present() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_random_synapse();
+
+        assert_eq!(3, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_synapse_no_changes() {
+        let mut test_brain = super::Brain::new(3, 3);
+
+        test_brain.add_random_synapse();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_synapse();
+
+        assert_eq!(2, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_synapse_changes() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_synapse(1, 6, w).unwrap();
+        test_brain.add_synapse(6, 5, w).unwrap();
+        test_brain.add_synapse(0, 4, w).unwrap();
+        dbg!(&test_brain.synapses());
+        test_brain.deactivate_random_synapse();
+
+        assert_eq!(4, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn add_random_neuron_no_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        test_brain.add_random_neuron();
+
+        assert_eq!(6, test_brain.neurons().len());
+    }
+
+    #[test]
+    fn add_random_neuron_single_option() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_random_neuron();
+
+        assert_eq!(7, test_brain.neurons().len());
+        assert_eq!(3, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn add_random_neuron_multiple_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_synapse(1, 4, w).unwrap();
+        test_brain.add_random_neuron();
+
+        assert_eq!(7, test_brain.neurons().len());
+        assert_eq!(4, test_brain.synapses().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_no_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(6, test_brain.neurons().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_single_option() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(3, test_brain.synapses().len());
+        assert_eq!(1, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn deactivate_random_neuron_multiple_options() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_synapse(1, 4, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_neuron(1).unwrap();
+        test_brain.deactivate_random_neuron();
+
+        assert_eq!(6, test_brain.synapses().len());
+        assert_eq!(3, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn mutate_synapse_weight_no_synapse_does_not_panic() {
+        let mut test_brain = super::Brain::new(1, 1);
+        test_brain.mutate_synapse_weight();
+    }
+
+    #[test]
+    fn mutate_synapse_weight_success() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let w = Weight::new(0.0).unwrap();
+
+        test_brain.add_synapse(0, 1, w).unwrap();
+
+        test_brain.mutate_synapse_weight();
+
+        assert_ne!(0.0, test_brain.synapses()[0].weight().as_float());
+    }
+
+    #[test]
+    fn mutate_neuron_bias_success() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let starting_bias = test_brain.neurons()[1].bias();
+        test_brain.mutate_neuron_bias();
+
+        assert_ne!(test_brain.neurons()[1].bias(), starting_bias);
+    }
+
+    #[test]
+    fn mutate_neuron_activation_does_not_change_input() {
+        let mut test_brain = super::Brain::new(1, 1);
+        test_brain.mutate_neuron_activation();
+
+        assert_eq!(
+            test_brain.neurons()[0].activation(),
+            &ActivationFunctionKind::Identity
+        );
     }
 }

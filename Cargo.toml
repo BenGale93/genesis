@@ -20,4 +20,5 @@ path = "src/lib.rs"
 [dependencies]
 anyhow = "1.0.58"
 rand = "0.8.5"
+rand_distr = "0.4.3"
 thiserror = "1.0.31"
