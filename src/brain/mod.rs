@@ -10,7 +10,10 @@ use rand_distr::StandardNormal;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
 use self::synapse::SynapsesExt;
-use crate::{brain::graph::feed_forward_layers, weight::Weight};
+use crate::{
+    brain::graph::feed_forward_layers,
+    weight::{Bias, Weight},
+};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Brain {
@@ -185,6 +188,28 @@ impl Brain {
                 Weight::new((syn.weight().as_float() + offset).min(1.0).max(-1.0)).unwrap();
             syn.set_weight(new_weight);
         }
+    }
+
+    pub fn mutate_neuron_bias(&mut self) {
+        let mut non_input_neurons: Vec<&mut Neuron> = self
+            .neurons
+            .iter_mut()
+            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .collect();
+
+        let random_neuron = non_input_neurons
+            .choose_mut(&mut rand::thread_rng())
+            .unwrap();
+
+        let offset: f64 = thread_rng().sample(StandardNormal);
+        let new_bias = Bias::new(
+            (random_neuron.bias().as_float() + offset)
+                .min(1.0)
+                .max(-1.0),
+        )
+        .unwrap();
+
+        random_neuron.set_bias(new_bias);
     }
 
     fn can_connect(&self, from: usize, to: usize) -> bool {
@@ -750,5 +775,14 @@ mod tests {
         test_brain.mutate_synapse_weight();
 
         assert_ne!(0.0, test_brain.synapses()[0].weight().as_float());
+    }
+
+    #[test]
+    fn mutate_neuron_bias_success() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let starting_bias = test_brain.neurons()[1].bias();
+        test_brain.mutate_neuron_bias();
+
+        assert_ne!(test_brain.neurons()[1].bias(), starting_bias);
     }
 }
