@@ -11,6 +11,7 @@ pub use synapse::{create_synapses, Synapse, Synapses};
 
 use self::synapse::SynapsesExt;
 use crate::{
+    activation::ActivationFunctionKind,
     brain::graph::feed_forward_layers,
     weight::{Bias, Weight},
 };
@@ -212,6 +213,20 @@ impl Brain {
         random_neuron.set_bias(new_bias);
     }
 
+    pub fn mutate_neuron_activation(&mut self) {
+        let mut non_input_neurons: Vec<&mut Neuron> = self
+            .neurons
+            .iter_mut()
+            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .collect();
+
+        let random_neuron = non_input_neurons
+            .choose_mut(&mut rand::thread_rng())
+            .unwrap();
+
+        random_neuron.set_activation(random::<ActivationFunctionKind>());
+    }
+
     fn can_connect(&self, from: usize, to: usize) -> bool {
         let from_kind = match self.neurons.get(from) {
             Some(n) => n.kind(),
@@ -396,7 +411,7 @@ impl Brain {
 
 #[cfg(test)]
 mod tests {
-    use crate::{brain::synapse::SynapsesExt, weight::Weight};
+    use crate::{activation::ActivationFunctionKind, brain::synapse::SynapsesExt, weight::Weight};
 
     #[test]
     fn add_new_synapse_from_out_to_in() {
@@ -784,5 +799,16 @@ mod tests {
         test_brain.mutate_neuron_bias();
 
         assert_ne!(test_brain.neurons()[1].bias(), starting_bias);
+    }
+
+    #[test]
+    fn mutate_neuron_activation_does_not_change_input() {
+        let mut test_brain = super::Brain::new(1, 1);
+        test_brain.mutate_neuron_activation();
+
+        assert_eq!(
+            test_brain.neurons()[0].activation(),
+            &ActivationFunctionKind::Identity
+        );
     }
 }
