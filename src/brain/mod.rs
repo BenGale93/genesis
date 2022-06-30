@@ -5,7 +5,8 @@ pub mod synapse;
 
 pub use errors::BrainError;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
-use rand::seq::SliceRandom;
+use rand::{prelude::*, seq::SliceRandom};
+use rand_distr::StandardNormal;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
 use self::synapse::SynapsesExt;
@@ -173,6 +174,16 @@ impl Brain {
         let index = hidden_neurons.choose(&mut rand::thread_rng());
         if let Some(i) = index {
             self.remove_neuron(*i).unwrap();
+        }
+    }
+
+    pub fn mutate_synapse_weight(&mut self) {
+        let random_synapse = self.synapses.choose_mut(&mut rand::thread_rng());
+        if let Some(syn) = random_synapse {
+            let offset: f64 = thread_rng().sample(StandardNormal);
+            let new_weight =
+                Weight::new((syn.weight().as_float() + offset).min(1.0).max(-1.0)).unwrap();
+            syn.set_weight(new_weight);
         }
     }
 
@@ -721,5 +732,23 @@ mod tests {
 
         assert_eq!(6, test_brain.synapses().len());
         assert_eq!(3, test_brain.synapses().get_active_indices().len());
+    }
+
+    #[test]
+    fn mutate_synapse_weight_no_synapse_does_not_panic() {
+        let mut test_brain = super::Brain::new(1, 1);
+        test_brain.mutate_synapse_weight();
+    }
+
+    #[test]
+    fn mutate_synapse_weight_success() {
+        let mut test_brain = super::Brain::new(1, 1);
+        let w = Weight::new(0.0).unwrap();
+
+        test_brain.add_synapse(0, 1, w).unwrap();
+
+        test_brain.mutate_synapse_weight();
+
+        assert_ne!(0.0, test_brain.synapses()[0].weight().as_float());
     }
 }
