@@ -11,7 +11,7 @@ readme = "./README.md"
 
 [[bin]]
 name = "genesis"
-path = "src/main.rs"
+path = "src/bin/genesis/main.rs"
 
 [lib]
 name = "genesis"
@@ -19,6 +19,7 @@ path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0.58"
+bevy = { version = "0.7.0", features = ["dynamic"] }
 bitvec = "1.0.0"
 rand = "0.8.5"
 rand_distr = "0.4.3"
