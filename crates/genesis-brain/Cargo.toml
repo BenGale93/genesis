@@ -1,0 +1,12 @@
+[package]
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+name = "genesis-brain"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[dependencies]
+rand = "0.8.5"
+rand_distr = "0.4.3"
+thiserror = "1.0.31"
+genesis-util = {path = "../genesis-util/"}

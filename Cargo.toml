@@ -18,9 +18,12 @@ name = "genesis"
 path = "src/lib.rs"
 
 [dependencies]
+genesis-brain = { path = "crates/genesis-brain" }
+genesis-genome = { path = "crates/genesis-genome" }
 anyhow = "1.0.58"
 bevy = { version = "0.7.0", features = [] }
-bitvec = "1.0.1"
 rand = "0.8.5"
-rand_distr = "0.4.3"
 thiserror = "1.0.31"
+
+[workspace]
+members = ["crates/*"]

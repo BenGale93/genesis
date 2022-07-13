@@ -1,20 +1,18 @@
-pub mod errors;
+mod activation;
+pub mod brain_error;
 mod graph;
 pub mod neuron;
 pub mod synapse;
 
-pub use errors::BrainError;
+use activation::ActivationFunctionKind;
+pub use brain_error::BrainError;
+use genesis_util::{Bias, Weight};
+use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
+use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
-
-use self::synapse::SynapsesExt;
-use crate::{
-    activation::ActivationFunctionKind,
-    brain::graph::feed_forward_layers,
-    weight::{Bias, Weight},
-};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Brain {
@@ -411,7 +409,9 @@ impl Brain {
 
 #[cfg(test)]
 mod tests {
-    use crate::{activation::ActivationFunctionKind, brain::synapse::SynapsesExt, weight::Weight};
+    use genesis_util::Weight;
+
+    use crate::{activation::ActivationFunctionKind, SynapsesExt};
 
     #[test]
     fn add_new_synapse_from_out_to_in() {
