@@ -1,7 +1,8 @@
 use bitvec::prelude::*;
+use genesis_util::Probability;
 use rand::{Rng, RngCore};
 
-use crate::{genome::errors::GenomeError, probability::Probability};
+use crate::GenomeError;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Chromosome {
@@ -54,10 +55,10 @@ impl Chromosome {
 #[cfg(test)]
 mod tests {
     use bitvec::prelude::*;
+    use genesis_util::Probability;
     use rand::{prelude::StdRng, SeedableRng};
 
     use super::Chromosome;
-    use crate::probability::Probability;
 
     #[test]
     fn test_mutate_changes() {

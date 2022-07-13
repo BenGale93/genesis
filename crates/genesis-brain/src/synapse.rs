@@ -1,6 +1,8 @@
 use std::hash::{Hash, Hasher};
 
-use crate::{brain::BrainError, weight::Weight};
+use genesis_util::Weight;
+
+use crate::BrainError;
 
 #[derive(Debug, Clone)]
 pub struct Synapse {
@@ -139,8 +141,9 @@ pub fn create_synapses(links: &[(usize, usize)]) -> Result<Vec<Synapse>, BrainEr
 
 #[cfg(test)]
 mod tests {
+    use genesis_util::Weight;
+
     use super::Synapse;
-    use crate::weight::Weight;
 
     #[test]
     fn not_equal_by_innovation() {

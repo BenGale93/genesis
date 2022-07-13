@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use crate::{activation, weight::Bias};
+use genesis_util::Bias;
+
+use crate::activation;
 
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum NeuronKind {
@@ -88,8 +90,10 @@ impl NeuronsExt for Neurons {
 
 #[cfg(test)]
 mod tests {
+    use genesis_util::Bias;
+
     use super::{Neuron, NeuronKind};
-    use crate::{activation, weight::Bias};
+    use crate::activation;
 
     #[test]
     fn test_activate_input() {

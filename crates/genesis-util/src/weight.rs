@@ -2,7 +2,7 @@ use std::ops;
 
 use rand::Rng;
 
-use crate::errors::GenesisError;
+use crate::GenesisUtilError;
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Weight(f64);
@@ -10,9 +10,9 @@ pub struct Weight(f64);
 pub type Bias = Weight;
 
 impl Weight {
-    pub fn new(w: f64) -> Result<Self, GenesisError> {
+    pub fn new(w: f64) -> Result<Self, GenesisUtilError> {
         if !(-1_f64..=1_f64).contains(&w) {
-            return Err(GenesisError::InvalidWeight);
+            return Err(GenesisUtilError::InvalidWeight);
         }
         Ok(Weight(w))
     }

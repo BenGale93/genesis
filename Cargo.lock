@@ -1400,9 +1400,37 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
- "bitvec",
+ "genesis-brain",
+ "genesis-genome",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis-brain"
+version = "0.1.0"
+dependencies = [
+ "genesis-util",
  "rand",
  "rand_distr",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis-genome"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "genesis-util",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis-util"
+version = "0.1.0"
+dependencies = [
+ "rand",
  "thiserror",
 ]
 

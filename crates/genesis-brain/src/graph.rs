@@ -1,11 +1,8 @@
 use std::collections::HashSet;
 
-use crate::{
-    brain,
-    brain::{NeuronKind, NeuronsExt},
-};
+use crate::{NeuronKind, Neurons, NeuronsExt, Synapses};
 
-pub fn creates_cycle(synapses: &brain::Synapses, from: usize, to: usize) -> bool {
+pub fn creates_cycle(synapses: &Synapses, from: usize, to: usize) -> bool {
     let mut visited = HashSet::from([to]);
 
     loop {
@@ -27,10 +24,7 @@ pub fn creates_cycle(synapses: &brain::Synapses, from: usize, to: usize) -> bool
     }
 }
 
-pub fn feed_forward_layers(
-    neurons: &brain::Neurons,
-    synapses: &brain::Synapses,
-) -> Vec<HashSet<usize>> {
+pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSet<usize>> {
     let required = neurons.get_indices(&HashSet::from([NeuronKind::Hidden, NeuronKind::Output]));
     let mut visited = neurons.get_indices(&HashSet::from([NeuronKind::Input]));
 
@@ -69,7 +63,7 @@ pub fn feed_forward_layers(
 mod tests {
     use std::collections::HashSet;
 
-    use crate::brain;
+    use crate as brain;
 
     #[test]
     fn creates_a_cycle() {

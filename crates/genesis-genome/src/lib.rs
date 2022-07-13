@@ -1,12 +1,11 @@
 mod chromosome;
-mod errors;
+mod genome_error;
 
 use bitvec::slice::BitSlice;
 use chromosome::Chromosome;
-pub use errors::GenomeError;
+use genesis_util::Probability;
+pub use genome_error::GenomeError;
 use rand::RngCore;
-
-use crate::probability::Probability;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Genome {
@@ -61,10 +60,10 @@ impl Genome {
 #[cfg(test)]
 mod tests {
     use bitvec::prelude::*;
+    use genesis_util::Probability;
     use rand::{prelude::StdRng, SeedableRng};
 
     use super::Genome;
-    use crate::probability::Probability;
 
     #[test]
     fn test_mutate_changes() {
