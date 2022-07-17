@@ -1,8 +1,9 @@
 use std::collections::HashSet;
 
 use genesis_util::Bias;
+use rand::random;
 
-use crate::activation;
+use crate::activation::{self, ActivationFunctionKind};
 
 #[derive(PartialEq, Eq, Debug, Hash)]
 pub enum NeuronKind {
@@ -22,7 +23,7 @@ impl Neuron {
     pub fn new(kind: NeuronKind) -> Self {
         let activation = match kind {
             NeuronKind::Input => activation::ActivationFunctionKind::Identity,
-            _ => activation::random_activation(),
+            _ => random::<ActivationFunctionKind>(),
         };
 
         let bias = match kind {
