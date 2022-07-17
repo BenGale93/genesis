@@ -17,7 +17,7 @@ pub enum ActivationFunctionKind {
 
 impl Distribution<ActivationFunctionKind> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ActivationFunctionKind {
-        match rng.gen_range(0..10) {
+        match rng.gen_range(0..=10) {
             0 => ActivationFunctionKind::Sigmoid,
             1 => ActivationFunctionKind::Tanh,
             2 => ActivationFunctionKind::Relu,
@@ -102,6 +102,8 @@ pub fn activate(x: f64, kind: &ActivationFunctionKind) -> f64 {
 
 #[cfg(test)]
 mod tests {
+    use rand::{distributions::Standard, prelude::StdRng, Rng, SeedableRng};
+
     use crate::activation;
 
     #[test]
@@ -194,5 +196,21 @@ mod tests {
             activation::activate(-1.0, &activation::ActivationFunctionKind::Selu),
             -1.111330737812562
         );
+    }
+
+    #[test]
+    fn test_random_activation() {
+        let mut rng = StdRng::seed_from_u64(2);
+        let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
+        assert_eq!(act_func, activation::ActivationFunctionKind::Step);
+
+        let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
+        assert_eq!(act_func, activation::ActivationFunctionKind::Identity);
+
+        let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
+        assert_eq!(act_func, activation::ActivationFunctionKind::Sigmoid);
+
+        let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
+        assert_eq!(act_func, activation::ActivationFunctionKind::Sin);
     }
 }
