@@ -1,0 +1,11 @@
+[package]
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+name = "genesis-math"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[dependencies]
+thiserror = "1.0.31"
+nalgebra = "0.31.0"
+bevy_transform = "0.7.0"
