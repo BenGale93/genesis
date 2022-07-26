@@ -53,7 +53,7 @@ impl Brain {
         self.synapses.as_ref()
     }
 
-    pub fn activate(&self, input_values: Vec<f64>) -> Result<Vec<f64>, BrainError> {
+    pub fn activate(&self, input_values: &[f64]) -> Result<Vec<f64>, BrainError> {
         if input_values.len() != self.inputs {
             return Err(BrainError::InputArrayError);
         }
@@ -620,7 +620,7 @@ mod tests {
 
         test_brain.add_synapse(0, 1, w).unwrap();
 
-        let result = test_brain.activate(vec![10.0]).unwrap();
+        let result = test_brain.activate(&[10.0]).unwrap();
 
         assert_ne!(result, vec![0.0]);
     }
@@ -633,7 +633,7 @@ mod tests {
         test_brain.add_synapse(0, 1, w).unwrap();
         test_brain.add_neuron(0).unwrap();
 
-        let result = test_brain.activate(vec![10.0]).unwrap();
+        let result = test_brain.activate(&[10.0]).unwrap();
 
         assert_ne!(result, vec![0.0]);
     }
@@ -645,7 +645,7 @@ mod tests {
 
         test_brain.add_synapse(0, 2, w).unwrap();
 
-        let result = test_brain.activate(vec![10.0, -10.0]).unwrap();
+        let result = test_brain.activate(&[10.0, -10.0]).unwrap();
 
         assert_ne!(result[0], 0.0);
         assert_eq!(result[1], 0.0);
@@ -655,7 +655,7 @@ mod tests {
     #[should_panic(expected = "value: InputArrayError")]
     fn activate_with_wrong_length_input() {
         let test_brain = super::Brain::new(2, 2);
-        test_brain.activate(vec![10.0]).unwrap();
+        test_brain.activate(&[10.0]).unwrap();
     }
 
     #[test]
