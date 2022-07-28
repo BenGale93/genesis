@@ -1403,6 +1403,7 @@ dependencies = [
  "genesis-brain",
  "genesis-genome",
  "genesis-math",
+ "genesis-util",
  "rand",
  "thiserror",
 ]

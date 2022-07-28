@@ -10,7 +10,7 @@ fn main() {
             title: "Genesis".to_string(),
             ..default()
         })
-        .add_system_set(systems::moving_bug_system_set())
+        .add_system_set(systems::thinking_system_set())
         .add_system_set(systems::moving_camera_system_set())
         .run();
 }
