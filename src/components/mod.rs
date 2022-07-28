@@ -3,6 +3,8 @@ use std::ops::{Deref, DerefMut};
 use bevy::prelude::{Bundle, Component};
 use genesis_brain::Brain;
 
+use crate::config;
+
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct Mind(pub Brain);
 
@@ -77,7 +79,11 @@ impl MindBundle {
     pub fn new(input: usize, output: usize) -> Self {
         let input_vec = MindInput(vec![0.0; input]);
         let output_vec = MindOutput(vec![0.0; output]);
-        let mind = Mind(Brain::new(input, output));
+        let mut mind = Mind(Brain::new(input, output));
+
+        for _ in 0..config::INITIAL_SYNAPSE_COUNT {
+            mind.add_random_synapse();
+        }
 
         Self {
             input: input_vec,
