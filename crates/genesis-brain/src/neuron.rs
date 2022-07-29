@@ -84,7 +84,7 @@ impl NeuronsExt for Neurons {
         HashSet::from_iter(
             self.iter()
                 .enumerate()
-                .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then(|| i)),
+                .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then_some(i)),
         )
     }
 }
