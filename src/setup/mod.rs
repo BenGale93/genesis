@@ -19,11 +19,14 @@ fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
             ))
             .insert_bundle(SpriteBundle {
                 texture: asset_server.load("sprite.png"),
-                transform: Transform::from_xyz(
-                    rng.gen_range(range.clone()),
-                    rng.gen_range(range.clone()),
-                    0.0,
-                ),
+                transform: Transform {
+                    translation: Vec3::new(
+                        rng.gen_range(range.clone()),
+                        rng.gen_range(range.clone()),
+                        0.0,
+                    ),
+                    ..default()
+                },
                 ..default()
             });
     }

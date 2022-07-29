@@ -15,4 +15,4 @@ pub const START_NUM: usize = 10;
 pub const INITIAL_SYNAPSE_COUNT: usize = 2;
 
 // World
-pub const WORLD_SIZE: f32 = 300.0;
+pub const WORLD_SIZE: f32 = 500.0;
