@@ -110,10 +110,7 @@ impl Brain {
         possible_from_to.sort_unstable();
         possible_from_to.dedup();
 
-        possible_from_to = possible_from_to
-            .into_iter()
-            .filter(|(i, j)| self.can_connect(*i, *j))
-            .collect();
+        possible_from_to.retain(|(i, j)| self.can_connect(*i, *j));
 
         let picked_from_to = possible_from_to.choose(&mut rand::thread_rng());
         if let Some(from_to) = picked_from_to {
@@ -395,7 +392,7 @@ impl Brain {
             .enumerate()
             .filter_map(|(i, syn)| {
                 ((syn.to() == neuron_index || syn.from() == neuron_index) && syn.active())
-                    .then(|| i)
+                    .then_some(i)
             })
             .collect();
 

@@ -108,7 +108,7 @@ impl SynapsesExt for Synapses {
     fn get_active_indices(&self) -> Vec<usize> {
         self.iter()
             .enumerate()
-            .filter_map(|(i, synapse)| (synapse.active()).then(|| i))
+            .filter_map(|(i, synapse)| (synapse.active()).then_some(i))
             .collect()
     }
 
