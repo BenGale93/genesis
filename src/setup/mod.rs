@@ -4,7 +4,7 @@ use rand::Rng;
 use crate::{components, config};
 
 fn camera_setup(commands: &mut Commands) {
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
+    commands.spawn_bundle(Camera2dBundle::default());
 }
 
 fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
