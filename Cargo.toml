@@ -22,7 +22,7 @@ genesis-brain = { path = "crates/genesis-brain" }
 genesis-genome = { path = "crates/genesis-genome" }
 genesis-math = { path = "crates/genesis-math" }
 genesis-util = { path = "crates/genesis-util/"}
-anyhow = "1.0.58"
+anyhow = "1.0.60"
 bevy = { version = "0.8.0", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.31"
