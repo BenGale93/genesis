@@ -3,6 +3,10 @@ use std::ops::{Deref, DerefMut};
 use bevy::prelude::{Bundle, Component};
 use genesis_brain::Brain;
 
+mod body;
+
+pub use body::BugBody;
+
 use crate::config;
 
 #[derive(Component, Debug, PartialEq, Eq)]

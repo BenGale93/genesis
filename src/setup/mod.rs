@@ -13,6 +13,7 @@ fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     for _ in 0..config::START_NUM {
         commands
             .spawn()
+            .insert(components::BugBody::random(&mut rng))
             .insert_bundle(components::MindBundle::new(
                 config::INPUT_NEURONS,
                 config::OUTPUT_NEURONS,
