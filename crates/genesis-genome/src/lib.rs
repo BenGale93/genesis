@@ -5,6 +5,7 @@ use bitvec::slice::BitSlice;
 use chromosome::Chromosome;
 use genesis_util::Probability;
 pub use genome_error::GenomeError;
+use ndarray::Array;
 use rand::RngCore;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -54,6 +55,23 @@ impl Genome {
             .ok_or(GenomeError::ChromosomeNotFoundError)?;
 
         c.read(start, length)
+    }
+
+    pub fn read_float(
+        &self,
+        min: f32,
+        max: f32,
+        location: usize,
+        start: usize,
+        length: usize,
+    ) -> Result<f32, GenomeError> {
+        let dna = self.read(location, start, length)?;
+
+        let count = dna.count_ones();
+
+        let array = Array::linspace(min, max, dna.len());
+
+        Ok(*array.get(count).expect("count should be less than len."))
     }
 }
 

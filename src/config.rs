@@ -13,6 +13,8 @@ pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 5;
 pub const START_NUM: usize = 10;
 pub const INITIAL_SYNAPSE_COUNT: usize = 2;
+pub const CHROMOSOME_COUNT: usize = 3;
+pub const CHROMOSOME_LEN: usize = 100;
 
 pub const MOVEMENT_INDEX: usize = 0;
 pub const ROTATE_INDEX: usize = 1;

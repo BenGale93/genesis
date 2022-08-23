@@ -22,13 +22,27 @@ pub fn move_me(me: &mut Transform, movement_factor: f32, movement_speed: f32) {
     me.translation += movement_direction * movement_distance;
 }
 
-pub fn movement_system(mut query: Query<(&mut Transform, &components::MindOutput)>) {
-    for (mut transform, outputs) in query.iter_mut() {
-        // TODO: make rotation speed an attribute of the bug.
-        rotate_me(&mut transform, outputs[config::ROTATE_INDEX] as f32, 1.0);
+pub fn movement_system(
+    mut query: Query<(
+        &mut Transform,
+        &components::MindOutput,
+        &components::BugBody,
+    )>,
+) {
+    for (mut transform, outputs, body) in query.iter_mut() {
+        let rotation_speed = body.rotate_speed();
+        rotate_me(
+            &mut transform,
+            outputs[config::ROTATE_INDEX] as f32,
+            rotation_speed,
+        );
 
-        // TODO: make movement speed an attribute of the bug.
-        move_me(&mut transform, outputs[config::MOVEMENT_INDEX] as f32, 50.0);
+        let movement_speed = body.movement_speed();
+        move_me(
+            &mut transform,
+            outputs[config::MOVEMENT_INDEX] as f32,
+            movement_speed,
+        );
     }
 }
 
