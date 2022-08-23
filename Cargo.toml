@@ -25,7 +25,7 @@ genesis-util = { path = "crates/genesis-util/"}
 anyhow = "1.0.58"
 bevy = { version = "0.8.0", features = [] }
 rand = "0.8.5"
-thiserror = "1.0.31"
+thiserror = "1.0.32"
 
 [workspace]
 members = ["crates/*"]
