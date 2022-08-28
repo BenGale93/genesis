@@ -3,7 +3,7 @@ use genesis_genome::Genome;
 use genesis_util::Probability;
 use rand::RngCore;
 
-use crate::config;
+use crate::{config, ecosystem::Energy};
 
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct BugBody {
@@ -54,5 +54,56 @@ impl BugBody {
 impl Default for BugBody {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[derive(Component, Debug, PartialEq, Eq)]
+pub struct EnergyReserve {
+    energy: Energy,
+}
+
+#[derive(Component, Debug, PartialEq, Eq)]
+pub struct HealthReserve {
+    health: Energy,
+}
+
+#[derive(Component, Debug, PartialEq, Eq)]
+pub struct CoreReserve {
+    core: Energy,
+}
+
+#[derive(Bundle, Debug)]
+pub struct BodyBundle {
+    body: BugBody,
+    energy_reserve: EnergyReserve,
+    health_reserve: HealthReserve,
+    core_reserve: CoreReserve,
+}
+
+impl BodyBundle {
+    pub fn random(rng: &mut dyn RngCore, total_energy: Energy) -> Self {
+        let body = BugBody::random(rng);
+
+        Self::new(body, total_energy)
+    }
+
+    pub fn new(body: BugBody, total_energy: Energy) -> Self {
+        let energy_split = total_energy.split(3);
+        let energy_reserve = EnergyReserve {
+            energy: energy_split[0],
+        };
+        let health_reserve = HealthReserve {
+            health: energy_split[1],
+        };
+        let core_reserve = CoreReserve {
+            core: energy_split[2],
+        };
+
+        Self {
+            body,
+            energy_reserve,
+            health_reserve,
+            core_reserve,
+        }
     }
 }
