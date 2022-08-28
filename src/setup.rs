@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{components, config};
+use crate::{body, config, mind};
 
 fn camera_setup(commands: &mut Commands) {
     commands.spawn_bundle(Camera2dBundle::default());
@@ -13,8 +13,8 @@ fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     for _ in 0..config::START_NUM {
         commands
             .spawn()
-            .insert(components::BugBody::random(&mut rng))
-            .insert_bundle(components::MindBundle::new(
+            .insert(body::BugBody::random(&mut rng))
+            .insert_bundle(mind::MindBundle::new(
                 config::INPUT_NEURONS,
                 config::OUTPUT_NEURONS,
             ))

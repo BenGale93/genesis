@@ -1,8 +1,8 @@
-use bevy::{prelude::*, time::FixedTimestep};
+use bevy::prelude::*;
 
 use crate::config;
 
-fn move_camera(
+pub fn move_camera_system(
     kb_input: Res<Input<KeyCode>>,
     time: Res<Time>,
     mut camera_query: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>,
@@ -45,10 +45,4 @@ fn move_camera(
     }
 
     projection.scale = log_scale.exp();
-}
-
-pub fn moving_camera_system_set() -> SystemSet {
-    SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(0.15))
-        .with_system(move_camera)
 }

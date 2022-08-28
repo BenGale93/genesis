@@ -1,10 +1,9 @@
 use bevy::{
     math::{Quat, Vec3},
     prelude::*,
-    time::FixedTimestep,
 };
 
-use crate::{components, config};
+use crate::{body, config, mind};
 
 pub fn rotate_me(me: &mut Transform, rotation_factor: f32, rotation_speed: f32) {
     let rotation_factor = rotation_factor.clamp(-1.0, 1.0);
@@ -22,13 +21,7 @@ pub fn move_me(me: &mut Transform, movement_factor: f32, movement_speed: f32) {
     me.translation += movement_direction * movement_distance;
 }
 
-pub fn movement_system(
-    mut query: Query<(
-        &mut Transform,
-        &components::MindOutput,
-        &components::BugBody,
-    )>,
-) {
+pub fn movement_system(mut query: Query<(&mut Transform, &mind::MindOutput, &body::BugBody)>) {
     for (mut transform, outputs, body) in query.iter_mut() {
         let rotation_speed = body.rotate_speed();
         rotate_me(
@@ -44,12 +37,6 @@ pub fn movement_system(
             movement_speed,
         );
     }
-}
-
-pub fn movement_system_set() -> SystemSet {
-    SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
-        .with_system(movement_system)
 }
 
 #[cfg(test)]

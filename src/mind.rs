@@ -1,11 +1,7 @@
 use std::ops::{Deref, DerefMut};
 
-use bevy::prelude::{Bundle, Component};
+use bevy::prelude::*;
 use genesis_brain::Brain;
-
-mod body;
-
-pub use body::BugBody;
 
 use crate::config;
 
@@ -94,5 +90,62 @@ impl MindBundle {
             mind,
             output: output_vec,
         }
+    }
+}
+
+pub fn thinking_system(mut query: Query<(&MindInput, &Mind, &mut MindOutput)>) {
+    for (input, bug_brain, mut output) in query.iter_mut() {
+        let x = bug_brain.activate(input).expect("Wrong length vector");
+        output.0 = x;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::*;
+
+    use super::thinking_system;
+    use crate::mind::{Mind, MindBundle, MindInput, MindOutput};
+
+    #[test]
+    fn mind_thinks() {
+        let mut app = App::new();
+
+        app.add_system(thinking_system);
+
+        let mut test_brain = genesis_brain::Brain::new(1, 1);
+
+        test_brain.add_random_synapse();
+
+        let bug_id = app
+            .world
+            .spawn()
+            .insert(Mind(test_brain))
+            .insert(MindInput(vec![1.0]))
+            .insert(MindOutput(vec![0.0]))
+            .id();
+
+        app.update();
+
+        let result = app.world.get::<MindOutput>(bug_id).unwrap();
+
+        assert_ne!(result.0[0], 0.0);
+    }
+
+    #[test]
+    fn mind_bundle_works() {
+        let mut app = App::new();
+
+        app.add_system(thinking_system);
+
+        let bug_id = app.world.spawn().insert_bundle(MindBundle::new(3, 2)).id();
+
+        app.update();
+
+        let mind_in = app.world.get::<MindInput>(bug_id).unwrap();
+        let mind_out = app.world.get::<MindOutput>(bug_id).unwrap();
+
+        assert_eq!(mind_in.0.len(), 3);
+        assert_eq!(mind_out.0.len(), 2);
     }
 }
