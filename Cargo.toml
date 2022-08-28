@@ -26,6 +26,10 @@ anyhow = "1.0.62"
 bevy = { version = "0.8.0", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.32"
+derive_more = "0.99.17"
+
+[dev-dependencies]
+rstest = "0.15.0"
 
 [workspace]
 members = ["crates/*"]

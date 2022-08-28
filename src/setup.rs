@@ -1,19 +1,27 @@
 use bevy::prelude::*;
 use rand::Rng;
 
-use crate::{body, config, mind};
+use crate::{body, config, ecosystem, mind, ui};
 
-fn camera_setup(commands: &mut Commands) {
+pub fn camera_setup(mut commands: Commands) {
     commands.spawn_bundle(Camera2dBundle::default());
 }
 
-fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
+pub fn bug_setup(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+) {
     let mut rng = rand::thread_rng();
     let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
     for _ in 0..config::START_NUM {
+        let energy = match ecosystem.request_energy(100) {
+            None => break,
+            Some(e) => e,
+        };
         commands
             .spawn()
-            .insert(body::BugBody::random(&mut rng))
+            .insert_bundle(body::BodyBundle::random(&mut rng, energy))
             .insert_bundle(mind::MindBundle::new(
                 config::INPUT_NEURONS,
                 config::OUTPUT_NEURONS,
@@ -33,7 +41,29 @@ fn bug_setup(commands: &mut Commands, asset_server: &Res<AssetServer>) {
     }
 }
 
-pub fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    camera_setup(&mut commands);
-    bug_setup(&mut commands, &asset_server);
+pub fn ui_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
+    commands
+        .spawn_bundle(
+            // Create a TextBundle that has a Text with a list of sections.
+            TextBundle::from_sections([
+                TextSection::new(
+                    "Energy: ",
+                    TextStyle {
+                        font: asset_server.load("fonts/calibri.ttf"),
+                        font_size: 30.0,
+                        color: Color::WHITE,
+                    },
+                ),
+                TextSection::from_style(TextStyle {
+                    font: asset_server.load("fonts/calibri.ttf"),
+                    font_size: 30.0,
+                    color: Color::GOLD,
+                }),
+            ])
+            .with_style(Style {
+                align_self: AlignSelf::FlexEnd,
+                ..default()
+            }),
+        )
+        .insert(ui::EnergyText);
 }
