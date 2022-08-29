@@ -2,18 +2,18 @@ extern crate derive_more;
 use derive_more::{Add, Display, Sub};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
-pub struct Energy(u64);
+pub struct Energy(usize);
 
 impl Energy {
-    fn new(e: u64) -> Self {
+    fn new(e: usize) -> Self {
         Self(e)
     }
 
-    pub fn as_uint(&self) -> u64 {
+    pub fn as_uint(&self) -> usize {
         self.0
     }
 
-    pub fn split(self, divisor: u64) -> Vec<Self> {
+    pub fn split(self, divisor: usize) -> Vec<Self> {
         let mut output = Vec::new();
         let mut starting_energy = self.0;
         for _ in 0..divisor {
@@ -35,7 +35,7 @@ pub struct Ecosystem {
 }
 
 impl Ecosystem {
-    pub fn new(energy: u64) -> Self {
+    pub fn new(energy: usize) -> Self {
         Self {
             energy: Energy(energy),
         }
@@ -45,7 +45,7 @@ impl Ecosystem {
         self.energy
     }
 
-    pub fn request_energy(&mut self, units: u64) -> Option<Energy> {
+    pub fn request_energy(&mut self, units: usize) -> Option<Energy> {
         let requested_energy = Energy(units);
         if requested_energy > self.energy {
             None
@@ -81,7 +81,10 @@ mod tests {
     #[case((100,3), vec![34,33,33])]
     #[case((101,3), vec![34,34,33])]
     #[case((101,4), vec![26,25,25,25])]
-    fn split_doesnt_create_new_energy(#[case] inputs: (u64, u64), #[case] expected: Vec<u64>) {
+    fn split_doesnt_create_new_energy(
+        #[case] inputs: (usize, usize),
+        #[case] expected: Vec<usize>,
+    ) {
         let energy = ecosystem::Energy::new(inputs.0);
 
         let split_energy = energy.split(inputs.1);
