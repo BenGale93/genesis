@@ -8,16 +8,12 @@ pub fn moving_camera_system_set() -> SystemSet {
         .with_system(interaction::move_camera_system)
 }
 
-pub fn thinking_system_set() -> SystemSet {
+pub fn behavior_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(mind::thinking_system)
-}
-
-pub fn movement_system_set() -> SystemSet {
-    SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
-        .with_system(movement::movement_system)
+        .with_system(mind::sensory_system.before(mind::thinking_system))
+        .with_system(movement::movement_system.after(mind::thinking_system))
 }
 
 pub fn bug_spawning_system_set() -> SystemSet {

@@ -3,7 +3,10 @@ use std::ops::{Deref, DerefMut};
 use bevy::prelude::*;
 use genesis_brain::Brain;
 
-use crate::config;
+use crate::{
+    body::{EnergyStore, Health},
+    config,
+};
 
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct Mind(pub Brain);
@@ -100,6 +103,18 @@ impl MindBundle {
             mind,
             output: output_vec,
         }
+    }
+}
+
+const CONST: f64 = 1.0;
+
+pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &EnergyStore, &Health)>) {
+    for (mut input, output, energy, health) in query.iter_mut() {
+        input[config::CONSTANT_INDEX] = CONST;
+        input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
+        input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
+        input[config::ENERGY_INDEX] = energy.reserve.proportion();
+        input[config::HEALTH_INDEX] = health.reserve.proportion();
     }
 }
 

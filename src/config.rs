@@ -17,11 +17,19 @@ pub const CHROMOSOME_COUNT: usize = 3;
 pub const CHROMOSOME_LEN: usize = 100;
 pub const START_ENERGY: usize = 100;
 
+// Outputs
 pub const MOVEMENT_INDEX: usize = 0;
 pub const ROTATE_INDEX: usize = 1;
 pub const REPRODUCE_INDEX: usize = 2;
 pub const EAT_INDEX: usize = 3;
 pub const RESET_TIMER_INDEX: usize = 4;
+
+// Inputs
+pub const CONSTANT_INDEX: usize = 0;
+pub const PREV_MOVEMENT_INDEX: usize = 1;
+pub const PREV_ROTATE_INDEX: usize = 2;
+pub const ENERGY_INDEX: usize = 3;
+pub const HEALTH_INDEX: usize = 4;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;
