@@ -11,11 +11,11 @@ fn main() {
         })
         .insert_resource(resources::Ecosystem::new(2000))
         .add_startup_system(setup::camera_setup)
-        .add_startup_system(setup::bug_setup)
         .add_startup_system(setup::ui_setup)
         .add_system_set(systems::thinking_system_set())
         .add_system_set(systems::moving_camera_system_set())
         .add_system_set(systems::movement_system_set())
+        .add_system_set(systems::bug_spawning_system_set())
         .add_system(ui::energy_ui_update_system)
         .run();
 }

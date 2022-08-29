@@ -76,7 +76,17 @@ pub struct MindBundle {
 }
 
 impl MindBundle {
-    pub fn new(input: usize, output: usize) -> Self {
+    pub fn new(mind: Mind) -> Self {
+        let input_vec = MindInput(vec![0.0; mind.inputs()]);
+        let output_vec = MindOutput(vec![0.0; mind.outputs()]);
+
+        Self {
+            input: input_vec,
+            mind,
+            output: output_vec,
+        }
+    }
+    pub fn random(input: usize, output: usize) -> Self {
         let input_vec = MindInput(vec![0.0; input]);
         let output_vec = MindOutput(vec![0.0; output]);
         let mut mind = Mind(Brain::new(input, output));
@@ -138,7 +148,11 @@ mod tests {
 
         app.add_system(thinking_system);
 
-        let bug_id = app.world.spawn().insert_bundle(MindBundle::new(3, 2)).id();
+        let bug_id = app
+            .world
+            .spawn()
+            .insert_bundle(MindBundle::random(3, 2))
+            .id();
 
         app.update();
 
