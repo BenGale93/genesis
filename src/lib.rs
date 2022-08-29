@@ -2,6 +2,7 @@
 mod body;
 pub mod config;
 mod ecosystem;
+mod food;
 mod interaction;
 mod mind;
 mod movement;
