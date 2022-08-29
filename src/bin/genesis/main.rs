@@ -16,6 +16,7 @@ fn main() {
         .add_system_set(systems::moving_camera_system_set())
         .add_system_set(systems::movement_system_set())
         .add_system_set(systems::bug_spawning_system_set())
+        .add_system_set(systems::food_spawning_system_set())
         .add_system(ui::energy_ui_update_system)
         .run();
 }

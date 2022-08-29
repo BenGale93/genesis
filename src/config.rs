@@ -25,3 +25,6 @@ pub const RESET_TIMER_INDEX: usize = 4;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;
+
+// Food
+pub const FOOD_ENERGY: usize = 10;
