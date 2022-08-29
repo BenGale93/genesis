@@ -23,7 +23,7 @@ genesis-genome = { path = "crates/genesis-genome" }
 genesis-math = { path = "crates/genesis-math" }
 genesis-util = { path = "crates/genesis-util/"}
 anyhow = "1.0.62"
-bevy = { version = "0.8.0", features = [] }
+bevy = { version = "0.8.1", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.32"
 derive_more = "0.99.17"
