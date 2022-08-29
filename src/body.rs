@@ -57,26 +57,45 @@ impl Default for BugBody {
     }
 }
 
-#[derive(Component, Debug, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct EnergyReserve {
     energy: Energy,
+    energy_limit: usize,
 }
 
-#[derive(Component, Debug, PartialEq, Eq)]
-pub struct HealthReserve {
-    health: Energy,
+impl EnergyReserve {
+    pub fn new(energy: Energy) -> Self {
+        Self {
+            energy,
+            energy_limit: energy.as_uint(),
+        }
+    }
+
+    pub fn proportion(&self) -> f64 {
+        self.energy.as_uint() as f64 / self.energy_limit as f64
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct EnergyStore {
+    pub reserve: EnergyReserve,
+}
+
+#[derive(Component, Debug)]
+pub struct Health {
+    pub reserve: EnergyReserve,
 }
 
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct CoreReserve {
-    core: Energy,
+    pub core: Energy,
 }
 
 #[derive(Bundle, Debug)]
 pub struct BodyBundle {
     body: BugBody,
-    energy_reserve: EnergyReserve,
-    health_reserve: HealthReserve,
+    energy_store: EnergyStore,
+    health: Health,
     core_reserve: CoreReserve,
 }
 
@@ -89,11 +108,11 @@ impl BodyBundle {
 
     pub fn new(body: BugBody, total_energy: Energy) -> Self {
         let energy_split = total_energy.split(3);
-        let energy_reserve = EnergyReserve {
-            energy: energy_split[0],
+        let energy_store = EnergyStore {
+            reserve: EnergyReserve::new(energy_split[0]),
         };
-        let health_reserve = HealthReserve {
-            health: energy_split[1],
+        let health = Health {
+            reserve: EnergyReserve::new(energy_split[1]),
         };
         let core_reserve = CoreReserve {
             core: energy_split[2],
@@ -101,8 +120,8 @@ impl BodyBundle {
 
         Self {
             body,
-            energy_reserve,
-            health_reserve,
+            energy_store,
+            health,
             core_reserve,
         }
     }
