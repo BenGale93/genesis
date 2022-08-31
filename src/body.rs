@@ -1,4 +1,6 @@
-use bevy::prelude::*;
+use std::time::Duration;
+
+use bevy::{prelude::*, time::Stopwatch};
 use genesis_genome::Genome;
 use genesis_util::Probability;
 use rand::RngCore;
@@ -49,6 +51,12 @@ impl BugBody {
             .read_float(10.0, 100.0, 0, 0, 100)
             .expect(GENOME_READ_ERROR)
     }
+
+    pub fn adult_age_seconds(&self) -> f32 {
+        self.genome
+            .read_float(30.0, 50.0, 1, 10, 10)
+            .expect(GENOME_READ_ERROR)
+    }
 }
 
 impl Default for BugBody {
@@ -91,12 +99,22 @@ pub struct CoreReserve {
     pub core: Energy,
 }
 
+#[derive(Component, Debug, Deref, DerefMut)]
+pub struct Age(pub Stopwatch);
+
+pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
+    for mut age in query.iter_mut() {
+        age.0.tick(time.delta());
+    }
+}
+
 #[derive(Bundle, Debug)]
 pub struct BodyBundle {
     body: BugBody,
     energy_store: EnergyStore,
     health: Health,
     core_reserve: CoreReserve,
+    age: Age,
 }
 
 impl BodyBundle {
@@ -123,6 +141,14 @@ impl BodyBundle {
             energy_store,
             health,
             core_reserve,
+            age: Age(Stopwatch::new()),
         }
+    }
+
+    pub fn make_adult(mut self) -> Self {
+        self.age
+            .0
+            .tick(Duration::from_secs_f32(self.body.adult_age_seconds()));
+        self
     }
 }

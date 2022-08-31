@@ -1,6 +1,6 @@
 use bevy::{prelude::*, time::FixedTimestep};
 
-use crate::{config, interaction, mind, movement, spawn};
+use crate::{body, config, interaction, mind, movement, spawn};
 
 pub fn moving_camera_system_set() -> SystemSet {
     SystemSet::new()
@@ -11,6 +11,7 @@ pub fn moving_camera_system_set() -> SystemSet {
 pub fn behavior_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
+        .with_system(body::progress_age_system.before(mind::thinking_system))
         .with_system(mind::thinking_system)
         .with_system(mind::sensory_system.before(mind::thinking_system))
         .with_system(movement::movement_system.after(mind::thinking_system))
