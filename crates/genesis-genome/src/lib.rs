@@ -67,11 +67,13 @@ impl Genome {
     ) -> Result<f32, GenomeError> {
         let dna = self.read(location, start, length)?;
 
-        let count = dna.count_ones();
+        let count = dna.count_ones() - 1;
 
         let array = Array::linspace(min, max, dna.len());
 
-        Ok(*array.get(count).expect("count should be less than len."))
+        Ok(*array
+            .get(count)
+            .expect("count should be strictly less than len."))
     }
 }
 
