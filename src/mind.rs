@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use genesis_brain::Brain;
 
 use crate::{
-    body::{EnergyStore, Health},
+    body::{Age, EnergyStore, Health},
     config,
 };
 
@@ -108,13 +108,16 @@ impl MindBundle {
 
 const CONST: f64 = 1.0;
 
-pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &EnergyStore, &Health)>) {
-    for (mut input, output, energy, health) in query.iter_mut() {
+pub fn sensory_system(
+    mut query: Query<(&mut MindInput, &MindOutput, &EnergyStore, &Health, &Age)>,
+) {
+    for (mut input, output, energy, health, age) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
         input[config::ENERGY_INDEX] = energy.reserve.proportion();
         input[config::HEALTH_INDEX] = health.reserve.proportion();
+        input[config::AGE_INDEX] = age.elapsed_secs() as f64;
     }
 }
 

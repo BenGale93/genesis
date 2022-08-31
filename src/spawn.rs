@@ -15,7 +15,7 @@ fn spawn_bug(
 
     let body_bundle = match body {
         Some(b) => body::BodyBundle::new(b, energy),
-        None => body::BodyBundle::random(&mut rng, energy),
+        None => body::BodyBundle::random(&mut rng, energy).make_adult(),
     };
 
     let mind_bundle = match mind {
