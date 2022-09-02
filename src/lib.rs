@@ -6,6 +6,7 @@ mod food;
 mod interaction;
 mod mind;
 mod movement;
+mod physics;
 pub mod setup;
 mod spawn;
 pub mod systems;
