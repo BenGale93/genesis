@@ -27,6 +27,7 @@ bevy = { version = "0.8.1", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.32"
 derive_more = "0.99.17"
+bevy_rapier2d = {version = "0.16.2", features = ["debug-render"]}
 
 [dev-dependencies]
 rstest = "0.15.0"
