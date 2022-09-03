@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::RapierConfiguration;
 
 use crate::ui;
 
@@ -31,4 +32,8 @@ pub fn ui_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             }),
         )
         .insert(ui::EnergyText);
+}
+
+pub fn physics_setup(mut rapier_config: ResMut<RapierConfiguration>) {
+    rapier_config.gravity = Vec2::ZERO;
 }

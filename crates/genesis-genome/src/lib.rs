@@ -67,9 +67,9 @@ impl Genome {
     ) -> Result<f32, GenomeError> {
         let dna = self.read(location, start, length)?;
 
-        let count = dna.count_ones() - 1;
+        let count = dna.count_ones();
 
-        let array = Array::linspace(min, max, dna.len());
+        let array = Array::linspace(min, max, dna.len() + 1);
 
         Ok(*array
             .get(count)
