@@ -141,7 +141,7 @@ pub fn process_eaters_system(
     not_eating_query: Query<(Entity, &MindOutput), Without<TryingToEat>>,
     eating_query: Query<(Entity, &MindOutput), With<TryingToEat>>,
 ) {
-    let boundary = 0.0;
+    let boundary = -5.0;
     for (entity, mind_out) in not_eating_query.iter() {
         if mind_out[config::EAT_INDEX] > boundary {
             commands.entity(entity).insert(TryingToEat);
@@ -157,31 +157,30 @@ pub fn process_eaters_system(
 
 pub fn eating_system(
     mut commands: Commands,
-    mut collision_events: EventReader<CollisionEvent>,
+    rapier_context: Res<RapierContext>,
     mut bug_query: Query<(Entity, &mut EnergyStore, &Transform), With<TryingToEat>>,
     mut food_query: Query<(Entity, &mut Plant, &Transform)>,
     mut ecosystem: ResMut<Ecosystem>,
 ) {
-    for collision_event in collision_events.iter() {
-        for (bug_entity, mut energy_store, bug_transform) in bug_query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = collision_event {
-                if h1 == &bug_entity || h2 == &bug_entity {
-                    for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
-                        if h1 == &food_entity || h2 == &food_entity {
-                            let angle =
-                                genesis_math::angle_distance_between(bug_transform, food_transform)
-                                    .angle();
-                            let rebased_angle =
-                                (angle - (PI / 2.0) - bug_transform.rotation.y).abs();
-                            if rebased_angle < 0.78 {
-                                let leftover = energy_store.reserve.eat(&mut food_energy);
-                                info!("Attempted to eat");
-                                ecosystem.return_energy(leftover);
-                                if food_energy.energy().as_uint() == 0 {
-                                    commands.entity(food_entity).despawn();
-                                    info!("Food eaten");
-                                }
-                            }
+    for (bug_entity, mut energy_store, bug_transform) in bug_query.iter_mut() {
+        for contact_pair in rapier_context.contacts_with(bug_entity) {
+            let other_collider = if contact_pair.collider1() == bug_entity {
+                contact_pair.collider2()
+            } else {
+                contact_pair.collider1()
+            };
+            for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
+                if other_collider == food_entity {
+                    let angle =
+                        genesis_math::angle_distance_between(bug_transform, food_transform).angle();
+                    let rebased_angle = (angle - (PI / 2.0) - bug_transform.rotation.y).abs();
+                    if rebased_angle < 0.78 {
+                        let leftover = energy_store.reserve.eat(&mut food_energy);
+                        info!("Attempted to eat");
+                        ecosystem.return_energy(leftover);
+                        if food_energy.energy().as_uint() == 0 {
+                            commands.entity(food_entity).despawn();
+                            info!("Food eaten");
                         }
                     }
                 }
