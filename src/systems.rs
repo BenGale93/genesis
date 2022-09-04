@@ -16,7 +16,6 @@ pub fn behavior_system_set() -> SystemSet {
         .with_system(mind::sensory_system.before(mind::thinking_system))
         .with_system(movement::movement_system.after(mind::thinking_system))
         .with_system(mind::process_eaters_system.after(mind::thinking_system))
-        .with_system(mind::eating_system.after(mind::process_eaters_system))
 }
 
 pub fn bug_spawning_system_set() -> SystemSet {
@@ -33,6 +32,7 @@ pub fn food_spawning_system_set() -> SystemSet {
 
 pub fn slow_behavior_system_set() -> SystemSet {
     SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(1.0))
+        .with_run_criteria(FixedTimestep::step(0.1))
+        .with_system(mind::eating_system.after(mind::process_eaters_system))
         .with_system(mind::attempted_to_eat_system.after(mind::eating_system))
 }
