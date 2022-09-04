@@ -24,7 +24,7 @@ impl DistanceAngle {
     }
 }
 
-pub fn angle_distance_between(me: Transform, them: Transform) -> DistanceAngle {
+pub fn angle_distance_between(me: &Transform, them: &Transform) -> DistanceAngle {
     let diff = them.translation - me.translation;
 
     DistanceAngle::new(diff.length(), diff.y.atan2(diff.x))
@@ -78,7 +78,7 @@ impl Cone {
     }
 
     pub fn is_within_cone(self, target: Transform) -> bool {
-        let dist_ang = angle_distance_between(self.point, target);
+        let dist_ang = angle_distance_between(&self.point, &target);
 
         if dist_ang.distance() > self.length {
             return false;
@@ -107,7 +107,7 @@ mod tests {
         let me = Transform::from_xyz(0.0, 0.0, 0.0);
         let them = Transform::from_xyz(0.0, 2.0, 0.0);
 
-        assert_eq!(angle_distance_between(me, them).distance(), 2.0);
+        assert_eq!(angle_distance_between(&me, &them).distance(), 2.0);
     }
 
     #[test]
@@ -115,7 +115,7 @@ mod tests {
         let me = Transform::from_xyz(0.0, 0.0, 0.0);
         let them = Transform::from_xyz(3.0, 4.0, 0.0);
 
-        assert_eq!(angle_distance_between(me, them).distance(), 5.0);
+        assert_eq!(angle_distance_between(&me, &them).distance(), 5.0);
     }
 
     #[test]
@@ -123,7 +123,7 @@ mod tests {
         let me = Transform::from_xyz(0.0, 0.0, 0.0);
         let them = Transform::from_xyz(3.0, 4.0, 0.0);
 
-        assert_eq!(angle_distance_between(me, them).angle(), 0.9272952);
+        assert_eq!(angle_distance_between(&me, &them).angle(), 0.9272952);
     }
 
     #[test]
@@ -131,7 +131,7 @@ mod tests {
         let me = Transform::from_xyz(1.0, 0.0, 0.0);
         let them = Transform::from_xyz(1.0, 4.0, 0.0);
 
-        assert_eq!(angle_distance_between(me, them).angle(), 1.5707964);
+        assert_eq!(angle_distance_between(&me, &them).angle(), 1.5707964);
     }
 
     #[test]
@@ -139,7 +139,7 @@ mod tests {
         let me = Transform::from_xyz(1.0, 4.0, 0.0);
         let them = Transform::from_xyz(5.0, 4.0, 0.0);
 
-        assert_eq!(angle_distance_between(me, them).angle(), 0.0);
+        assert_eq!(angle_distance_between(&me, &them).angle(), 0.0);
     }
 
     #[test]

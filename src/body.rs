@@ -5,7 +5,7 @@ use genesis_genome::Genome;
 use genesis_util::Probability;
 use rand::RngCore;
 
-use crate::{config, ecosystem::Energy};
+use crate::{config, ecosystem::Energy, food};
 
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct BugBody {
@@ -81,6 +81,28 @@ impl EnergyReserve {
 
     pub fn proportion(&self) -> f64 {
         self.energy.as_uint() as f64 / self.energy_limit as f64
+    }
+
+    pub fn available_space(&self) -> usize {
+        self.energy_limit - self.energy.as_uint()
+    }
+
+    #[must_use]
+    pub fn add_energy(&mut self, mut energy: Energy) -> Energy {
+        let energy_taken = energy.take_energy(self.available_space());
+        self.energy = self.energy + energy_taken;
+        energy
+    }
+
+    #[must_use]
+    pub fn take_energy(&mut self, amount: usize) -> Energy {
+        self.energy.take_energy(amount)
+    }
+
+    pub fn eat(&mut self, food_source: &mut food::Plant) -> Energy {
+        let requested_energy = self.available_space();
+        let extracted_energy = food_source.take_energy(requested_energy);
+        self.add_energy(extracted_energy)
     }
 }
 

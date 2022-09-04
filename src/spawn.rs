@@ -47,6 +47,7 @@ fn spawn_bug(
             9.0,
         ))
         .insert(Velocity::zero())
+        .insert(ActiveEvents::COLLISION_EVENTS)
         .insert_bundle(body_bundle)
         .insert_bundle(mind_bundle);
 }
