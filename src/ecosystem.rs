@@ -28,6 +28,13 @@ impl Energy {
 
         output.iter().map(|&e| Energy::new(e)).collect()
     }
+
+    #[must_use]
+    pub fn take_energy(&mut self, amount: usize) -> Self {
+        let to_return = amount.min(self.0);
+        self.0 -= to_return;
+        Energy::new(to_return)
+    }
 }
 
 pub struct Ecosystem {

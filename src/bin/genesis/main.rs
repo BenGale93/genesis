@@ -20,6 +20,7 @@ fn main() {
         .add_system_set(systems::behavior_system_set())
         .add_system_set(systems::bug_spawning_system_set())
         .add_system_set(systems::food_spawning_system_set())
+        .add_system_set(systems::slow_behavior_system_set())
         .add_system(ui::energy_ui_update_system)
         .run();
 }
