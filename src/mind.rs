@@ -3,7 +3,7 @@ use std::{
     ops::{Deref, DerefMut},
 };
 
-use bevy::prelude::*;
+use bevy::{prelude::*, time::Stopwatch};
 use bevy_rapier2d::prelude::*;
 use genesis_brain::Brain;
 
@@ -134,7 +134,7 @@ pub fn thinking_system(mut query: Query<(&MindInput, &Mind, &mut MindOutput)>) {
 }
 
 #[derive(Component)]
-pub struct TryingToEat;
+pub struct TryingToEat(pub Stopwatch);
 
 pub fn process_eaters_system(
     mut commands: Commands,
@@ -144,7 +144,9 @@ pub fn process_eaters_system(
     let boundary = 0.0;
     for (entity, mind_out) in not_eating_query.iter() {
         if mind_out[config::EAT_INDEX] > boundary {
-            commands.entity(entity).insert(TryingToEat);
+            commands
+                .entity(entity)
+                .insert(TryingToEat(Stopwatch::new()));
         }
     }
 
@@ -157,31 +159,29 @@ pub fn process_eaters_system(
 
 pub fn eating_system(
     mut commands: Commands,
-    mut collision_events: EventReader<CollisionEvent>,
+    rapier_context: Res<RapierContext>,
     mut bug_query: Query<(Entity, &mut EnergyStore, &Transform), With<TryingToEat>>,
     mut food_query: Query<(Entity, &mut Plant, &Transform)>,
     mut ecosystem: ResMut<Ecosystem>,
 ) {
-    for collision_event in collision_events.iter() {
-        for (bug_entity, mut energy_store, bug_transform) in bug_query.iter_mut() {
-            if let CollisionEvent::Started(h1, h2, _) = collision_event {
-                if h1 == &bug_entity || h2 == &bug_entity {
-                    for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
-                        if h1 == &food_entity || h2 == &food_entity {
-                            let angle =
-                                genesis_math::angle_distance_between(bug_transform, food_transform)
-                                    .angle();
-                            let rebased_angle =
-                                (angle - (PI / 2.0) - bug_transform.rotation.y).abs();
-                            if rebased_angle < 0.78 {
-                                let leftover = energy_store.reserve.eat(&mut food_energy);
-                                info!("Attempted to eat");
-                                ecosystem.return_energy(leftover);
-                                if food_energy.energy().as_uint() == 0 {
-                                    commands.entity(food_entity).despawn();
-                                    info!("Food eaten");
-                                }
-                            }
+    for (bug_entity, mut energy_store, bug_transform) in bug_query.iter_mut() {
+        for contact_pair in rapier_context.contacts_with(bug_entity) {
+            let other_collider = if contact_pair.collider1() == bug_entity {
+                contact_pair.collider2()
+            } else {
+                contact_pair.collider1()
+            };
+            for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
+                if other_collider == food_entity {
+                    let angle =
+                        genesis_math::angle_distance_between(bug_transform, food_transform).angle();
+                    let rotation = bug_transform.rotation.z;
+                    let rebased_angle = (angle - (PI / 2.0) - rotation).abs();
+                    if rebased_angle < 0.5 {
+                        let leftover = energy_store.reserve.eat(&mut food_energy);
+                        ecosystem.return_energy(leftover);
+                        if food_energy.energy().as_uint() == 0 {
+                            commands.entity(food_entity).despawn();
                         }
                     }
                 }
@@ -191,11 +191,16 @@ pub fn eating_system(
 }
 
 pub fn attempted_to_eat_system(
-    mut bug_query: Query<&mut EnergyStore, With<TryingToEat>>,
+    time: Res<Time>,
+    mut bug_query: Query<(&mut EnergyStore, &mut TryingToEat)>,
     mut ecosystem: ResMut<Ecosystem>,
 ) {
-    for mut energy_store in bug_query.iter_mut() {
-        ecosystem.return_energy(energy_store.reserve.take_energy(1));
+    for (mut energy_store, mut trying_to_eat) in bug_query.iter_mut() {
+        trying_to_eat.0.tick(time.delta());
+        if trying_to_eat.0.elapsed().as_secs_f32() >= 1.0 {
+            ecosystem.return_energy(energy_store.reserve.take_energy(1));
+            trying_to_eat.0.reset()
+        }
     }
 }
 
