@@ -37,5 +37,11 @@ pub fn slow_behavior_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(mind::eating_system.after(mind::process_eaters_system))
         .with_system(mind::attempted_to_eat_system.after(mind::eating_system))
+}
+
+pub fn burnt_energy_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_run_criteria(FixedTimestep::step(1.0))
         .with_system(ecosystem::burnt_energy_system)
+        .with_system(mind::thinking_energy_system)
 }

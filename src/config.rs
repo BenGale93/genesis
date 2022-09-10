@@ -15,8 +15,10 @@ pub const START_NUM: usize = 10;
 pub const INITIAL_SYNAPSE_COUNT: usize = 2;
 pub const CHROMOSOME_COUNT: usize = 3;
 pub const CHROMOSOME_LEN: usize = 100;
-pub const START_ENERGY: usize = 100;
-pub const EATING_COST: usize = 1;
+
+// Bugs energy
+pub const START_ENERGY: usize = 1000;
+pub const EATING_COST: usize = 10;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
@@ -35,6 +37,7 @@ pub const AGE_INDEX: usize = 5;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;
+pub const WORLD_ENERGY: usize = 30000;
 
 // Food
-pub const FOOD_ENERGY: usize = 10;
+pub const FOOD_ENERGY: usize = 100;

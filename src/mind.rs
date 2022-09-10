@@ -130,6 +130,13 @@ pub fn thinking_system(mut query: Query<(&MindInput, &Mind, &mut MindOutput)>) {
     }
 }
 
+pub fn thinking_energy_system(mut query: Query<(&Mind, &mut Vitality, &mut BurntEnergy)>) {
+    for (bug_brain, mut vitality, mut burnt_energy) in query.iter_mut() {
+        let thought_energy = vitality.take_energy(bug_brain.synapses().len());
+        burnt_energy.add_energy(thought_energy);
+    }
+}
+
 #[derive(Component)]
 pub struct TryingToEat(pub Stopwatch);
 

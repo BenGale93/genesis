@@ -100,7 +100,7 @@ pub fn spawn_food_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
-    if ecosystem.available_energy().as_uint() > 1000 {
+    if ecosystem.available_energy().as_uint() > 10000 {
         let energy = match ecosystem.request_energy(config::FOOD_ENERGY) {
             None => return,
             Some(e) => e,
