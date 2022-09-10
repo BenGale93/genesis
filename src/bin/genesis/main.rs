@@ -16,7 +16,7 @@ fn main() {
         .add_startup_system(setup::camera_setup)
         .add_startup_system(setup::ui_setup)
         .add_startup_system(setup::physics_setup)
-        .add_system_set(systems::moving_camera_system_set())
+        .add_system_set(systems::interaction_system_set())
         .add_system_set(systems::behavior_system_set())
         .add_system_set(systems::bug_spawning_system_set())
         .add_system_set(systems::food_spawning_system_set())
