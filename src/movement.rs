@@ -5,37 +5,82 @@ use bevy::{
 
 use crate::{body, config, mind};
 
-pub fn rotate_me(me: &mut Transform, rotation_factor: f32, rotation_speed: f32) {
-    let rotation_factor = rotation_factor.clamp(-1.0, 1.0);
+#[derive(Component, Debug)]
+pub struct MovementSum {
+    translation_sum: f32,
+    rotation_sum: f32,
+}
 
+impl MovementSum {
+    pub fn new() -> Self {
+        Self {
+            translation_sum: 0.0,
+            rotation_sum: 0.0,
+        }
+    }
+
+    fn uint_portion(&mut self) -> usize {
+        let tran_floor = self.translation_sum.floor();
+        self.translation_sum -= tran_floor;
+
+        let rot_floor = self.rotation_sum.floor();
+        self.rotation_sum -= rot_floor;
+
+        (tran_floor + rot_floor) as usize
+    }
+
+    fn add_translation(&mut self, translation: f32) {
+        self.translation_sum += translation.abs() * config::ROTATION_COST
+    }
+    fn add_rotation(&mut self, rotation: f32) {
+        self.rotation_sum += rotation.abs() * config::TRANSLATION_COST
+    }
+}
+
+pub fn rotate_me(me: &mut Transform, rotation_factor: f32, rotation_speed: f32) {
     let z_adjustment = rotation_factor * rotation_speed * config::TIME_STEP;
 
     me.rotation *= Quat::from_rotation_z(z_adjustment);
 }
 
 pub fn move_me(me: &mut Transform, movement_factor: f32, movement_speed: f32) {
-    let movement_factor = movement_factor.clamp(-1.0, 1.0);
     let movement_direction = me.rotation * Vec3::Y;
     let movement_distance = movement_factor * movement_speed * config::TIME_STEP;
 
     me.translation += movement_direction * movement_distance;
 }
 
-pub fn movement_system(mut query: Query<(&mut Transform, &mind::MindOutput, &body::BugBody)>) {
-    for (mut transform, outputs, body) in query.iter_mut() {
+pub fn movement_system(
+    mut query: Query<(
+        &mut Transform,
+        &mind::MindOutput,
+        &body::BugBody,
+        &mut MovementSum,
+    )>,
+) {
+    for (mut transform, outputs, body, mut movement_sum) in query.iter_mut() {
         let rotation_speed = body.rotate_speed();
-        rotate_me(
-            &mut transform,
-            outputs[config::ROTATE_INDEX] as f32,
-            rotation_speed,
-        );
+        let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
+        movement_sum.add_rotation(rotation_factor);
+        rotate_me(&mut transform, rotation_factor, rotation_speed);
 
         let movement_speed = body.movement_speed();
-        move_me(
-            &mut transform,
-            outputs[config::MOVEMENT_INDEX] as f32,
-            movement_speed,
-        );
+        let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
+        movement_sum.add_translation(movement_factor);
+        move_me(&mut transform, movement_factor, movement_speed);
+    }
+}
+
+pub fn movement_energy_burn_system(
+    mut query: Query<(
+        &mut body::Vitality,
+        &mut MovementSum,
+        &mut body::BurntEnergy,
+    )>,
+) {
+    for (mut vitality, mut movement_sum, mut burnt_energy) in query.iter_mut() {
+        let energy = vitality.take_energy(movement_sum.uint_portion());
+        burnt_energy.add_energy(energy)
     }
 }
 

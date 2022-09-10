@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{body, config, ecosystem, food, mind};
+use crate::{body, config, ecosystem, food, mind, movement};
 
 fn spawn_bug(
     commands: &mut Commands,
@@ -48,6 +48,7 @@ fn spawn_bug(
         ))
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(movement::MovementSum::new())
         .insert_bundle(body_bundle)
         .insert_bundle(mind_bundle);
 }
@@ -100,7 +101,7 @@ pub fn spawn_food_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
-    if ecosystem.available_energy().as_uint() > 1000 {
+    if ecosystem.available_energy().as_uint() > 10000 {
         let energy = match ecosystem.request_energy(config::FOOD_ENERGY) {
             None => return,
             Some(e) => e,

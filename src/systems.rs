@@ -1,6 +1,6 @@
 use bevy::{prelude::*, time::FixedTimestep};
 
-use crate::{body, config, interaction, mind, movement, spawn, ui};
+use crate::{body, config, ecosystem, interaction, mind, movement, spawn, ui};
 
 pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
@@ -37,4 +37,12 @@ pub fn slow_behavior_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(mind::eating_system.after(mind::process_eaters_system))
         .with_system(mind::attempted_to_eat_system.after(mind::eating_system))
+}
+
+pub fn burnt_energy_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_run_criteria(FixedTimestep::step(1.0))
+        .with_system(ecosystem::burnt_energy_system)
+        .with_system(mind::thinking_energy_system)
+        .with_system(movement::movement_energy_burn_system)
 }

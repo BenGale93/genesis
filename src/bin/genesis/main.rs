@@ -12,7 +12,7 @@ fn main() {
             title: "Genesis".to_string(),
             ..default()
         })
-        .insert_resource(resources::Ecosystem::new(3000))
+        .insert_resource(resources::Ecosystem::new(config::WORLD_ENERGY))
         .add_startup_system(setup::camera_setup)
         .add_startup_system(setup::ui_setup)
         .add_startup_system(setup::physics_setup)
@@ -21,6 +21,7 @@ fn main() {
         .add_system_set(systems::bug_spawning_system_set())
         .add_system_set(systems::food_spawning_system_set())
         .add_system_set(systems::slow_behavior_system_set())
+        .add_system_set(systems::burnt_energy_system_set())
         .add_system(ui::energy_ui_update_system)
         .run();
 }

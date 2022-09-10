@@ -8,9 +8,8 @@ use bevy_rapier2d::prelude::*;
 use genesis_brain::Brain;
 
 use crate::{
-    body::{Age, EnergyStore, Health},
+    body::{Age, BurntEnergy, Vitality},
     config,
-    ecosystem::Ecosystem,
     food::Plant,
 };
 #[derive(Component, Debug, PartialEq, Eq)]
@@ -113,15 +112,13 @@ impl MindBundle {
 
 const CONST: f64 = 1.0;
 
-pub fn sensory_system(
-    mut query: Query<(&mut MindInput, &MindOutput, &EnergyStore, &Health, &Age)>,
-) {
-    for (mut input, output, energy, health, age) in query.iter_mut() {
+pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, &Age)>) {
+    for (mut input, output, vitality, age) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
-        input[config::ENERGY_INDEX] = energy.reserve.proportion();
-        input[config::HEALTH_INDEX] = health.reserve.proportion();
+        input[config::ENERGY_INDEX] = vitality.energy_store().proportion();
+        input[config::HEALTH_INDEX] = vitality.health().proportion();
         input[config::AGE_INDEX] = age.elapsed_secs() as f64;
     }
 }
@@ -130,6 +127,13 @@ pub fn thinking_system(mut query: Query<(&MindInput, &Mind, &mut MindOutput)>) {
     for (input, bug_brain, mut output) in query.iter_mut() {
         let x = bug_brain.activate(input).expect("Wrong length vector");
         output.0 = x;
+    }
+}
+
+pub fn thinking_energy_system(mut query: Query<(&Mind, &mut Vitality, &mut BurntEnergy)>) {
+    for (bug_brain, mut vitality, mut burnt_energy) in query.iter_mut() {
+        let thought_energy = vitality.take_energy(bug_brain.synapses().len());
+        burnt_energy.add_energy(thought_energy);
     }
 }
 
@@ -160,11 +164,10 @@ pub fn process_eaters_system(
 pub fn eating_system(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
-    mut bug_query: Query<(Entity, &mut EnergyStore, &Transform), With<TryingToEat>>,
+    mut bug_query: Query<(Entity, &mut Vitality, &Transform, &mut BurntEnergy), With<TryingToEat>>,
     mut food_query: Query<(Entity, &mut Plant, &Transform)>,
-    mut ecosystem: ResMut<Ecosystem>,
 ) {
-    for (bug_entity, mut energy_store, bug_transform) in bug_query.iter_mut() {
+    for (bug_entity, mut vitality, bug_transform, mut burnt_energy) in bug_query.iter_mut() {
         for contact_pair in rapier_context.contacts_with(bug_entity) {
             let other_collider = if contact_pair.collider1() == bug_entity {
                 contact_pair.collider2()
@@ -178,8 +181,8 @@ pub fn eating_system(
                     let rotation = bug_transform.rotation.z;
                     let rebased_angle = (angle - (PI / 2.0) - rotation).abs();
                     if rebased_angle < 0.5 {
-                        let leftover = energy_store.reserve.eat(&mut food_energy);
-                        ecosystem.return_energy(leftover);
+                        let leftover = vitality.eat(&mut food_energy);
+                        burnt_energy.add_energy(leftover);
                         if food_energy.energy().as_uint() == 0 {
                             commands.entity(food_entity).despawn();
                         }
@@ -192,13 +195,12 @@ pub fn eating_system(
 
 pub fn attempted_to_eat_system(
     time: Res<Time>,
-    mut bug_query: Query<(&mut EnergyStore, &mut TryingToEat)>,
-    mut ecosystem: ResMut<Ecosystem>,
+    mut bug_query: Query<(&mut Vitality, &mut TryingToEat, &mut BurntEnergy)>,
 ) {
-    for (mut energy_store, mut trying_to_eat) in bug_query.iter_mut() {
+    for (mut vitality, mut trying_to_eat, mut burnt_energy) in bug_query.iter_mut() {
         trying_to_eat.0.tick(time.delta());
         if trying_to_eat.0.elapsed().as_secs_f32() >= 1.0 {
-            ecosystem.return_energy(energy_store.reserve.take_energy(1));
+            burnt_energy.add_energy(vitality.take_energy(config::EATING_COST));
             trying_to_eat.0.reset()
         }
     }
