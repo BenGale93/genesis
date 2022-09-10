@@ -44,4 +44,5 @@ pub fn burnt_energy_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(1.0))
         .with_system(ecosystem::burnt_energy_system)
         .with_system(mind::thinking_energy_system)
+        .with_system(movement::movement_energy_burn_system)
 }

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{body, config, ecosystem, food, mind};
+use crate::{body, config, ecosystem, food, mind, movement};
 
 fn spawn_bug(
     commands: &mut Commands,
@@ -48,6 +48,7 @@ fn spawn_bug(
         ))
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(movement::MovementSum::new())
         .insert_bundle(body_bundle)
         .insert_bundle(mind_bundle);
 }
