@@ -28,6 +28,12 @@ pub fn ui_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
             ])
             .with_style(Style {
                 align_self: AlignSelf::FlexEnd,
+                position_type: PositionType::Absolute,
+                position: UiRect {
+                    bottom: Val::Px(5.0),
+                    right: Val::Px(15.0),
+                    ..default()
+                },
                 ..default()
             }),
         )

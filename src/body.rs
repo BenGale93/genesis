@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{fmt, time::Duration};
 
 use bevy::{prelude::*, time::Stopwatch};
 use genesis_genome::Genome;
@@ -123,6 +123,12 @@ pub struct CoreReserve {
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct Age(pub Stopwatch);
+
+impl fmt::Display for Age {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0.elapsed().as_secs())
+    }
+}
 
 pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
     for mut age in query.iter_mut() {

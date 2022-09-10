@@ -1,11 +1,13 @@
 use bevy::{prelude::*, time::FixedTimestep};
 
-use crate::{body, config, interaction, mind, movement, spawn};
+use crate::{body, config, interaction, mind, movement, spawn, ui};
 
-pub fn moving_camera_system_set() -> SystemSet {
+pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(0.15))
         .with_system(interaction::move_camera_system)
+        .with_system(ui::select_bug_system)
+        .with_system(ui::selected_bug_system)
 }
 
 pub fn behavior_system_set() -> SystemSet {
