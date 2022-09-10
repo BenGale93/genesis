@@ -44,13 +44,15 @@ pub fn select_bug_system(
 }
 
 fn populate_bug_info(
-    bug_info: &(&Transform, &body::Age),
+    bug_info: &(&Transform, &body::Age, &body::Vitality),
     mut info_text: Query<&mut Text, With<BugInfoText>>,
 ) {
     let mut text = info_text.single_mut();
     text.sections[1].value = format!("\nPosition: {}", &bug_info.0.translation.truncate());
     text.sections[2].value = format!("\nRotation: {}", &bug_info.0.rotation.z);
     text.sections[3].value = format!("\nAge: {}", &bug_info.1);
+    text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
+    text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
 }
 
 fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
@@ -64,6 +66,8 @@ fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
             // Create a TextBundle that has a Text with a list of sections.
             TextBundle::from_sections([
                 TextSection::new("Bug Info", text_style.clone()),
+                TextSection::from_style(text_style.clone()),
+                TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style),
@@ -81,7 +85,7 @@ pub struct BugInfoText;
 
 pub fn selected_bug_system(
     mut commands: Commands,
-    bug_query: Query<(&Transform, &body::Age), With<Selected>>,
+    bug_query: Query<(&Transform, &body::Age, &body::Vitality), With<Selected>>,
     info_panel_query: Query<Entity, With<BugInfoText>>,
     info_text: Query<&mut Text, With<BugInfoText>>,
     asset_server: Res<AssetServer>,

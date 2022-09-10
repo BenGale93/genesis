@@ -79,10 +79,12 @@ impl EnergyReserve {
         }
     }
 
+    #[must_use]
     pub fn proportion(&self) -> f64 {
         self.energy.as_uint() as f64 / self.energy_limit as f64
     }
 
+    #[must_use]
     pub fn available_space(&self) -> usize {
         self.energy_limit - self.energy.as_uint()
     }
@@ -99,26 +101,83 @@ impl EnergyReserve {
         self.energy.take_energy(amount)
     }
 
+    #[must_use]
     pub fn eat(&mut self, food_source: &mut food::Plant) -> Energy {
         let requested_energy = self.available_space();
         let extracted_energy = food_source.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
 }
-
-#[derive(Component, Debug)]
-pub struct EnergyStore {
-    pub reserve: EnergyReserve,
+impl fmt::Display for EnergyReserve {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}/{}", self.energy.as_uint(), self.energy_limit)
+    }
 }
 
+#[derive(Debug)]
+struct EnergyStore(EnergyReserve);
+
+#[derive(Debug)]
+struct Health(EnergyReserve);
+
+#[derive(Debug, PartialEq, Eq)]
+struct CoreReserve(Energy);
+
 #[derive(Component, Debug)]
-pub struct Health {
-    pub reserve: EnergyReserve,
+pub struct Vitality {
+    energy_store: EnergyStore,
+    health: Health,
+    core_reserve: CoreReserve,
 }
 
-#[derive(Component, Debug, PartialEq, Eq)]
-pub struct CoreReserve {
-    pub core: Energy,
+impl Vitality {
+    pub fn new(_body: &BugBody, total_energy: Energy) -> Self {
+        let energy_split = total_energy.split(3);
+        let energy_store = EnergyStore(EnergyReserve::new(energy_split[0]));
+        let health = Health(EnergyReserve::new(energy_split[1]));
+        let core_reserve = CoreReserve(energy_split[2]);
+        Self {
+            energy_store,
+            health,
+            core_reserve,
+        }
+    }
+
+    pub fn energy_store(&self) -> &EnergyReserve {
+        &self.energy_store.0
+    }
+
+    pub fn health(&self) -> &EnergyReserve {
+        &self.health.0
+    }
+
+    #[must_use]
+    pub fn available_space(&self) -> usize {
+        self.health().available_space() + self.energy_store().available_space()
+    }
+
+    #[must_use]
+    pub fn add_energy(&mut self, energy: Energy) -> Energy {
+        let remaining_energy = self.health.0.add_energy(energy);
+        self.energy_store.0.add_energy(remaining_energy)
+    }
+
+    #[must_use]
+    pub fn take_energy(&mut self, amount: usize) -> Energy {
+        let mut taken_energy = self.energy_store.0.take_energy(amount);
+        let still_needed = amount - taken_energy.as_uint();
+        if still_needed > 0 {
+            taken_energy = taken_energy + self.health.0.take_energy(still_needed);
+        }
+        taken_energy
+    }
+
+    #[must_use]
+    pub fn eat(&mut self, food_source: &mut food::Plant) -> Energy {
+        let requested_energy = self.available_space();
+        let extracted_energy = food_source.take_energy(requested_energy);
+        self.add_energy(extracted_energy)
+    }
 }
 
 #[derive(Component, Debug, Deref, DerefMut)]
@@ -139,9 +198,7 @@ pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
 #[derive(Bundle, Debug)]
 pub struct BodyBundle {
     body: BugBody,
-    energy_store: EnergyStore,
-    health: Health,
-    core_reserve: CoreReserve,
+    vitality: Vitality,
     age: Age,
 }
 
@@ -153,22 +210,10 @@ impl BodyBundle {
     }
 
     pub fn new(body: BugBody, total_energy: Energy) -> Self {
-        let energy_split = total_energy.split(3);
-        let energy_store = EnergyStore {
-            reserve: EnergyReserve::new(energy_split[0]),
-        };
-        let health = Health {
-            reserve: EnergyReserve::new(energy_split[1]),
-        };
-        let core_reserve = CoreReserve {
-            core: energy_split[2],
-        };
-
+        let vitality = Vitality::new(&body, total_energy);
         Self {
             body,
-            energy_store,
-            health,
-            core_reserve,
+            vitality,
             age: Age(Stopwatch::new()),
         }
     }
