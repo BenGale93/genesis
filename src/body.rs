@@ -180,6 +180,26 @@ impl Vitality {
     }
 }
 
+#[derive(Component, Debug)]
+pub struct BurntEnergy(Energy);
+
+impl BurntEnergy {
+    pub fn new() -> Self {
+        BurntEnergy(Energy::new_empty())
+    }
+}
+
+impl BurntEnergy {
+    pub fn add_energy(&mut self, energy: Energy) {
+        self.0 = self.0 + energy;
+    }
+
+    pub fn return_energy(&mut self) -> Energy {
+        let amount = self.0.as_uint();
+        self.0.take_energy(amount)
+    }
+}
+
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct Age(pub Stopwatch);
 
@@ -200,6 +220,7 @@ pub struct BodyBundle {
     body: BugBody,
     vitality: Vitality,
     age: Age,
+    burnt_energy: BurntEnergy,
 }
 
 impl BodyBundle {
@@ -215,6 +236,7 @@ impl BodyBundle {
             body,
             vitality,
             age: Age(Stopwatch::new()),
+            burnt_energy: BurntEnergy::new(),
         }
     }
 

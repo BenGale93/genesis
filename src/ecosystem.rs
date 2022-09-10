@@ -1,5 +1,8 @@
 extern crate derive_more;
+use bevy::prelude::*;
 use derive_more::{Add, Display, Sub};
+
+use crate::body::BurntEnergy;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
 pub struct Energy(usize);
@@ -35,6 +38,10 @@ impl Energy {
         self.0 -= to_return;
         Energy::new(to_return)
     }
+
+    pub fn new_empty() -> Self {
+        Self(0)
+    }
 }
 
 pub struct Ecosystem {
@@ -64,6 +71,15 @@ impl Ecosystem {
 
     pub fn return_energy(&mut self, energy: Energy) {
         self.energy = self.energy + energy;
+    }
+}
+
+pub fn burnt_energy_system(
+    mut ecosystem: ResMut<Ecosystem>,
+    mut burnt_query: Query<&mut BurntEnergy>,
+) {
+    for mut burnt_energy in burnt_query.iter_mut() {
+        ecosystem.return_energy(burnt_energy.return_energy())
     }
 }
 

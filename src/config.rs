@@ -16,6 +16,7 @@ pub const INITIAL_SYNAPSE_COUNT: usize = 2;
 pub const CHROMOSOME_COUNT: usize = 3;
 pub const CHROMOSOME_LEN: usize = 100;
 pub const START_ENERGY: usize = 100;
+pub const EATING_COST: usize = 1;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;

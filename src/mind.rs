@@ -8,9 +8,8 @@ use bevy_rapier2d::prelude::*;
 use genesis_brain::Brain;
 
 use crate::{
-    body::{Age, Vitality},
+    body::{Age, BurntEnergy, Vitality},
     config,
-    ecosystem::Ecosystem,
     food::Plant,
 };
 #[derive(Component, Debug, PartialEq, Eq)]
@@ -158,11 +157,10 @@ pub fn process_eaters_system(
 pub fn eating_system(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
-    mut bug_query: Query<(Entity, &mut Vitality, &Transform), With<TryingToEat>>,
+    mut bug_query: Query<(Entity, &mut Vitality, &Transform, &mut BurntEnergy), With<TryingToEat>>,
     mut food_query: Query<(Entity, &mut Plant, &Transform)>,
-    mut ecosystem: ResMut<Ecosystem>,
 ) {
-    for (bug_entity, mut vitality, bug_transform) in bug_query.iter_mut() {
+    for (bug_entity, mut vitality, bug_transform, mut burnt_energy) in bug_query.iter_mut() {
         for contact_pair in rapier_context.contacts_with(bug_entity) {
             let other_collider = if contact_pair.collider1() == bug_entity {
                 contact_pair.collider2()
@@ -177,7 +175,7 @@ pub fn eating_system(
                     let rebased_angle = (angle - (PI / 2.0) - rotation).abs();
                     if rebased_angle < 0.5 {
                         let leftover = vitality.eat(&mut food_energy);
-                        ecosystem.return_energy(leftover);
+                        burnt_energy.add_energy(leftover);
                         if food_energy.energy().as_uint() == 0 {
                             commands.entity(food_entity).despawn();
                         }
@@ -190,13 +188,12 @@ pub fn eating_system(
 
 pub fn attempted_to_eat_system(
     time: Res<Time>,
-    mut bug_query: Query<(&mut Vitality, &mut TryingToEat)>,
-    mut ecosystem: ResMut<Ecosystem>,
+    mut bug_query: Query<(&mut Vitality, &mut TryingToEat, &mut BurntEnergy)>,
 ) {
-    for (mut vitality, mut trying_to_eat) in bug_query.iter_mut() {
+    for (mut vitality, mut trying_to_eat, mut burnt_energy) in bug_query.iter_mut() {
         trying_to_eat.0.tick(time.delta());
         if trying_to_eat.0.elapsed().as_secs_f32() >= 1.0 {
-            ecosystem.return_energy(vitality.take_energy(1));
+            burnt_energy.add_energy(vitality.take_energy(config::EATING_COST));
             trying_to_eat.0.reset()
         }
     }
