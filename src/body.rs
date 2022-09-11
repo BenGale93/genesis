@@ -27,41 +27,14 @@ impl BugBody {
         Self { genome }
     }
 
-    pub fn mutate(&self, rng: &mut dyn RngCore) -> Self {
-        let probability = Probability::new(
-            self.genome
-                .read_float(0.0, 0.2, 3, 0, 100)
-                .expect(GENOME_READ_ERROR) as f64,
-        )
-        .expect("Expected to be between 0.0 and 1.0.");
-
+    pub fn mutate(&self, rng: &mut dyn RngCore, probability: Probability) -> Self {
         Self {
             genome: self.genome.mutate(rng, probability),
         }
     }
 
-    pub fn rotate_speed(&self) -> f32 {
-        self.genome
-            .read_float(0.5, 3.0, 0, 0, 20)
-            .expect(GENOME_READ_ERROR)
-    }
-
-    pub fn movement_speed(&self) -> f32 {
-        self.genome
-            .read_float(10.0, 100.0, 0, 0, 100)
-            .expect(GENOME_READ_ERROR)
-    }
-
-    pub fn adult_age_seconds(&self) -> f32 {
-        self.genome
-            .read_float(30.0, 50.0, 1, 10, 10)
-            .expect(GENOME_READ_ERROR)
-    }
-
-    pub fn death_age_seconds(&self) -> f32 {
-        self.genome
-            .read_float(600.0, 700.0, 1, 10, 10)
-            .expect(GENOME_READ_ERROR)
+    pub fn genome(&self) -> &Genome {
+        &self.genome
     }
 }
 
@@ -141,7 +114,7 @@ pub struct Vitality {
 }
 
 impl Vitality {
-    pub fn new(_body: &BugBody, total_energy: Energy) -> Self {
+    pub fn new(total_energy: Energy) -> Self {
         let energy_split = total_energy.split(3);
         let energy_store = EnergyStore(EnergyReserve::new(energy_split[0]));
         let health = Health(EnergyReserve::new(energy_split[1]));
@@ -213,6 +186,20 @@ impl BurntEnergy {
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct Age(pub Stopwatch);
 
+impl Age {
+    pub fn new(seconds: f32) -> Self {
+        let mut age = Age::default();
+        age.0.tick(Duration::from_secs_f32(seconds));
+        age
+    }
+}
+
+impl Default for Age {
+    fn default() -> Self {
+        Self(Stopwatch::new())
+    }
+}
+
 impl fmt::Display for Age {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.0.elapsed().as_secs())
@@ -222,38 +209,5 @@ impl fmt::Display for Age {
 pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
     for mut age in query.iter_mut() {
         age.0.tick(time.delta());
-    }
-}
-
-#[derive(Bundle, Debug)]
-pub struct BodyBundle {
-    body: BugBody,
-    vitality: Vitality,
-    age: Age,
-    burnt_energy: BurntEnergy,
-}
-
-impl BodyBundle {
-    pub fn random(rng: &mut dyn RngCore, total_energy: Energy) -> Self {
-        let body = BugBody::random(rng);
-
-        Self::new(body, total_energy)
-    }
-
-    pub fn new(body: BugBody, total_energy: Energy) -> Self {
-        let vitality = Vitality::new(&body, total_energy);
-        Self {
-            body,
-            vitality,
-            age: Age(Stopwatch::new()),
-            burnt_energy: BurntEnergy::new(),
-        }
-    }
-
-    pub fn make_adult(mut self) -> Self {
-        self.age
-            .0
-            .tick(Duration::from_secs_f32(self.body.adult_age_seconds()));
-        self
     }
 }

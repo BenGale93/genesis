@@ -3,7 +3,7 @@ use bevy::{
     prelude::*,
 };
 
-use crate::{body, config, mind};
+use crate::{attributes, body, config, mind};
 
 #[derive(Component, Debug)]
 pub struct MovementSum {
@@ -54,20 +54,21 @@ pub fn movement_system(
     mut query: Query<(
         &mut Transform,
         &mind::MindOutput,
-        &body::BugBody,
         &mut MovementSum,
+        &attributes::RotationSpeed,
+        &attributes::TranslationSpeed,
     )>,
 ) {
-    for (mut transform, outputs, body, mut movement_sum) in query.iter_mut() {
-        let rotation_speed = body.rotate_speed();
+    for (mut transform, outputs, mut movement_sum, rotation_speed, translation_speed) in
+        query.iter_mut()
+    {
         let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_rotation(rotation_factor);
-        rotate_me(&mut transform, rotation_factor, rotation_speed);
+        rotate_me(&mut transform, rotation_factor, rotation_speed.value());
 
-        let movement_speed = body.movement_speed();
         let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_translation(movement_factor);
-        move_me(&mut transform, movement_factor, movement_speed);
+        move_me(&mut transform, movement_factor, translation_speed.value());
     }
 }
 
