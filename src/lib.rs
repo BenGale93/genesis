@@ -1,4 +1,5 @@
 #![allow(dead_code)]
+mod attributes;
 mod body;
 pub mod config;
 mod ecosystem;

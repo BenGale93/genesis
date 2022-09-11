@@ -2,22 +2,32 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{body, config, ecosystem, food, mind, movement};
+use crate::{attributes, body, config, ecosystem, food, mind, movement};
 
 fn spawn_bug(
     commands: &mut Commands,
     asset_server: Res<AssetServer>,
     energy: ecosystem::Energy,
-    body: Option<body::BugBody>,
+    body_opt: Option<body::BugBody>,
     mind: Option<mind::Mind>,
 ) {
     let size = 30.0;
     let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
     let mut rng = rand::thread_rng();
 
-    let body_bundle = match body {
-        Some(b) => body::BodyBundle::new(b, energy),
-        None => body::BodyBundle::random(&mut rng, energy).make_adult(),
+    let adult = body_opt.is_none();
+
+    let bug_body = match body_opt {
+        Some(b) => b,
+        None => body::BugBody::random(&mut rng),
+    };
+
+    let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
+
+    let age = if adult {
+        body::Age::new(attribute_bundle.adult_age.value())
+    } else {
+        body::Age::default()
     };
 
     let mind_bundle = match mind {
@@ -49,7 +59,11 @@ fn spawn_bug(
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(movement::MovementSum::new())
-        .insert_bundle(body_bundle)
+        .insert(age)
+        .insert(bug_body)
+        .insert(body::Vitality::new(energy))
+        .insert(body::BurntEnergy::new())
+        .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
 }
 
@@ -112,10 +126,10 @@ pub fn spawn_food_system(
 
 pub fn kill_bug_system(
     mut commands: Commands,
-    query: Query<(Entity, &body::Vitality, &body::BugBody, &body::Age)>,
+    query: Query<(Entity, &body::Vitality, &attributes::DeathAge, &body::Age)>,
 ) {
-    for (entity, vitality, bug_body, age) in query.iter() {
-        if vitality.health().amount() == 0 || bug_body.death_age_seconds() < age.elapsed_secs() {
+    for (entity, vitality, death_age, age) in query.iter() {
+        if vitality.health().amount() == 0 || death_age.value() < age.elapsed_secs() {
             commands.entity(entity).despawn();
         }
     }
