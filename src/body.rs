@@ -57,6 +57,12 @@ impl BugBody {
             .read_float(30.0, 50.0, 1, 10, 10)
             .expect(GENOME_READ_ERROR)
     }
+
+    pub fn death_age_seconds(&self) -> f32 {
+        self.genome
+            .read_float(600.0, 700.0, 1, 10, 10)
+            .expect(GENOME_READ_ERROR)
+    }
 }
 
 impl Default for BugBody {
@@ -77,6 +83,10 @@ impl EnergyReserve {
             energy,
             energy_limit: energy.as_uint(),
         }
+    }
+
+    pub fn amount(&self) -> usize {
+        self.energy.as_uint()
     }
 
     #[must_use]

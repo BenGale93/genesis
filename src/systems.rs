@@ -18,6 +18,7 @@ pub fn behavior_system_set() -> SystemSet {
         .with_system(mind::sensory_system.before(mind::thinking_system))
         .with_system(movement::movement_system.after(mind::thinking_system))
         .with_system(mind::process_eaters_system.after(mind::thinking_system))
+        .with_system(spawn::kill_bug_system)
 }
 
 pub fn bug_spawning_system_set() -> SystemSet {

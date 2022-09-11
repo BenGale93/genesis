@@ -109,3 +109,14 @@ pub fn spawn_food_system(
         spawn_food(&mut commands, asset_server, energy)
     }
 }
+
+pub fn kill_bug_system(
+    mut commands: Commands,
+    query: Query<(Entity, &body::Vitality, &body::BugBody, &body::Age)>,
+) {
+    for (entity, vitality, bug_body, age) in query.iter() {
+        if vitality.health().amount() == 0 || bug_body.death_age_seconds() < age.elapsed_secs() {
+            commands.entity(entity).despawn();
+        }
+    }
+}
