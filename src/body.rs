@@ -5,7 +5,10 @@ use genesis_genome::Genome;
 use genesis_util::Probability;
 use rand::RngCore;
 
-use crate::{config, ecosystem::Energy, food};
+use crate::{
+    config,
+    ecosystem::{Energy, Plant},
+};
 
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct BugBody {
@@ -85,9 +88,9 @@ impl EnergyReserve {
     }
 
     #[must_use]
-    pub fn eat(&mut self, food_source: &mut food::Plant) -> Energy {
+    pub fn eat(&mut self, plant: &mut Plant) -> Energy {
         let requested_energy = self.available_space();
-        let extracted_energy = food_source.take_energy(requested_energy);
+        let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
 }
@@ -156,9 +159,9 @@ impl Vitality {
     }
 
     #[must_use]
-    pub fn eat(&mut self, food_source: &mut food::Plant) -> Energy {
+    pub fn eat(&mut self, plant: &mut Plant) -> Energy {
         let requested_energy = self.available_space();
-        let extracted_energy = food_source.take_energy(requested_energy);
+        let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
 }

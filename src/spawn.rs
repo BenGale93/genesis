@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{attributes, body, config, ecosystem, food, mind, movement};
+use crate::{attributes, body, config, ecosystem, mind, movement};
 
 fn spawn_bug(
     commands: &mut Commands,
@@ -84,7 +84,7 @@ pub fn spawn_bug_system(
     }
 }
 
-fn spawn_food(commands: &mut Commands, asset_server: Res<AssetServer>, energy: ecosystem::Energy) {
+fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: ecosystem::Energy) {
     let size = 10.0;
     let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
     let mut rng = rand::thread_rng();
@@ -107,20 +107,20 @@ fn spawn_food(commands: &mut Commands, asset_server: Res<AssetServer>, energy: e
         )))
         .insert(Collider::ball(size / 2.0))
         .insert(Velocity::zero())
-        .insert(food::Plant::new(energy));
+        .insert(ecosystem::Plant::new(energy));
 }
 
-pub fn spawn_food_system(
+pub fn spawn_plant_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
     if ecosystem.available_energy().as_uint() > 10000 {
-        let energy = match ecosystem.request_energy(config::FOOD_ENERGY) {
+        let energy = match ecosystem.request_energy(config::PLANT_ENERGY) {
             None => return,
             Some(e) => e,
         };
-        spawn_food(&mut commands, asset_server, energy)
+        spawn_plant(&mut commands, asset_server, energy)
     }
 }
 

@@ -8,7 +8,7 @@ use genesis_util::maths;
 use crate::{
     body::{Age, BurntEnergy, Vitality},
     config,
-    food::Plant,
+    ecosystem::Plant,
 };
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct Mind(pub Brain);
@@ -163,7 +163,7 @@ pub fn eating_system(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut bug_query: Query<(Entity, &mut Vitality, &Transform, &mut BurntEnergy), With<TryingToEat>>,
-    mut food_query: Query<(Entity, &mut Plant, &Transform)>,
+    mut plant_query: Query<(Entity, &mut Plant, &Transform)>,
 ) {
     for (bug_entity, mut vitality, bug_transform, mut burnt_energy) in bug_query.iter_mut() {
         for contact_pair in rapier_context.contacts_with(bug_entity) {
@@ -172,17 +172,17 @@ pub fn eating_system(
             } else {
                 contact_pair.collider1()
             };
-            for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
-                if other_collider == food_entity {
+            for (plant_entity, mut plant_energy, plant_transform) in plant_query.iter_mut() {
+                if other_collider == plant_entity {
                     let angle = maths::angle_to_point(
-                        food_transform.translation - bug_transform.translation,
+                        plant_transform.translation - bug_transform.translation,
                     );
                     let rebased_angle = maths::rebased_angle(angle, bug_transform.rotation.z);
                     if rebased_angle < 0.5 {
-                        let leftover = vitality.eat(&mut food_energy);
+                        let leftover = vitality.eat(&mut plant_energy);
                         burnt_energy.add_energy(leftover);
-                        if food_energy.energy().as_uint() == 0 {
-                            commands.entity(food_entity).despawn();
+                        if plant_energy.energy().as_uint() == 0 {
+                            commands.entity(plant_entity).despawn();
                         }
                     }
                 }

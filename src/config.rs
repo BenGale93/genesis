@@ -41,5 +41,5 @@ pub const AGE_INDEX: usize = 5;
 pub const WORLD_SIZE: f32 = 500.0;
 pub const WORLD_ENERGY: usize = 30000;
 
-// Food
-pub const FOOD_ENERGY: usize = 100;
+// Plant
+pub const PLANT_ENERGY: usize = 100;

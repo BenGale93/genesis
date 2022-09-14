@@ -27,10 +27,10 @@ pub fn bug_spawning_system_set() -> SystemSet {
         .with_system(spawn::spawn_bug_system)
 }
 
-pub fn food_spawning_system_set() -> SystemSet {
+pub fn plant_spawning_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
-        .with_system(spawn::spawn_food_system)
+        .with_system(spawn::spawn_plant_system)
 }
 
 pub fn slow_behavior_system_set() -> SystemSet {
