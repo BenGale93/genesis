@@ -7,4 +7,10 @@ pub enum GenesisUtilError {
 
     #[error("Probability must be between 0 and 1.")]
     InvalidProbability,
+
+    #[error("The length provided should be strictly greater than 0.")]
+    LengthError,
+
+    #[error("The angle provided should be between 0 and pi radians.")]
+    AngleError,
 }

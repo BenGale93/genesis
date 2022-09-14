@@ -1,3 +1,4 @@
+pub mod maths;
 pub mod probability;
 pub mod util_error;
 pub mod weight;

@@ -1,11 +1,9 @@
-use std::{
-    f32::consts::PI,
-    ops::{Deref, DerefMut},
-};
+use std::ops::{Deref, DerefMut};
 
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_rapier2d::prelude::*;
 use genesis_brain::Brain;
+use genesis_util::maths;
 
 use crate::{
     body::{Age, BurntEnergy, Vitality},
@@ -176,10 +174,10 @@ pub fn eating_system(
             };
             for (food_entity, mut food_energy, food_transform) in food_query.iter_mut() {
                 if other_collider == food_entity {
-                    let angle =
-                        genesis_math::angle_distance_between(bug_transform, food_transform).angle();
-                    let rotation = bug_transform.rotation.z;
-                    let rebased_angle = (angle - (PI / 2.0) - rotation).abs();
+                    let angle = maths::angle_to_point(
+                        food_transform.translation - bug_transform.translation,
+                    );
+                    let rebased_angle = maths::rebased_angle(angle, bug_transform.rotation.z);
                     if rebased_angle < 0.5 {
                         let leftover = vitality.eat(&mut food_energy);
                         burnt_energy.add_energy(leftover);

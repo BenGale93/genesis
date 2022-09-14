@@ -1634,7 +1634,6 @@ dependencies = [
  "derive_more",
  "genesis-brain",
  "genesis-genome",
- "genesis-math",
  "genesis-util",
  "rand",
  "rstest",
@@ -1663,18 +1662,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "genesis-math"
-version = "0.1.0"
-dependencies = [
- "bevy_transform",
- "nalgebra",
- "thiserror",
-]
-
-[[package]]
 name = "genesis-util"
 version = "0.1.0"
 dependencies = [
+ "glam",
+ "nalgebra",
  "rand",
  "thiserror",
 ]
