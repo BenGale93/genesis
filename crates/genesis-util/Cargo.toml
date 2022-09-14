@@ -7,6 +7,6 @@ license = "Apache-2.0"
 
 [dependencies]
 rand = "0.8.5"
-thiserror = "1.0.32"
+thiserror = "1.0.35"
 nalgebra = "0.31.1"
 glam = "0.21.2"
