@@ -5,7 +5,7 @@ use genesis::{config, resources, setup, systems, ui};
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
-        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(100.0))
+        .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1000.0))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(config::BACKGROUND)
         .insert_resource(WindowDescriptor {
