@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_rapier2d::prelude::Velocity;
 
 use crate::{body, ecosystem, interaction, mind};
 
@@ -44,7 +45,7 @@ pub fn select_bug_system(
 }
 
 fn populate_bug_info(
-    bug_info: &(&Transform, &body::Age, &body::Vitality),
+    bug_info: &(&Transform, &body::Age, &body::Vitality, &Velocity),
     mut info_text: Query<&mut Text, With<BugInfoText>>,
 ) {
     let mut text = info_text.single_mut();
@@ -53,6 +54,7 @@ fn populate_bug_info(
     text.sections[3].value = format!("\nAge: {}", &bug_info.1);
     text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
     text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
+    text.sections[6].value = format!("\nVelocity: {}", &bug_info.3.linvel);
 }
 
 fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
@@ -66,6 +68,7 @@ fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
             // Create a TextBundle that has a Text with a list of sections.
             TextBundle::from_sections([
                 TextSection::new("Bug Info", text_style.clone()),
+                TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
@@ -85,7 +88,7 @@ pub struct BugInfoText;
 
 pub fn selected_bug_system(
     mut commands: Commands,
-    bug_query: Query<(&Transform, &body::Age, &body::Vitality), With<Selected>>,
+    bug_query: Query<(&Transform, &body::Age, &body::Vitality, &Velocity), With<Selected>>,
     info_panel_query: Query<Entity, With<BugInfoText>>,
     info_text: Query<&mut Text, With<BugInfoText>>,
     asset_server: Res<AssetServer>,

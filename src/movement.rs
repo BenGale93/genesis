@@ -1,7 +1,5 @@
-use bevy::{
-    math::{Quat, Vec3},
-    prelude::*,
-};
+use bevy::{math::Quat, prelude::*};
+use bevy_rapier2d::prelude::Velocity;
 
 use crate::{attributes, body, config, mind};
 
@@ -43,32 +41,27 @@ pub fn rotate_me(me: &mut Transform, rotation_factor: f32, rotation_speed: f32) 
     me.rotation *= Quat::from_rotation_z(z_adjustment);
 }
 
-pub fn move_me(me: &mut Transform, movement_factor: f32, movement_speed: f32) {
-    let movement_direction = me.rotation * Vec3::Y;
-    let movement_distance = movement_factor * movement_speed * config::TIME_STEP;
-
-    me.translation += movement_direction * movement_distance;
-}
-
 pub fn movement_system(
     mut query: Query<(
         &mut Transform,
+        &mut Velocity,
         &mind::MindOutput,
         &mut MovementSum,
-        &attributes::RotationSpeed,
-        &attributes::TranslationSpeed,
+        &attributes::MaxRotationRate,
+        &attributes::MaxSpeed,
     )>,
 ) {
-    for (mut transform, outputs, mut movement_sum, rotation_speed, translation_speed) in
+    for (mut transform, mut velocity, outputs, mut movement_sum, max_rotation, max_speed) in
         query.iter_mut()
     {
         let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_rotation(rotation_factor);
-        rotate_me(&mut transform, rotation_factor, rotation_speed.value());
+        rotate_me(&mut transform, rotation_factor, max_rotation.value());
 
         let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_translation(movement_factor);
-        move_me(&mut transform, movement_factor, translation_speed.value());
+        let speed = movement_factor * max_speed.value();
+        velocity.linvel = (speed * transform.local_y()).truncate();
     }
 }
 
@@ -90,7 +83,7 @@ mod tests {
 
     use bevy::{math::Quat, prelude::Transform};
 
-    use super::{move_me, rotate_me};
+    use super::rotate_me;
 
     #[test]
     fn rotate_clockwise() {
@@ -108,44 +101,5 @@ mod tests {
         rotate_me(&mut me, -1.0, f32::to_radians(45.0));
 
         assert!(me.rotation.z < 0.0);
-    }
-
-    #[test]
-    fn move_me_forwards() {
-        let mut me = Transform::identity();
-        let old = me;
-
-        move_me(&mut me, 1.0, 10.0);
-
-        assert_eq!(me.translation.x, old.translation.x);
-        assert_eq!(me.translation.z, 0.0);
-        assert!(me.translation.y > 0.0);
-        assert_ne!(me.translation.y, old.translation.y);
-    }
-
-    #[test]
-    fn move_me_backwards() {
-        let mut me = Transform::identity();
-        let old = me;
-
-        move_me(&mut me, -1.0, 10.0);
-
-        assert_eq!(me.translation.x, old.translation.x);
-        assert_eq!(me.translation.z, 0.0);
-        assert!(me.translation.y < 0.0);
-        assert_ne!(me.translation.y, old.translation.y);
-    }
-
-    #[test]
-    fn rotate_then_move() {
-        let mut me = Transform::identity();
-
-        rotate_me(&mut me, 1.0, f32::to_radians(45.0));
-
-        move_me(&mut me, 1.0, 10.0);
-
-        assert!(me.translation.x < 0.0);
-        assert_eq!(me.translation.z, 0.0);
-        assert!(me.translation.y > 0.0);
     }
 }

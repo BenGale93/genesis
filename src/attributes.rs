@@ -113,40 +113,40 @@ impl MutationProbability {
 }
 
 #[derive(Component, Debug)]
-pub struct TranslationSpeed {
+pub struct MaxSpeed {
     value: f32,
     config: AttributeConfig,
 }
 
-impl TranslationSpeed {
+impl MaxSpeed {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(10.0, 100.0, 0, 0, 100)
+        AttributeConfig::new(100.0, 500.0, 0, 0, 100)
     }
 }
 
-impl_attribute!(TranslationSpeed);
+impl_attribute!(MaxSpeed);
 
 #[derive(Component, Debug)]
-pub struct RotationSpeed {
+pub struct MaxRotationRate {
     value: f32,
     config: AttributeConfig,
 }
 
-impl RotationSpeed {
+impl MaxRotationRate {
     fn default_config() -> AttributeConfig {
         AttributeConfig::new(0.5, 3.0, 0, 0, 20)
     }
 }
 
-impl_attribute!(RotationSpeed);
+impl_attribute!(MaxRotationRate);
 
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
     pub death_age: DeathAge,
     pub mutation_probability: MutationProbability,
-    pub translation_speed: TranslationSpeed,
-    pub rotation_speed: RotationSpeed,
+    pub translation_speed: MaxSpeed,
+    pub rotation_speed: MaxRotationRate,
 }
 
 impl AttributeBundle {
@@ -154,8 +154,8 @@ impl AttributeBundle {
         let adult_age = AdultAge::from_genome(genome);
         let death_age = DeathAge::from_genome(genome);
         let mutation_probability = MutationProbability::from_genome(genome);
-        let translation_speed = TranslationSpeed::from_genome(genome);
-        let rotation_speed = RotationSpeed::from_genome(genome);
+        let translation_speed = MaxSpeed::from_genome(genome);
+        let rotation_speed = MaxRotationRate::from_genome(genome);
 
         Self {
             adult_age,
