@@ -1,4 +1,4 @@
-use bevy::{math::Quat, prelude::*};
+use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
 use crate::{attributes, body, config, mind};
@@ -35,15 +35,9 @@ impl MovementSum {
     }
 }
 
-pub fn rotate_me(me: &mut Transform, rotation_factor: f32, rotation_speed: f32) {
-    let z_adjustment = rotation_factor * rotation_speed * config::TIME_STEP;
-
-    me.rotation *= Quat::from_rotation_z(z_adjustment);
-}
-
 pub fn movement_system(
     mut query: Query<(
-        &mut Transform,
+        &Transform,
         &mut Velocity,
         &mind::MindOutput,
         &mut MovementSum,
@@ -51,12 +45,12 @@ pub fn movement_system(
         &attributes::MaxSpeed,
     )>,
 ) {
-    for (mut transform, mut velocity, outputs, mut movement_sum, max_rotation, max_speed) in
+    for (transform, mut velocity, outputs, mut movement_sum, max_rotation, max_speed) in
         query.iter_mut()
     {
         let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_rotation(rotation_factor);
-        rotate_me(&mut transform, rotation_factor, max_rotation.value());
+        velocity.angvel = rotation_factor * max_rotation.value();
 
         let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
         movement_sum.add_translation(movement_factor);
@@ -75,31 +69,5 @@ pub fn movement_energy_burn_system(
     for (mut vitality, mut movement_sum, mut burnt_energy) in query.iter_mut() {
         let energy = vitality.take_energy(movement_sum.uint_portion());
         burnt_energy.add_energy(energy)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-
-    use bevy::{math::Quat, prelude::Transform};
-
-    use super::rotate_me;
-
-    #[test]
-    fn rotate_clockwise() {
-        let mut me = Transform::from_rotation(Quat::from_rotation_z(0.0));
-
-        rotate_me(&mut me, 1.0, f32::to_radians(45.0));
-
-        assert!(me.rotation.z > 0.0);
-    }
-
-    #[test]
-    fn rotate_anti_clockwise() {
-        let mut me = Transform::from_rotation(Quat::from_rotation_z(0.0));
-
-        rotate_me(&mut me, -1.0, f32::to_radians(45.0));
-
-        assert!(me.rotation.z < 0.0);
     }
 }

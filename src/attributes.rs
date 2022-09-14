@@ -134,7 +134,7 @@ pub struct MaxRotationRate {
 
 impl MaxRotationRate {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(0.5, 3.0, 0, 0, 20)
+        AttributeConfig::new(10.0, 30.0, 0, 0, 20)
     }
 }
 
