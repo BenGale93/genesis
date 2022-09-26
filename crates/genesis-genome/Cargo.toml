@@ -7,7 +7,7 @@ license = "Apache-2.0"
 
 [dependencies]
 rand = "0.8.5"
-thiserror = "1.0.32"
+thiserror = "1.0.36"
 bitvec = "1.0.1"
 genesis-util = {path = "../genesis-util/"}
 ndarray = "0.15.6"
