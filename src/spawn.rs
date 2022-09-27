@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{attributes, body, config, ecosystem, mind, movement};
+use crate::{attributes, body, config, ecosystem, mind, movement, sight};
 
 fn spawn_bug(
     commands: &mut Commands,
@@ -61,6 +61,7 @@ fn spawn_bug(
         .insert(movement::MovementSum::new())
         .insert(age)
         .insert(bug_body)
+        .insert(sight::Vision::new())
         .insert(body::Vitality::new(energy))
         .insert(body::BurntEnergy::new())
         .insert_bundle(attribute_bundle)

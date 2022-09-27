@@ -9,6 +9,7 @@ use crate::{
     body::{Age, BurntEnergy, Vitality},
     config,
     ecosystem::Plant,
+    sight::Vision,
 };
 #[derive(Component, Debug, PartialEq, Eq)]
 pub struct Mind(pub Brain);
@@ -110,14 +111,15 @@ impl MindBundle {
 
 const CONST: f64 = 1.0;
 
-pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, &Age)>) {
-    for (mut input, output, vitality, age) in query.iter_mut() {
+pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, &Age, &Vision)>) {
+    for (mut input, output, vitality, age, vision) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
         input[config::ENERGY_INDEX] = vitality.energy_store().proportion();
         input[config::HEALTH_INDEX] = vitality.health().proportion();
         input[config::AGE_INDEX] = age.elapsed_secs() as f64;
+        input[config::VISIBLE_BUGS_INDEX] = vision.visible_bugs() as f64;
     }
 }
 

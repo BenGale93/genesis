@@ -36,6 +36,7 @@ pub const PREV_ROTATE_INDEX: usize = 2;
 pub const ENERGY_INDEX: usize = 3;
 pub const HEALTH_INDEX: usize = 4;
 pub const AGE_INDEX: usize = 5;
+pub const VISIBLE_BUGS_INDEX: usize = 6;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;

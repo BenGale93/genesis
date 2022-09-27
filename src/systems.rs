@@ -1,6 +1,6 @@
 use bevy::{prelude::*, time::FixedTimestep};
 
-use crate::{body, config, ecosystem, interaction, mind, movement, spawn, ui};
+use crate::{body, config, ecosystem, interaction, mind, movement, sight, spawn, ui};
 
 pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
@@ -19,6 +19,7 @@ pub fn behavior_system_set() -> SystemSet {
         .with_system(movement::movement_system.after(mind::thinking_system))
         .with_system(mind::process_eaters_system.after(mind::thinking_system))
         .with_system(spawn::kill_bug_system)
+        .with_system(sight::process_sight_system)
 }
 
 pub fn bug_spawning_system_set() -> SystemSet {
