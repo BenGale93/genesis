@@ -120,6 +120,7 @@ pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, 
         input[config::HEALTH_INDEX] = vitality.health().proportion();
         input[config::AGE_INDEX] = age.elapsed_secs() as f64;
         input[config::VISIBLE_BUGS_INDEX] = vision.visible_bugs() as f64;
+        input[config::VISIBLE_FOOD_INDEX] = vision.visible_food() as f64;
     }
 }
 

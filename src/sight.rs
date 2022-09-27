@@ -10,15 +10,23 @@ use crate::{
 #[derive(Component, Debug)]
 pub struct Vision {
     visible_bugs: u32,
+    visible_food: u32,
 }
 
 impl Vision {
     pub fn new() -> Self {
-        Self { visible_bugs: 0 }
+        Self {
+            visible_bugs: 0,
+            visible_food: 0,
+        }
     }
 
     pub fn visible_bugs(&self) -> u32 {
         self.visible_bugs
+    }
+
+    pub fn visible_food(&self) -> u32 {
+        self.visible_food
     }
 }
 
@@ -31,7 +39,7 @@ impl Default for Vision {
 pub fn process_sight_system(
     mut eye_query: Query<(&EyeRange, &EyeAngle, &Transform, &mut Vision)>,
     bug_query: Query<&Transform, With<Mind>>,
-    _food_query: Query<&Transform, With<Plant>>,
+    food_query: Query<&Transform, With<Plant>>,
 ) {
     for (eye_range, eye_angle, transform, mut vision) in eye_query.iter_mut() {
         let cone = Cone::new(
@@ -47,6 +55,13 @@ pub fn process_sight_system(
                 continue;
             } else if cone.is_within_cone(bug_transform.translation) {
                 vision.visible_bugs += 1;
+            }
+        }
+
+        vision.visible_food = 0;
+        for food_transform in food_query.iter() {
+            if cone.is_within_cone(food_transform.translation) {
+                vision.visible_food += 1;
             }
         }
     }

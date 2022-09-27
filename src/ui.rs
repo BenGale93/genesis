@@ -60,7 +60,8 @@ fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<Bu
     text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
     text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
     text.sections[6].value = format!("\nVelocity: {}", &bug_info.3.linvel);
-    text.sections[7].value = format!("\nVisible: {}", &bug_info.4.visible_bugs());
+    text.sections[7].value = format!("\nVisible Bugs: {}", &bug_info.4.visible_bugs());
+    text.sections[8].value = format!("\nVisible Food: {}", &bug_info.4.visible_food());
 }
 
 fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
@@ -74,6 +75,7 @@ fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
             // Create a TextBundle that has a Text with a list of sections.
             TextBundle::from_sections([
                 TextSection::new("Bug Info", text_style.clone()),
+                TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
