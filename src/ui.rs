@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
-use crate::{body, ecosystem, interaction, mind};
+use crate::{body, ecosystem, interaction, mind, sight::Vision};
 
 #[derive(Component)]
 pub struct EnergyText;
@@ -44,10 +44,15 @@ pub fn select_bug_system(
     }
 }
 
-fn populate_bug_info(
-    bug_info: &(&Transform, &body::Age, &body::Vitality, &Velocity),
-    mut info_text: Query<&mut Text, With<BugInfoText>>,
-) {
+type BugInfo<'a> = (
+    &'a Transform,
+    &'a body::Age,
+    &'a body::Vitality,
+    &'a Velocity,
+    &'a Vision,
+);
+
+fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<BugInfoText>>) {
     let mut text = info_text.single_mut();
     text.sections[1].value = format!("\nPosition: {}", &bug_info.0.translation.truncate());
     text.sections[2].value = format!("\nRotation: {}", &bug_info.0.rotation.z);
@@ -55,6 +60,8 @@ fn populate_bug_info(
     text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
     text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
     text.sections[6].value = format!("\nVelocity: {}", &bug_info.3.linvel);
+    text.sections[7].value = format!("\nVisible Bugs: {}", &bug_info.4.visible_bugs());
+    text.sections[8].value = format!("\nVisible Food: {}", &bug_info.4.visible_food());
 }
 
 fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
@@ -68,6 +75,8 @@ fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
             // Create a TextBundle that has a Text with a list of sections.
             TextBundle::from_sections([
                 TextSection::new("Bug Info", text_style.clone()),
+                TextSection::from_style(text_style.clone()),
+                TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
@@ -88,7 +97,7 @@ pub struct BugInfoText;
 
 pub fn selected_bug_system(
     mut commands: Commands,
-    bug_query: Query<(&Transform, &body::Age, &body::Vitality, &Velocity), With<Selected>>,
+    bug_query: Query<BugInfo, With<Selected>>,
     info_panel_query: Query<Entity, With<BugInfoText>>,
     info_text: Query<&mut Text, With<BugInfoText>>,
     asset_server: Res<AssetServer>,

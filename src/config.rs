@@ -12,7 +12,7 @@ pub const ZOOM_SPEED: f32 = 2.0;
 pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 5;
 pub const START_NUM: usize = 10;
-pub const INITIAL_SYNAPSE_COUNT: usize = 2;
+pub const INITIAL_SYNAPSE_COUNT: usize = 3;
 pub const CHROMOSOME_COUNT: usize = 3;
 pub const CHROMOSOME_LEN: usize = 100;
 
@@ -36,6 +36,12 @@ pub const PREV_ROTATE_INDEX: usize = 2;
 pub const ENERGY_INDEX: usize = 3;
 pub const HEALTH_INDEX: usize = 4;
 pub const AGE_INDEX: usize = 5;
+pub const VISIBLE_BUGS_INDEX: usize = 6;
+pub const BUG_ANGLE_SCORE_INDEX: usize = 7;
+pub const BUG_DIST_SCORE_INDEX: usize = 8;
+pub const VISIBLE_FOOD_INDEX: usize = 9;
+pub const FOOD_ANGLE_SCORE_INDEX: usize = 10;
+pub const FOOD_DIST_SCORE_INDEX: usize = 11;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;

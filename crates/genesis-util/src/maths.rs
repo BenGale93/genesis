@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use glam::Vec3;
+use glam::{Quat, Vec3};
 use nalgebra::wrap;
 
 use crate::util_error::GenesisUtilError;
@@ -21,14 +21,21 @@ pub fn closest_object(distances: &[f32]) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
+#[derive(Debug)]
 pub struct Cone {
     point: Vec3,
-    angle: f32,
-    length: f32,
+    rotation: Quat,
+    fov_angle: f32,
+    fov_length: f32,
 }
 
 impl Cone {
-    pub fn new(point: Vec3, angle: f32, length: f32) -> Result<Self, GenesisUtilError> {
+    pub fn new(
+        point: Vec3,
+        rotation: Quat,
+        angle: f32,
+        length: f32,
+    ) -> Result<Self, GenesisUtilError> {
         if length <= 0.0 {
             return Err(GenesisUtilError::LengthError);
         }
@@ -39,8 +46,9 @@ impl Cone {
 
         Ok(Self {
             point,
-            angle,
-            length,
+            rotation,
+            fov_angle: angle,
+            fov_length: length,
         })
     }
 
@@ -49,24 +57,26 @@ impl Cone {
     }
 
     pub fn angle(&self) -> f32 {
-        self.angle
+        self.fov_angle
     }
 
     pub fn length(&self) -> f32 {
-        self.length
+        self.fov_length
     }
 
-    pub fn is_within_cone(self, target: Vec3) -> bool {
+    pub fn is_within_cone(&self, target: Vec3) -> bool {
         let distance = target - self.point;
-        let angle = angle_to_point(distance);
 
-        if distance.length() > self.length {
+        if distance.length() > self.fov_length {
             return false;
         }
+        let x_angle = angle_to_point(distance);
+
+        let angle = rebased_angle(x_angle, self.rotation.z.asin() * 2.0);
 
         let angle = wrap(angle, -PI, PI);
 
-        if angle < -self.angle / 2.0 || angle > self.angle / 2.0 {
+        if angle < -self.fov_angle / 2.0 || angle > self.fov_angle / 2.0 {
             return false;
         }
 
@@ -77,7 +87,7 @@ impl Cone {
 #[cfg(test)]
 mod tests {
 
-    use glam::Vec3;
+    use glam::{Quat, Vec3};
 
     use super::{angle_to_point, closest_object, Cone};
 
@@ -108,8 +118,9 @@ mod tests {
     #[test]
     fn is_within_cone_true() {
         let me = Vec3::ZERO;
+        let rotation = Quat::IDENTITY;
 
-        let cone = Cone::new(me, f32::to_radians(180.0), 10.0).unwrap();
+        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
 
         let target = Vec3::new(3.0, 3.0, 0.0);
 
@@ -119,8 +130,9 @@ mod tests {
     #[test]
     fn is_not_within_cone_to_far_away() {
         let me = Vec3::ZERO;
+        let rotation = Quat::IDENTITY;
 
-        let cone = Cone::new(me, f32::to_radians(180.0), 10.0).unwrap();
+        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
 
         let target = Vec3::new(8.0, 8.0, 0.0);
 
@@ -130,12 +142,60 @@ mod tests {
     #[test]
     fn is_not_within_cone_behind_me() {
         let me = Vec3::ZERO;
+        let rotation = Quat::IDENTITY;
 
-        let cone = Cone::new(me, f32::to_radians(180.0), 10.0).unwrap();
+        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
 
         let target = Vec3::new(-1.0, -1.0, 0.0);
 
         assert!(!cone.is_within_cone(target));
+    }
+
+    #[test]
+    fn is_visible_rotated_cone() {
+        let me = Vec3::ZERO;
+        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
+
+        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
+
+        let target = Vec3::new(3.0, -3.0, 0.0);
+
+        assert!(cone.is_within_cone(target));
+    }
+    #[test]
+    fn is_not_visible_rotated_cone() {
+        let me = Vec3::ZERO;
+        let rotation = Quat::from_rotation_z(f32::to_radians(90.0));
+
+        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
+
+        let target = Vec3::new(3.0, -3.0, 0.0);
+
+        assert!(!cone.is_within_cone(target));
+    }
+
+    #[test]
+    fn is_not_visible_rotated_cone_smaller_fov() {
+        let me = Vec3::ZERO;
+        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
+
+        let cone = Cone::new(me, rotation, f32::to_radians(89.0), 10.0).unwrap();
+
+        let target = Vec3::new(3.0, 3.0, 0.0);
+
+        assert!(!cone.is_within_cone(target));
+    }
+
+    #[test]
+    fn is_visible_rotated_cone_smaller_fov() {
+        let me = Vec3::ZERO;
+        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
+
+        let cone = Cone::new(me, rotation, f32::to_radians(100.0), 10.0).unwrap();
+
+        let target = Vec3::new(3.0, 3.0, 0.0);
+
+        assert!(cone.is_within_cone(target));
     }
 
     #[test]

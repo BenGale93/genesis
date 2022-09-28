@@ -7,6 +7,7 @@ mod interaction;
 mod mind;
 mod movement;
 pub mod setup;
+mod sight;
 mod spawn;
 pub mod systems;
 pub mod ui;

@@ -140,6 +140,33 @@ impl MaxRotationRate {
 
 impl_attribute!(MaxRotationRate);
 
+#[derive(Component, Debug)]
+pub struct EyeRange {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl EyeRange {
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(200.0, 700.0, 2, 20, 50)
+    }
+}
+
+impl_attribute!(EyeRange);
+
+#[derive(Component, Debug)]
+pub struct EyeAngle {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl EyeAngle {
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(f32::to_radians(30.0), f32::to_radians(360.0), 2, 50, 50)
+    }
+}
+
+impl_attribute!(EyeAngle);
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -147,6 +174,8 @@ pub struct AttributeBundle {
     pub mutation_probability: MutationProbability,
     pub translation_speed: MaxSpeed,
     pub rotation_speed: MaxRotationRate,
+    pub eye_range: EyeRange,
+    pub eye_angle: EyeAngle,
 }
 
 impl AttributeBundle {
@@ -156,6 +185,8 @@ impl AttributeBundle {
         let mutation_probability = MutationProbability::from_genome(genome);
         let translation_speed = MaxSpeed::from_genome(genome);
         let rotation_speed = MaxRotationRate::from_genome(genome);
+        let eye_range = EyeRange::from_genome(genome);
+        let eye_angle = EyeAngle::from_genome(genome);
 
         Self {
             adult_age,
@@ -163,6 +194,8 @@ impl AttributeBundle {
             mutation_probability,
             translation_speed,
             rotation_speed,
+            eye_range,
+            eye_angle,
         }
     }
 }
