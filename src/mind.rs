@@ -6,7 +6,7 @@ use genesis_brain::Brain;
 use genesis_util::maths;
 
 use crate::{
-    body::{Age, BurntEnergy, Vitality},
+    body::{Age, BurntEnergy, Heart, Vitality},
     config,
     ecosystem::Plant,
     sight::Vision,
@@ -111,8 +111,17 @@ impl MindBundle {
 
 const CONST: f64 = 1.0;
 
-pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, &Age, &Vision)>) {
-    for (mut input, output, vitality, age, vision) in query.iter_mut() {
+pub fn sensory_system(
+    mut query: Query<(
+        &mut MindInput,
+        &MindOutput,
+        &Vitality,
+        &Age,
+        &Vision,
+        &Heart,
+    )>,
+) {
+    for (mut input, output, vitality, age, vision, heart) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
@@ -125,6 +134,7 @@ pub fn sensory_system(mut query: Query<(&mut MindInput, &MindOutput, &Vitality, 
         input[config::VISIBLE_FOOD_INDEX] = vision.visible_food() as f64;
         input[config::FOOD_ANGLE_SCORE_INDEX] = vision.food_angle_score() as f64;
         input[config::FOOD_DIST_SCORE_INDEX] = vision.food_dist_score() as f64;
+        input[config::HEARTBEAT_INDEX] = heart.pulse() as f64;
     }
 }
 

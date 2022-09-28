@@ -64,6 +64,7 @@ fn spawn_bug(
         .insert(sight::Vision::new())
         .insert(body::Vitality::new(energy))
         .insert(body::BurntEnergy::new())
+        .insert(body::Heart::new())
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
 }

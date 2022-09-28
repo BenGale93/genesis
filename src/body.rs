@@ -214,3 +214,26 @@ pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
         age.0.tick(time.delta());
     }
 }
+
+#[derive(Component, Debug)]
+pub struct Heart {
+    stopwatch: Stopwatch,
+}
+
+impl Heart {
+    pub fn new() -> Self {
+        Self {
+            stopwatch: Stopwatch::new(),
+        }
+    }
+
+    pub fn pulse(&self) -> f32 {
+        self.stopwatch.elapsed_secs().sin()
+    }
+}
+
+pub fn progress_heart_system(time: Res<Time>, mut query: Query<&mut Heart>) {
+    for mut heart in query.iter_mut() {
+        heart.stopwatch.tick(time.delta());
+    }
+}
