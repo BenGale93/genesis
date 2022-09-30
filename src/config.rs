@@ -42,6 +42,7 @@ pub const BUG_DIST_SCORE_INDEX: usize = 8;
 pub const VISIBLE_FOOD_INDEX: usize = 9;
 pub const FOOD_ANGLE_SCORE_INDEX: usize = 10;
 pub const FOOD_DIST_SCORE_INDEX: usize = 11;
+pub const HEARTBEAT_INDEX: usize = 12;
 
 // World
 pub const WORLD_SIZE: f32 = 500.0;
