@@ -192,7 +192,7 @@ pub struct Age(pub Stopwatch);
 impl Age {
     pub fn new(seconds: f32) -> Self {
         let mut age = Age::default();
-        age.0.tick(Duration::from_secs_f32(seconds));
+        age.tick(Duration::from_secs_f32(seconds));
         age
     }
 }
@@ -209,31 +209,47 @@ impl fmt::Display for Age {
     }
 }
 
-pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
-    for mut age in query.iter_mut() {
-        age.0.tick(time.delta());
-    }
-}
-
-#[derive(Component, Debug)]
-pub struct Heart {
-    stopwatch: Stopwatch,
-}
+#[derive(Component, Debug, Deref, DerefMut)]
+pub struct Heart(pub Stopwatch);
 
 impl Heart {
     pub fn new() -> Self {
-        Self {
-            stopwatch: Stopwatch::new(),
-        }
+        Self(Stopwatch::new())
     }
 
     pub fn pulse(&self) -> f32 {
-        self.stopwatch.elapsed_secs().sin()
+        self.elapsed_secs().sin()
     }
 }
 
-pub fn progress_heart_system(time: Res<Time>, mut query: Query<&mut Heart>) {
-    for mut heart in query.iter_mut() {
-        heart.stopwatch.tick(time.delta());
+#[derive(Component, Debug, Deref, DerefMut)]
+pub struct InternalTimer(pub Stopwatch);
+
+impl InternalTimer {
+    pub fn new() -> Self {
+        Self(Stopwatch::new())
+    }
+}
+
+impl Default for InternalTimer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl fmt::Display for InternalTimer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.elapsed().as_secs())
+    }
+}
+
+pub fn progress_timers_system(
+    time: Res<Time>,
+    mut query: Query<(&mut Age, &mut Heart, &mut InternalTimer)>,
+) {
+    for (mut age, mut heart, mut internal_timer) in query.iter_mut() {
+        age.tick(time.delta());
+        heart.tick(time.delta());
+        internal_timer.tick(time.delta());
     }
 }

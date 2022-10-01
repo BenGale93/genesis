@@ -6,7 +6,8 @@ use genesis_brain::Brain;
 use genesis_util::maths;
 
 use crate::{
-    body::{Age, BurntEnergy, Heart, Vitality},
+    attributes,
+    body::{Age, BurntEnergy, Heart, InternalTimer, Vitality},
     config,
     ecosystem::Plant,
     sight::Vision,
@@ -119,9 +120,10 @@ pub fn sensory_system(
         &Age,
         &Vision,
         &Heart,
+        &InternalTimer,
     )>,
 ) {
-    for (mut input, output, vitality, age, vision, heart) in query.iter_mut() {
+    for (mut input, output, vitality, age, vision, heart, internal_timer) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
@@ -135,6 +137,7 @@ pub fn sensory_system(
         input[config::FOOD_ANGLE_SCORE_INDEX] = vision.food_angle_score() as f64;
         input[config::FOOD_DIST_SCORE_INDEX] = vision.food_dist_score() as f64;
         input[config::HEARTBEAT_INDEX] = heart.pulse() as f64;
+        input[config::INTERNAL_TIMER_INDEX] = internal_timer.elapsed_secs() as f64;
     }
 }
 
@@ -142,6 +145,20 @@ pub fn thinking_system(mut query: Query<(&MindInput, &Mind, &mut MindOutput)>) {
     for (input, bug_brain, mut output) in query.iter_mut() {
         let x = bug_brain.activate(input).expect("Wrong length vector");
         output.0 = x;
+    }
+}
+
+pub fn reset_internal_timer_system(
+    mut query: Query<(
+        &mut InternalTimer,
+        &MindOutput,
+        &attributes::InternalTimerBoundary,
+    )>,
+) {
+    for (mut internal_timer, mind_out, boundary) in query.iter_mut() {
+        if mind_out[config::RESET_TIMER_INDEX] > boundary.value() as f64 {
+            internal_timer.reset();
+        }
     }
 }
 

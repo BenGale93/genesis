@@ -13,10 +13,10 @@ pub fn interaction_system_set() -> SystemSet {
 pub fn behavior_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
-        .with_system(body::progress_age_system.before(mind::thinking_system))
-        .with_system(body::progress_heart_system.before(mind::thinking_system))
-        .with_system(mind::thinking_system)
+        .with_system(body::progress_timers_system.before(mind::thinking_system))
         .with_system(mind::sensory_system.before(mind::thinking_system))
+        .with_system(mind::thinking_system)
+        .with_system(mind::reset_internal_timer_system.after(mind::thinking_system))
         .with_system(movement::movement_system.after(mind::thinking_system))
         .with_system(mind::process_eaters_system.after(mind::thinking_system))
         .with_system(spawn::kill_bug_system)

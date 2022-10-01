@@ -167,6 +167,21 @@ impl EyeAngle {
 }
 
 impl_attribute!(EyeAngle);
+
+#[derive(Component, Debug)]
+pub struct InternalTimerBoundary {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl InternalTimerBoundary {
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(-0.5, 0.5, 0, 70, 10)
+    }
+}
+
+impl_attribute!(InternalTimerBoundary);
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -176,6 +191,7 @@ pub struct AttributeBundle {
     pub rotation_speed: MaxRotationRate,
     pub eye_range: EyeRange,
     pub eye_angle: EyeAngle,
+    pub internal_timer_boundary: InternalTimerBoundary,
 }
 
 impl AttributeBundle {
@@ -187,6 +203,7 @@ impl AttributeBundle {
         let rotation_speed = MaxRotationRate::from_genome(genome);
         let eye_range = EyeRange::from_genome(genome);
         let eye_angle = EyeAngle::from_genome(genome);
+        let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
 
         Self {
             adult_age,
@@ -196,6 +213,7 @@ impl AttributeBundle {
             rotation_speed,
             eye_range,
             eye_angle,
+            internal_timer_boundary,
         }
     }
 }
