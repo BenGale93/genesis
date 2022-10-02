@@ -117,11 +117,12 @@ pub struct Vitality {
 }
 
 impl Vitality {
-    pub fn new(total_energy: Energy) -> Self {
-        let energy_split = total_energy.split(3);
-        let energy_store = EnergyStore(EnergyReserve::new(energy_split[0]));
-        let health = Health(EnergyReserve::new(energy_split[1]));
-        let core_reserve = CoreReserve(energy_split[2]);
+    pub fn new(mut total_energy: Energy) -> Self {
+        let core_reserve = CoreReserve(total_energy.take_energy(config::CORE_ENERGY));
+        let health = Health(EnergyReserve::new(
+            total_energy.take_energy(config::HEALTH_ENERGY),
+        ));
+        let energy_store = EnergyStore(EnergyReserve::new(total_energy));
         Self {
             energy_store,
             health,
