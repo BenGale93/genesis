@@ -4,6 +4,7 @@ mod body;
 pub mod config;
 mod ecosystem;
 mod interaction;
+mod lifecycle;
 mod mind;
 mod movement;
 pub mod setup;

@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
 use rand::Rng;
 
-use crate::{attributes, body, config, ecosystem, mind, movement, sight};
+use crate::{attributes, body, config, ecosystem, lifecycle, mind, movement, sight};
 
 fn spawn_bug(
     commands: &mut Commands,
@@ -24,19 +24,24 @@ fn spawn_bug(
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
 
-    let age = if adult {
-        body::Age::new(attribute_bundle.adult_age.value())
-    } else {
-        body::Age::default()
-    };
-
     let mind_bundle = match mind {
         Some(m) => mind::MindBundle::new(m),
         None => mind::MindBundle::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS),
     };
 
-    commands
-        .spawn()
+    let mut entity = commands.spawn();
+
+    if adult {
+        entity
+            .insert(body::Age::new(attribute_bundle.adult_age.value()))
+            .insert(lifecycle::Adult);
+    } else {
+        entity
+            .insert(body::Age::default())
+            .insert(lifecycle::Juvenile);
+    }
+
+    entity
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
@@ -59,7 +64,6 @@ fn spawn_bug(
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(movement::MovementSum::new())
-        .insert(age)
         .insert(bug_body)
         .insert(sight::Vision::new())
         .insert(body::Vitality::new(energy))
@@ -136,4 +140,36 @@ pub fn kill_bug_system(
             commands.entity(entity).despawn();
         }
     }
+}
+
+pub fn spawn_egg(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    energy: ecosystem::Energy,
+    location: Vec3,
+    bug_body: body::BugBody,
+) {
+    let size = 16.0;
+
+    let attribute_bundle = attributes::EggAttributeBundle::new(bug_body.genome());
+
+    commands
+        .spawn()
+        .insert_bundle(SpriteBundle {
+            texture: asset_server.load("egg.png"),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(size, size)),
+                ..default()
+            },
+            ..default()
+        })
+        .insert(RigidBody::Dynamic)
+        .insert_bundle(TransformBundle::from(Transform::from_translation(location)))
+        .insert_bundle(attribute_bundle)
+        .insert(Collider::ball(size / 2.0))
+        .insert(Velocity::zero())
+        .insert(bug_body)
+        .insert(body::Age::default())
+        .insert(body::BurntEnergy::new())
+        .insert(body::Vitality::new(energy));
 }

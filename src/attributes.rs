@@ -182,6 +182,45 @@ impl InternalTimerBoundary {
 
 impl_attribute!(InternalTimerBoundary);
 
+#[derive(Component, Debug)]
+pub struct LayEggBoundary {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl LayEggBoundary {
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(0.0, 0.9, 0, 70, 10)
+    }
+}
+
+impl_attribute!(LayEggBoundary);
+
+#[derive(Component, Debug)]
+pub struct OffspringEnergy {
+    value: usize,
+    config: AttributeConfig,
+}
+
+impl OffspringEnergy {
+    fn new(value: usize, config: AttributeConfig) -> Self {
+        Self { value, config }
+    }
+
+    pub fn from_genome(genome: &Genome) -> Self {
+        let attribute_config = Self::default_config();
+        let value = attribute_config.read_genome(genome) as usize;
+        Self::new(value, attribute_config)
+    }
+
+    pub fn value(&self) -> usize {
+        self.value
+    }
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(400.0, 600.0, 0, 50, 50)
+    }
+}
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -192,6 +231,8 @@ pub struct AttributeBundle {
     pub eye_range: EyeRange,
     pub eye_angle: EyeAngle,
     pub internal_timer_boundary: InternalTimerBoundary,
+    pub lay_egg_boundary: LayEggBoundary,
+    pub offspring_energy: OffspringEnergy,
 }
 
 impl AttributeBundle {
@@ -204,6 +245,8 @@ impl AttributeBundle {
         let eye_range = EyeRange::from_genome(genome);
         let eye_angle = EyeAngle::from_genome(genome);
         let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
+        let lay_egg_boundary = LayEggBoundary::from_genome(genome);
+        let offspring_energy = OffspringEnergy::from_genome(genome);
 
         Self {
             adult_age,
@@ -214,6 +257,35 @@ impl AttributeBundle {
             eye_range,
             eye_angle,
             internal_timer_boundary,
+            lay_egg_boundary,
+            offspring_energy,
         }
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct HatchAge {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl HatchAge {
+    fn default_config() -> AttributeConfig {
+        AttributeConfig::new(10.0, 30.0, 1, 80, 10)
+    }
+}
+
+impl_attribute!(HatchAge);
+
+#[derive(Bundle, Debug)]
+pub struct EggAttributeBundle {
+    pub hatch_age: HatchAge,
+}
+
+impl EggAttributeBundle {
+    pub fn new(genome: &Genome) -> Self {
+        let hatch_age = HatchAge::from_genome(genome);
+
+        Self { hatch_age }
     }
 }
