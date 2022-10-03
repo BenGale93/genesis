@@ -5,14 +5,14 @@ use rand::random;
 
 use crate::activation::{self, ActivationFunctionKind};
 
-#[derive(PartialEq, Eq, Debug, Hash)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
 pub enum NeuronKind {
     Input,
     Output,
     Hidden,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Neuron {
     kind: NeuronKind,
     activation: activation::ActivationFunctionKind,
