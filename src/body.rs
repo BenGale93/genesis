@@ -1,5 +1,6 @@
 use std::{fmt, time::Duration};
 
+use anyhow::{anyhow, Result};
 use bevy::{prelude::*, time::Stopwatch};
 use genesis_genome::Genome;
 use genesis_util::Probability;
@@ -10,7 +11,7 @@ use crate::{
     ecosystem::{Energy, Plant},
 };
 
-#[derive(Component, Debug, PartialEq, Eq)]
+#[derive(Component, Debug, PartialEq, Eq, Clone)]
 pub struct BugBody {
     genome: Genome,
 }
@@ -54,11 +55,14 @@ pub struct EnergyReserve {
 }
 
 impl EnergyReserve {
-    pub fn new(energy: Energy) -> Self {
-        Self {
-            energy,
-            energy_limit: energy.as_uint(),
+    pub fn new(energy: Energy, limit: usize) -> Result<Self> {
+        if energy.as_uint() > limit {
+            return Err(anyhow!("Limit should be higher than energy passed in."));
         }
+        Ok(Self {
+            energy,
+            energy_limit: limit,
+        })
     }
 
     pub fn amount(&self) -> usize {
@@ -119,10 +123,14 @@ pub struct Vitality {
 impl Vitality {
     pub fn new(mut total_energy: Energy) -> Self {
         let core_reserve = CoreReserve(total_energy.take_energy(config::CORE_ENERGY));
-        let health = Health(EnergyReserve::new(
-            total_energy.take_energy(config::HEALTH_ENERGY),
-        ));
-        let energy_store = EnergyStore(EnergyReserve::new(total_energy));
+        let health = Health(
+            EnergyReserve::new(
+                total_energy.take_energy(config::HEALTH_ENERGY),
+                config::HEALTH_ENERGY,
+            )
+            .unwrap(),
+        );
+        let energy_store = EnergyStore(EnergyReserve::new(total_energy, 700).unwrap());
         Self {
             energy_store,
             health,
@@ -164,6 +172,21 @@ impl Vitality {
         let requested_energy = self.available_space();
         let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
+    }
+
+    #[must_use]
+    pub fn move_all_energy(&mut self) -> Energy {
+        let mut moved_energy = self
+            .core_reserve
+            .0
+            .take_energy(self.core_reserve.0.as_uint());
+        moved_energy = moved_energy + self.health.0.take_energy(self.health.0.amount());
+        moved_energy = moved_energy
+            + self
+                .energy_store
+                .0
+                .take_energy(self.energy_store.0.amount());
+        moved_energy
     }
 }
 
@@ -244,12 +267,14 @@ impl fmt::Display for InternalTimer {
     }
 }
 
-pub fn progress_timers_system(
-    time: Res<Time>,
-    mut query: Query<(&mut Age, &mut Heart, &mut InternalTimer)>,
-) {
-    for (mut age, mut heart, mut internal_timer) in query.iter_mut() {
+pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
+    for mut age in query.iter_mut() {
         age.tick(time.delta());
+    }
+}
+
+pub fn progress_timers_system(time: Res<Time>, mut query: Query<(&mut Heart, &mut InternalTimer)>) {
+    for (mut heart, mut internal_timer) in query.iter_mut() {
         heart.tick(time.delta());
         internal_timer.tick(time.delta());
     }

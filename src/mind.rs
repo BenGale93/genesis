@@ -14,7 +14,7 @@ use crate::{
     sight::Vision,
     spawn,
 };
-#[derive(Component, Debug, PartialEq, Eq)]
+#[derive(Component, Debug, PartialEq, Eq, Clone)]
 pub struct Mind(pub Brain);
 
 impl Deref for Mind {
@@ -275,34 +275,40 @@ fn egg_position(parent_transform: &Transform) -> Vec3 {
     egg_pos
 }
 
+type Parent<'a> = (
+    &'a Transform,
+    &'a BugBody,
+    &'a Mind,
+    &'a attributes::MutationProbability,
+    &'a mut Vitality,
+    &'a attributes::OffspringEnergy,
+    &'a lifecycle::Generation,
+);
+
 pub fn lay_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    mut parent_query: Query<
-        (
-            &Transform,
-            &BugBody,
-            &attributes::MutationProbability,
-            &mut Vitality,
-            &attributes::OffspringEnergy,
-        ),
-        With<TryingToLay>,
-    >,
+    mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
     let mut rng = rand::thread_rng();
-    for (transform, bug_body, prob, mut vitality, offspring_energy) in parent_query.iter_mut() {
+    for (transform, bug_body, mind, prob, mut vitality, offspring_energy, generation) in
+        parent_query.iter_mut()
+    {
         if vitality.energy_store().amount() < offspring_energy.value() {
             continue;
         }
         let energy = vitality.take_energy(offspring_energy.value());
         let location = egg_position(transform);
         let offspring_body = bug_body.mutate(&mut rng, *prob.value());
+        let offspring_mind = Mind(mind.mutate(&mut rng, *prob.value()));
         spawn::spawn_egg(
             &mut commands,
             &asset_server,
             energy,
             location,
             offspring_body,
+            offspring_mind,
+            lifecycle::Generation(generation.0 + 1),
         );
     }
 }

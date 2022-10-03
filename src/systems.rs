@@ -13,6 +13,7 @@ pub fn interaction_system_set() -> SystemSet {
 pub fn behavior_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
+        .with_system(body::progress_age_system.before(mind::thinking_system))
         .with_system(body::progress_timers_system.before(mind::thinking_system))
         .with_system(mind::sensory_system.before(mind::thinking_system))
         .with_system(mind::thinking_system)
@@ -23,6 +24,7 @@ pub fn behavior_system_set() -> SystemSet {
         .with_system(spawn::kill_bug_system)
         .with_system(sight::process_sight_system)
         .with_system(lifecycle::transition_to_adult_system)
+        .with_system(lifecycle::transition_to_hatching_system)
 }
 
 pub fn bug_spawning_system_set() -> SystemSet {
@@ -43,6 +45,7 @@ pub fn slow_behavior_system_set() -> SystemSet {
         .with_system(mind::eating_system.after(mind::process_eaters_system))
         .with_system(mind::lay_egg_system.after(mind::process_layers_system))
         .with_system(mind::attempted_to_eat_system.after(mind::eating_system))
+        .with_system(lifecycle::hatch_egg_system)
 }
 
 pub fn burnt_energy_system_set() -> SystemSet {

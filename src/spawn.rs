@@ -4,30 +4,40 @@ use rand::Rng;
 
 use crate::{attributes, body, config, ecosystem, lifecycle, mind, movement, sight};
 
-fn spawn_bug(
+type BugParts<'a> = (
+    body::BugBody,
+    mind::Mind,
+    &'a Transform,
+    lifecycle::Generation,
+);
+
+pub fn spawn_bug(
     commands: &mut Commands,
-    asset_server: Res<AssetServer>,
+    asset_server: &Res<AssetServer>,
     energy: ecosystem::Energy,
-    body_opt: Option<body::BugBody>,
-    mind: Option<mind::Mind>,
+    bug_parts: Option<BugParts>,
 ) {
     let size = 30.0;
     let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
     let mut rng = rand::thread_rng();
 
-    let adult = body_opt.is_none();
+    let adult = bug_parts.is_none();
 
-    let bug_body = match body_opt {
-        Some(b) => b,
-        None => body::BugBody::random(&mut rng),
+    let (bug_body, mind_bundle, transform_bundle, generation) = match bug_parts {
+        Some((b, m, t, g)) => (b, mind::MindBundle::new(m), TransformBundle::from(*t), g),
+        None => (
+            body::BugBody::random(&mut rng),
+            mind::MindBundle::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS),
+            TransformBundle::from(Transform::from_xyz(
+                rng.gen_range(range.clone()),
+                rng.gen_range(range),
+                0.0,
+            )),
+            lifecycle::Generation(0),
+        ),
     };
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
-
-    let mind_bundle = match mind {
-        Some(m) => mind::MindBundle::new(m),
-        None => mind::MindBundle::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS),
-    };
 
     let mut entity = commands.spawn();
 
@@ -51,11 +61,7 @@ fn spawn_bug(
             ..default()
         })
         .insert(RigidBody::Dynamic)
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(
-            rng.gen_range(range.clone()),
-            rng.gen_range(range),
-            0.0,
-        )))
+        .insert_bundle(transform_bundle)
         .insert(Collider::capsule(
             Vec2::new(0.0, -6.0),
             Vec2::new(0.0, 6.0),
@@ -70,6 +76,7 @@ fn spawn_bug(
         .insert(body::BurntEnergy::new())
         .insert(body::Heart::new())
         .insert(body::InternalTimer::new())
+        .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
 }
@@ -87,7 +94,7 @@ pub fn spawn_bug_system(
             None => return,
             Some(e) => e,
         };
-        spawn_bug(&mut commands, asset_server, energy, None, None)
+        spawn_bug(&mut commands, &asset_server, energy, None)
     }
 }
 
@@ -148,6 +155,8 @@ pub fn spawn_egg(
     energy: ecosystem::Energy,
     location: Vec3,
     bug_body: body::BugBody,
+    mind: mind::Mind,
+    generation: lifecycle::Generation,
 ) {
     let size = 16.0;
 
@@ -169,6 +178,8 @@ pub fn spawn_egg(
         .insert(Collider::ball(size / 2.0))
         .insert(Velocity::zero())
         .insert(bug_body)
+        .insert(mind)
+        .insert(generation)
         .insert(body::Age::default())
         .insert(body::BurntEnergy::new())
         .insert(body::Vitality::new(energy));
