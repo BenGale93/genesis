@@ -1,3 +1,4 @@
+#![feature(exclusive_range_pattern)]
 mod activation;
 pub mod brain_error;
 mod graph;
@@ -6,7 +7,7 @@ pub mod synapse;
 
 use activation::ActivationFunctionKind;
 pub use brain_error::BrainError;
-use genesis_util::{Bias, Weight};
+use genesis_util::{Bias, Probability, Weight};
 use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
@@ -14,7 +15,7 @@ use rand_distr::StandardNormal;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Brain {
     inputs: usize,
     outputs: usize,
@@ -83,6 +84,23 @@ impl Brain {
         }
 
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
+    }
+
+    pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
+        let mut new_brain = self.clone();
+        if rng.gen_bool(chance.as_float()) {
+            match rng.gen_range(0..=16) {
+                0 => new_brain.deactivate_random_synapse(),
+                1 => new_brain.deactivate_random_neuron(),
+                2..4 => new_brain.mutate_synapse_weight(),
+                4..6 => new_brain.mutate_neuron_bias(),
+                6..8 => new_brain.mutate_neuron_activation(),
+                8..12 => new_brain.add_random_neuron(),
+                _ => new_brain.add_random_synapse(),
+            }
+        }
+
+        new_brain
     }
 
     pub fn add_random_synapse(&mut self) {

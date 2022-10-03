@@ -18,7 +18,7 @@ jobs:
       - name: Dependencies
         run: sudo apt install g++ pkg-config libx11-dev libasound2-dev libudev-dev
       - name: Update
-        run: rustup update stable && rustup default stable
+        run: rustup update nightly && rustup default nightly
       - name: Add components
         run: rustup component add rustfmt clippy
       - name: Run fmt

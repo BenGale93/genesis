@@ -7,12 +7,14 @@ use genesis_util::maths;
 
 use crate::{
     attributes,
-    body::{Age, BurntEnergy, Heart, InternalTimer, Vitality},
+    body::{Age, BugBody, BurntEnergy, Heart, InternalTimer, Vitality},
     config,
     ecosystem::Plant,
+    lifecycle,
     sight::Vision,
+    spawn,
 };
-#[derive(Component, Debug, PartialEq, Eq)]
+#[derive(Component, Debug, PartialEq, Eq, Clone)]
 pub struct Mind(pub Brain);
 
 impl Deref for Mind {
@@ -235,6 +237,79 @@ pub fn attempted_to_eat_system(
             burnt_energy.add_energy(vitality.take_energy(config::EATING_COST));
             trying_to_eat.0.reset()
         }
+    }
+}
+
+#[derive(Component)]
+pub struct TryingToLay;
+
+type LayerTest<'a> = (Entity, &'a MindOutput, &'a attributes::LayEggBoundary);
+
+pub fn process_layers_system(
+    mut commands: Commands,
+    not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<lifecycle::Adult>)>,
+    laying_query: Query<LayerTest, (With<TryingToLay>, With<lifecycle::Adult>)>,
+) {
+    for (entity, mind_out, boundary) in not_laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] > boundary.value() as f64 {
+            commands.entity(entity).insert(TryingToLay);
+        }
+    }
+
+    for (entity, mind_out, boundary) in laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] <= boundary.value() as f64 {
+            commands.entity(entity).remove::<TryingToLay>();
+        }
+    }
+}
+
+fn egg_position(parent_transform: &Transform) -> Vec3 {
+    let separation = 20.0;
+    let mut egg_pos = parent_transform.translation;
+    let angle = parent_transform.rotation.z.asin() * 2.0;
+    let (s, c) = angle.sin_cos();
+
+    egg_pos.y -= separation * c;
+    egg_pos.x += separation * s;
+
+    egg_pos
+}
+
+type Parent<'a> = (
+    &'a Transform,
+    &'a BugBody,
+    &'a Mind,
+    &'a attributes::MutationProbability,
+    &'a mut Vitality,
+    &'a attributes::OffspringEnergy,
+    &'a lifecycle::Generation,
+);
+
+pub fn lay_egg_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut parent_query: Query<Parent, With<TryingToLay>>,
+) {
+    let mut rng = rand::thread_rng();
+    for (transform, bug_body, mind, prob, mut vitality, offspring_energy, generation) in
+        parent_query.iter_mut()
+    {
+        if vitality.energy_store().amount() < offspring_energy.value() {
+            continue;
+        }
+        let energy = vitality.take_energy(offspring_energy.value());
+        let location = egg_position(transform);
+        let offspring_body = bug_body.mutate(&mut rng, *prob.value());
+        let offspring_mind = Mind(mind.mutate(&mut rng, *prob.value()));
+        spawn::spawn_egg(
+            &mut commands,
+            &asset_server,
+            energy,
+            location,
+            offspring_body,
+            offspring_mind,
+            lifecycle::Generation(generation.0 + 1),
+        );
     }
 }
 

@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::Velocity;
 
-use crate::{body, ecosystem, interaction, mind, sight::Vision};
+use crate::{body, ecosystem, interaction, lifecycle, mind, sight::Vision};
 
 #[derive(Component)]
 pub struct EnergyText;
@@ -51,6 +51,7 @@ type BugInfo<'a> = (
     &'a Velocity,
     &'a Vision,
     &'a body::InternalTimer,
+    &'a lifecycle::Generation,
 );
 
 fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<BugInfoText>>) {
@@ -64,6 +65,7 @@ fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<Bu
     text.sections[7].value = format!("\nVisible Bugs: {}", &bug_info.4.visible_bugs());
     text.sections[8].value = format!("\nVisible Food: {}", &bug_info.4.visible_food());
     text.sections[9].value = format!("\nInternal Timer: {}", &bug_info.5);
+    text.sections[10].value = format!("\nGeneration: {}", &bug_info.6 .0);
 }
 
 fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
@@ -77,6 +79,7 @@ fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
             // Create a TextBundle that has a Text with a list of sections.
             TextBundle::from_sections([
                 TextSection::new("Bug Info", text_style.clone()),
+                TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
                 TextSection::from_style(text_style.clone()),
