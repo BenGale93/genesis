@@ -23,9 +23,9 @@ genesis-genome = { path = "crates/genesis-genome" }
 genesis-util = { path = "crates/genesis-util/"}
 bevy = { version = "0.8.1", features = [] }
 rand = "0.8.5"
-thiserror = "1.0.32"
+thiserror = "1.0.37"
 derive_more = "0.99.17"
-bevy_rapier2d = {version = "0.16.2", features = ["debug-render"]}
+bevy_rapier2d = {version = "0.17.0", features = ["debug-render"]}
 anyhow = "1.0.65"
 
 [dev-dependencies]
