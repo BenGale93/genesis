@@ -122,15 +122,16 @@ pub struct Vitality {
 
 impl Vitality {
     pub fn new(mut total_energy: Energy) -> Self {
-        let core_reserve = CoreReserve(total_energy.take_energy(config::CORE_ENERGY));
+        let core_energy = config::WorldConfig::global().core_energy;
+        let core_reserve = CoreReserve(total_energy.take_energy(core_energy));
+
+        let health_energy = config::WorldConfig::global().health_energy;
         let health = Health(
-            EnergyReserve::new(
-                total_energy.take_energy(config::HEALTH_ENERGY),
-                config::HEALTH_ENERGY,
-            )
-            .unwrap(),
+            EnergyReserve::new(total_energy.take_energy(health_energy), health_energy).unwrap(),
         );
-        let energy_store = EnergyStore(EnergyReserve::new(total_energy, 700).unwrap());
+
+        let energy_limit = config::WorldConfig::global().start_energy - core_energy - health_energy;
+        let energy_store = EnergyStore(EnergyReserve::new(total_energy, energy_limit).unwrap());
         Self {
             energy_store,
             health,

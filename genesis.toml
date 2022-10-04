@@ -1,0 +1,11 @@
+start_num = 40
+initial_synapse_count = 3
+start_energy = 1000
+core_energy = 100
+health_energy = 200
+eating_cost = 10
+rotation_cost = 0.1
+translation_cost = 0.1
+world_size = 2000.0
+world_energy = 100000
+plant_energy = 100

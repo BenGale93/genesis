@@ -64,12 +64,12 @@ pub fn spawn_egg_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     query: Query<&mind::MindOutput>,
 ) {
-    let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
+    let range = config::WorldConfig::global().world_size_range();
     let mut rng = rand::thread_rng();
     let bug_num = query.iter().len();
 
-    if bug_num < config::START_NUM {
-        let energy = match ecosystem.request_energy(config::START_ENERGY) {
+    if bug_num < config::WorldConfig::global().start_num {
+        let energy = match ecosystem.request_energy(config::WorldConfig::global().start_energy) {
             None => return,
             Some(e) => e,
         };
@@ -90,7 +90,7 @@ pub fn spawn_egg_system(
 
 fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: ecosystem::Energy) {
     let size = 10.0;
-    let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
+    let range = config::WorldConfig::global().world_size_range();
     let mut rng = rand::thread_rng();
 
     commands
@@ -120,7 +120,7 @@ pub fn spawn_plant_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
     if ecosystem.available_energy().as_uint() > 10000 {
-        let energy = match ecosystem.request_energy(config::PLANT_ENERGY) {
+        let energy = match ecosystem.request_energy(config::WorldConfig::global().plant_energy) {
             None => return,
             Some(e) => e,
         };

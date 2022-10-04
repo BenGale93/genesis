@@ -21,7 +21,7 @@ impl Mind {
     pub fn random(input: usize, output: usize) -> Self {
         let mut brain = Brain::new(input, output);
 
-        for _ in 0..config::INITIAL_SYNAPSE_COUNT {
+        for _ in 0..config::WorldConfig::global().initial_synapse_count {
             brain.add_random_synapse();
         }
 
@@ -231,7 +231,8 @@ pub fn attempted_to_eat_system(
     for (mut vitality, mut trying_to_eat, mut burnt_energy) in bug_query.iter_mut() {
         trying_to_eat.0.tick(time.delta());
         if trying_to_eat.0.elapsed().as_secs_f32() >= 1.0 {
-            burnt_energy.add_energy(vitality.take_energy(config::EATING_COST));
+            burnt_energy
+                .add_energy(vitality.take_energy(config::WorldConfig::global().eating_cost));
             trying_to_eat.0.reset()
         }
     }

@@ -28,10 +28,10 @@ impl MovementSum {
     }
 
     fn add_translation(&mut self, translation: f32) {
-        self.translation_sum += translation.abs() * config::ROTATION_COST
+        self.translation_sum += translation.abs() * config::WorldConfig::global().translation_cost
     }
     fn add_rotation(&mut self, rotation: f32) {
-        self.rotation_sum += rotation.abs() * config::TRANSLATION_COST
+        self.rotation_sum += rotation.abs() * config::WorldConfig::global().rotation_cost
     }
 }
 

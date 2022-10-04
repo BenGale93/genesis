@@ -3,6 +3,9 @@ use bevy_rapier2d::prelude::*;
 use genesis::{config, resources, setup, systems, ui};
 
 fn main() {
+    let config = config::WorldConfig::from_config();
+    config::WORLD_CONFIG_INSTANCE.set(config).unwrap();
+
     App::new()
         .add_plugins(DefaultPlugins)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1000.0))
@@ -12,7 +15,9 @@ fn main() {
             title: "Genesis".to_string(),
             ..default()
         })
-        .insert_resource(resources::Ecosystem::new(config::WORLD_ENERGY))
+        .insert_resource(resources::Ecosystem::new(
+            config::WorldConfig::global().world_energy,
+        ))
         .add_startup_system(setup::camera_setup)
         .add_startup_system(setup::ui_setup)
         .add_startup_system(setup::physics_setup)
