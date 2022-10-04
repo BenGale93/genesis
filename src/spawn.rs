@@ -36,6 +36,10 @@ pub fn spawn_bug(
             ..default()
         })
         .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
         .insert_bundle(transform_bundle)
         .insert(Collider::capsule(
             Vec2::new(0.0, -6.0),
@@ -104,6 +108,10 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
             ..default()
         })
         .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
         .insert_bundle(TransformBundle::from(Transform::from_xyz(
             rng.gen_range(range.clone()),
             rng.gen_range(range),
@@ -163,6 +171,10 @@ pub fn spawn_egg(
             ..default()
         })
         .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
         .insert_bundle(TransformBundle::from(Transform::from_translation(location)))
         .insert_bundle(attribute_bundle)
         .insert(Collider::ball(size / 2.0))
