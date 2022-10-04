@@ -17,6 +17,18 @@ use crate::{
 #[derive(Component, Debug, PartialEq, Eq, Clone)]
 pub struct Mind(pub Brain);
 
+impl Mind {
+    pub fn random(input: usize, output: usize) -> Self {
+        let mut brain = Brain::new(input, output);
+
+        for _ in 0..config::INITIAL_SYNAPSE_COUNT {
+            brain.add_random_synapse();
+        }
+
+        Self(brain)
+    }
+}
+
 impl Deref for Mind {
     type Target = Brain;
 
@@ -88,21 +100,6 @@ impl MindBundle {
     pub fn new(mind: Mind) -> Self {
         let input_vec = MindInput(vec![0.0; mind.inputs()]);
         let output_vec = MindOutput(vec![0.0; mind.outputs()]);
-
-        Self {
-            input: input_vec,
-            mind,
-            output: output_vec,
-        }
-    }
-    pub fn random(input: usize, output: usize) -> Self {
-        let input_vec = MindInput(vec![0.0; input]);
-        let output_vec = MindOutput(vec![0.0; output]);
-        let mut mind = Mind(Brain::new(input, output));
-
-        for _ in 0..config::INITIAL_SYNAPSE_COUNT {
-            mind.add_random_synapse();
-        }
 
         Self {
             input: input_vec,
@@ -350,12 +347,9 @@ mod tests {
         let mut app = App::new();
 
         app.add_system(thinking_system);
+        let mind = Mind::random(3, 2);
 
-        let bug_id = app
-            .world
-            .spawn()
-            .insert_bundle(MindBundle::random(3, 2))
-            .id();
+        let bug_id = app.world.spawn().insert_bundle(MindBundle::new(mind)).id();
 
         app.update();
 

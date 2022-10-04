@@ -15,43 +15,18 @@ pub fn spawn_bug(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
     energy: ecosystem::Energy,
-    bug_parts: Option<BugParts>,
+    bug_parts: BugParts,
 ) {
     let size = 30.0;
-    let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
-    let mut rng = rand::thread_rng();
 
-    let adult = bug_parts.is_none();
-
-    let (bug_body, mind_bundle, transform_bundle, generation) = match bug_parts {
-        Some((b, m, t, g)) => (b, mind::MindBundle::new(m), TransformBundle::from(*t), g),
-        None => (
-            body::BugBody::random(&mut rng),
-            mind::MindBundle::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS),
-            TransformBundle::from(Transform::from_xyz(
-                rng.gen_range(range.clone()),
-                rng.gen_range(range),
-                0.0,
-            )),
-            lifecycle::Generation(0),
-        ),
-    };
+    let (bug_body, mind, transform, generation) = bug_parts;
+    let mind_bundle = mind::MindBundle::new(mind);
+    let transform_bundle = TransformBundle::from(*transform);
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
 
-    let mut entity = commands.spawn();
-
-    if adult {
-        entity
-            .insert(body::Age::new(attribute_bundle.adult_age.value()))
-            .insert(lifecycle::Adult);
-    } else {
-        entity
-            .insert(body::Age::default())
-            .insert(lifecycle::Juvenile);
-    }
-
-    entity
+    commands
+        .spawn()
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
@@ -71,6 +46,8 @@ pub fn spawn_bug(
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(movement::MovementSum::new())
         .insert(bug_body)
+        .insert(body::Age::default())
+        .insert(lifecycle::Juvenile)
         .insert(sight::Vision::new())
         .insert(body::Vitality::new(energy))
         .insert(body::BurntEnergy::new())
@@ -81,12 +58,14 @@ pub fn spawn_bug(
         .insert_bundle(mind_bundle);
 }
 
-pub fn spawn_bug_system(
+pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     query: Query<&mind::MindOutput>,
 ) {
+    let range = -config::WORLD_SIZE..=config::WORLD_SIZE;
+    let mut rng = rand::thread_rng();
     let bug_num = query.iter().len();
 
     if bug_num < config::START_NUM {
@@ -94,7 +73,18 @@ pub fn spawn_bug_system(
             None => return,
             Some(e) => e,
         };
-        spawn_bug(&mut commands, &asset_server, energy, None)
+        let location = Vec3::new(rng.gen_range(range.clone()), rng.gen_range(range), 0.0);
+        let bug_body = body::BugBody::random(&mut rng);
+        let mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
+        spawn_egg(
+            &mut commands,
+            &asset_server,
+            energy,
+            location,
+            bug_body,
+            mind,
+            lifecycle::Generation(0),
+        );
     }
 }
 

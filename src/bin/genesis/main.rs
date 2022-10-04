@@ -18,7 +18,7 @@ fn main() {
         .add_startup_system(setup::physics_setup)
         .add_system_set(systems::interaction_system_set())
         .add_system_set(systems::behavior_system_set())
-        .add_system_set(systems::bug_spawning_system_set())
+        .add_system_set(systems::egg_spawning_system_set())
         .add_system_set(systems::plant_spawning_system_set())
         .add_system_set(systems::slow_behavior_system_set())
         .add_system_set(systems::burnt_energy_system_set())

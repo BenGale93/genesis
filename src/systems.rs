@@ -27,10 +27,10 @@ pub fn behavior_system_set() -> SystemSet {
         .with_system(lifecycle::transition_to_hatching_system)
 }
 
-pub fn bug_spawning_system_set() -> SystemSet {
+pub fn egg_spawning_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(1.0))
-        .with_system(spawn::spawn_bug_system)
+        .with_system(spawn::spawn_egg_system)
 }
 
 pub fn plant_spawning_system_set() -> SystemSet {
