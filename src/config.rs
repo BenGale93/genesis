@@ -48,7 +48,7 @@ pub const HEARTBEAT_INDEX: usize = 12;
 pub const INTERNAL_TIMER_INDEX: usize = 13;
 
 // World
-pub const WORLD_SIZE: f32 = 500.0;
+pub const WORLD_SIZE: f32 = 1000.0;
 pub const WORLD_ENERGY: usize = 30000;
 
 // Plant

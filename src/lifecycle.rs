@@ -56,7 +56,7 @@ pub fn hatch_egg_system(
             &mut commands,
             &asset_server,
             vitality.move_all_energy(),
-            Some((body.clone(), mind.clone(), transform, *generation)),
+            (body.clone(), mind.clone(), transform, *generation),
         )
     }
 }
