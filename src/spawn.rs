@@ -82,7 +82,7 @@ pub fn spawn_egg_system(
         let bug_body = body::BugBody::random(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config::WorldConfig::global().mutations {
-            mind = mind::Mind(mind.mutate(&mut rng, Probability::new(1.0).unwrap()));
+            mind = mind.mutate(&mut rng, Probability::new(1.0).unwrap()).into();
         }
         spawn_egg(
             &mut commands,
@@ -131,7 +131,7 @@ pub fn spawn_plant_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
-    if ecosystem.available_energy().as_uint() > 10000 {
+    if ecosystem.available_energy().amount() > 10000 {
         let energy = match ecosystem.request_energy(config::WorldConfig::global().plant_energy) {
             None => return,
             Some(e) => e,

@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use derive_more::{Add, From};
 
 use crate::{attributes, body, mind, spawn};
 
@@ -11,7 +12,7 @@ pub struct Juvenile;
 #[derive(Component, Debug)]
 pub struct Adult;
 
-#[derive(Component, Debug, Deref, DerefMut, Clone, Copy)]
+#[derive(Component, Debug, Deref, DerefMut, Clone, Copy, From, Add)]
 pub struct Generation(pub usize);
 
 pub fn transition_to_adult_system(

@@ -1,7 +1,6 @@
-use std::ops::{Deref, DerefMut};
-
 use bevy::{prelude::*, time::Stopwatch};
 use bevy_rapier2d::prelude::*;
+use derive_more::From;
 use genesis_brain::Brain;
 use genesis_util::maths;
 
@@ -14,7 +13,7 @@ use crate::{
     sight::Vision,
     spawn,
 };
-#[derive(Component, Debug, PartialEq, Eq, Clone)]
+#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From)]
 pub struct Mind(pub Brain);
 
 impl Mind {
@@ -29,65 +28,11 @@ impl Mind {
     }
 }
 
-impl Deref for Mind {
-    type Target = Brain;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for Mind {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-#[derive(Component, Debug, PartialEq, Clone)]
+#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
 pub struct MindInput(pub Vec<f64>);
 
-impl Deref for MindInput {
-    type Target = Vec<f64>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MindInput {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl From<Vec<f64>> for MindInput {
-    fn from(val: Vec<f64>) -> MindInput {
-        MindInput(val)
-    }
-}
-
-#[derive(Component, Debug, PartialEq, Clone)]
+#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
 pub struct MindOutput(pub Vec<f64>);
-
-impl Deref for MindOutput {
-    type Target = Vec<f64>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl DerefMut for MindOutput {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
-
-impl From<Vec<f64>> for MindOutput {
-    fn from(val: Vec<f64>) -> MindOutput {
-        MindOutput(val)
-    }
-}
 
 #[derive(Bundle, Debug)]
 pub struct MindBundle {
@@ -168,7 +113,7 @@ pub fn thinking_energy_system(mut query: Query<(&Mind, &mut Vitality, &mut Burnt
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug, Deref, DerefMut)]
 pub struct TryingToEat(pub Stopwatch);
 
 pub fn process_eaters_system(
@@ -214,7 +159,7 @@ pub fn eating_system(
                     if rebased_angle < 0.5 {
                         let leftover = vitality.eat(&mut plant_energy);
                         burnt_energy.add_energy(leftover);
-                        if plant_energy.energy().as_uint() == 0 {
+                        if plant_energy.energy().amount() == 0 {
                             commands.entity(plant_entity).despawn();
                         }
                     }
@@ -229,11 +174,11 @@ pub fn attempted_to_eat_system(
     mut bug_query: Query<(&mut Vitality, &mut TryingToEat, &mut BurntEnergy)>,
 ) {
     for (mut vitality, mut trying_to_eat, mut burnt_energy) in bug_query.iter_mut() {
-        trying_to_eat.0.tick(time.delta());
-        if trying_to_eat.0.elapsed().as_secs_f32() >= 1.0 {
+        trying_to_eat.tick(time.delta());
+        if trying_to_eat.elapsed().as_secs_f32() >= 1.0 {
             burnt_energy
                 .add_energy(vitality.take_energy(config::WorldConfig::global().eating_cost));
-            trying_to_eat.0.reset()
+            trying_to_eat.reset()
         }
     }
 }
@@ -298,7 +243,7 @@ pub fn lay_egg_system(
         let energy = vitality.take_energy(offspring_energy.value());
         let location = egg_position(transform);
         let offspring_body = bug_body.mutate(&mut rng, *prob.value());
-        let offspring_mind = Mind(mind.mutate(&mut rng, *prob.value()));
+        let offspring_mind = mind.mutate(&mut rng, *prob.value()).into();
         spawn::spawn_egg(
             &mut commands,
             &asset_server,
@@ -306,7 +251,7 @@ pub fn lay_egg_system(
             location,
             offspring_body,
             offspring_mind,
-            lifecycle::Generation(generation.0 + 1),
+            *generation + 1.into(),
         );
     }
 }
@@ -324,14 +269,14 @@ mod tests {
 
         app.add_system(thinking_system);
 
-        let mut test_brain = genesis_brain::Brain::new(1, 1);
+        let mut test_mind: Mind = genesis_brain::Brain::new(1, 1).into();
 
-        test_brain.add_random_synapse();
+        test_mind.add_random_synapse();
 
         let bug_id = app
             .world
             .spawn()
-            .insert(Mind(test_brain))
+            .insert(test_mind)
             .insert(MindInput(vec![1.0]))
             .insert(MindOutput(vec![0.0]))
             .id();

@@ -1,6 +1,6 @@
 extern crate derive_more;
 use bevy::prelude::*;
-use derive_more::{Add, Display, Sub};
+use derive_more::{Add, Constructor, Display, Sub};
 
 use crate::body::BurntEnergy;
 
@@ -12,7 +12,7 @@ impl Energy {
         Self(e)
     }
 
-    pub fn as_uint(&self) -> usize {
+    pub fn amount(&self) -> usize {
         self.0
     }
 
@@ -44,16 +44,12 @@ impl Energy {
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Constructor)]
 pub struct Plant {
     energy: Energy,
 }
 
 impl Plant {
-    pub fn new(energy: Energy) -> Self {
-        Self { energy }
-    }
-
     pub fn take_energy(&mut self, amount: usize) -> Energy {
         self.energy.take_energy(amount)
     }
@@ -63,6 +59,7 @@ impl Plant {
     }
 }
 
+#[derive(Debug)]
 pub struct Ecosystem {
     energy: Energy,
 }
@@ -106,7 +103,8 @@ pub fn burnt_energy_system(
 mod tests {
     use rstest::rstest;
 
-    use crate::ecosystem;
+    use super::*;
+    use crate::{body::Vitality, config, ecosystem};
 
     #[test]
     fn request_energy_success() {
@@ -114,8 +112,8 @@ mod tests {
 
         let energy = eco_system.request_energy(20).unwrap();
 
-        assert_eq!(energy.as_uint(), 20);
-        assert_eq!(eco_system.available_energy().as_uint(), 80);
+        assert_eq!(energy.amount(), 20);
+        assert_eq!(eco_system.available_energy().amount(), 80);
     }
 
     #[rstest]
@@ -132,7 +130,21 @@ mod tests {
         let split_energy = energy.split(inputs.1);
 
         for (exp, e) in expected.iter().zip(split_energy.iter()) {
-            assert_eq!(&e.as_uint(), exp);
+            assert_eq!(&e.amount(), exp);
         }
+    }
+
+    #[test]
+    fn move_all_energy_empties_vitality() {
+        config::initialize_config();
+        let initial_energy = Energy::new(1000);
+        let mut vitality = Vitality::new(initial_energy);
+
+        let moved_energy = vitality.move_all_energy();
+
+        assert_eq!(vitality.health().amount(), 0);
+        assert_eq!(vitality.energy_store().amount(), 0);
+        assert_eq!(vitality.core_reserve().amount(), 0);
+        assert_eq!(moved_energy.amount(), 1000);
     }
 }
