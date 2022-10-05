@@ -2,6 +2,7 @@ use std::{fmt, time::Duration};
 
 use anyhow::{anyhow, Result};
 use bevy::{prelude::*, time::Stopwatch};
+use derive_more::{Add, From};
 use genesis_genome::Genome;
 use genesis_util::Probability;
 use rand::RngCore;
@@ -56,7 +57,7 @@ pub struct EnergyReserve {
 
 impl EnergyReserve {
     pub fn new(energy: Energy, limit: usize) -> Result<Self> {
-        if energy.as_uint() > limit {
+        if energy.amount() > limit {
             return Err(anyhow!("Limit should be higher than energy passed in."));
         }
         Ok(Self {
@@ -66,17 +67,17 @@ impl EnergyReserve {
     }
 
     pub fn amount(&self) -> usize {
-        self.energy.as_uint()
+        self.energy.amount()
     }
 
     #[must_use]
     pub fn proportion(&self) -> f64 {
-        self.energy.as_uint() as f64 / self.energy_limit as f64
+        self.energy.amount() as f64 / self.energy_limit as f64
     }
 
     #[must_use]
     pub fn available_space(&self) -> usize {
-        self.energy_limit - self.energy.as_uint()
+        self.energy_limit - self.energy.amount()
     }
 
     #[must_use]
@@ -97,21 +98,27 @@ impl EnergyReserve {
         let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
+
+    #[must_use]
+    pub fn take_all_energy(&mut self) -> Energy {
+        let amount = self.amount();
+        self.take_energy(amount)
+    }
 }
 impl fmt::Display for EnergyReserve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}/{}", self.energy.as_uint(), self.energy_limit)
+        write!(f, "{}/{}", self.energy.amount(), self.energy_limit)
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Deref, DerefMut)]
 struct EnergyStore(EnergyReserve);
 
-#[derive(Debug)]
+#[derive(Debug, Deref, DerefMut)]
 struct Health(EnergyReserve);
 
-#[derive(Debug, PartialEq, Eq)]
-struct CoreReserve(Energy);
+#[derive(Debug, PartialEq, Eq, Deref, DerefMut)]
+pub struct CoreReserve(Energy);
 
 #[derive(Component, Debug)]
 pub struct Vitality {
@@ -140,11 +147,15 @@ impl Vitality {
     }
 
     pub fn energy_store(&self) -> &EnergyReserve {
-        &self.energy_store.0
+        &self.energy_store
     }
 
     pub fn health(&self) -> &EnergyReserve {
-        &self.health.0
+        &self.health
+    }
+
+    pub fn core_reserve(&self) -> &CoreReserve {
+        &self.core_reserve
     }
 
     #[must_use]
@@ -154,16 +165,16 @@ impl Vitality {
 
     #[must_use]
     pub fn add_energy(&mut self, energy: Energy) -> Energy {
-        let remaining_energy = self.health.0.add_energy(energy);
-        self.energy_store.0.add_energy(remaining_energy)
+        let remaining_energy = self.health.add_energy(energy);
+        self.energy_store.add_energy(remaining_energy)
     }
 
     #[must_use]
     pub fn take_energy(&mut self, amount: usize) -> Energy {
-        let mut taken_energy = self.energy_store.0.take_energy(amount);
-        let still_needed = amount - taken_energy.as_uint();
+        let mut taken_energy = self.energy_store.take_energy(amount);
+        let still_needed = amount - taken_energy.amount();
         if still_needed > 0 {
-            taken_energy = taken_energy + self.health.0.take_energy(still_needed);
+            taken_energy = taken_energy + self.health.take_energy(still_needed);
         }
         taken_energy
     }
@@ -177,21 +188,16 @@ impl Vitality {
 
     #[must_use]
     pub fn move_all_energy(&mut self) -> Energy {
-        let mut moved_energy = self
-            .core_reserve
-            .0
-            .take_energy(self.core_reserve.0.as_uint());
-        moved_energy = moved_energy + self.health.0.take_energy(self.health.0.amount());
-        moved_energy = moved_energy
-            + self
-                .energy_store
-                .0
-                .take_energy(self.energy_store.0.amount());
+        let core_energy = self.core_reserve.amount();
+        let mut moved_energy = self.core_reserve.take_energy(core_energy);
+
+        moved_energy = moved_energy + self.health.take_all_energy();
+        moved_energy = moved_energy + self.energy_store.take_all_energy();
         moved_energy
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, PartialEq, Eq, Deref, DerefMut, From, Add)]
 pub struct BurntEnergy(Energy);
 
 impl BurntEnergy {
@@ -206,8 +212,8 @@ impl BurntEnergy {
     }
 
     pub fn return_energy(&mut self) -> Energy {
-        let amount = self.0.as_uint();
-        self.0.take_energy(amount)
+        let amount = self.amount();
+        self.take_energy(amount)
     }
 }
 
@@ -230,7 +236,7 @@ impl Default for Age {
 
 impl fmt::Display for Age {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0.elapsed().as_secs())
+        write!(f, "{}", self.elapsed().as_secs())
     }
 }
 
