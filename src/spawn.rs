@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 use bevy_rapier2d::prelude::*;
+use genesis_util::Probability;
 use rand::Rng;
 
 use crate::{attributes, body, config, ecosystem, lifecycle, mind, movement, sight};
@@ -79,7 +80,10 @@ pub fn spawn_egg_system(
         };
         let location = Vec3::new(rng.gen_range(range.clone()), rng.gen_range(range), 0.0);
         let bug_body = body::BugBody::random(&mut rng);
-        let mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
+        let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
+        for _ in 0..config::WorldConfig::global().mutations {
+            mind = mind::Mind(mind.mutate(&mut rng, Probability::new(1.0).unwrap()));
+        }
         spawn_egg(
             &mut commands,
             &asset_server,

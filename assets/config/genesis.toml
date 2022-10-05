@@ -1,5 +1,6 @@
 start_num = 40
 initial_synapse_count = 3
+mutations = 3
 start_energy = 1000
 core_energy = 100
 health_energy = 200
