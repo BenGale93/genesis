@@ -64,7 +64,7 @@ impl WorldConfig {
     }
 
     pub fn from_config() -> Self {
-        confy::load_path("./genesis.toml").unwrap()
+        confy::load_path("./assets/config/genesis.toml").unwrap()
     }
 
     pub fn world_size_range(&self) -> RangeInclusive<f32> {
