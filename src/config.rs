@@ -91,3 +91,8 @@ impl Default for WorldConfig {
 }
 
 pub static WORLD_CONFIG_INSTANCE: OnceCell<WorldConfig> = OnceCell::new();
+
+pub fn initialize_config() {
+    let config = WorldConfig::from_config();
+    WORLD_CONFIG_INSTANCE.set(config).unwrap();
+}

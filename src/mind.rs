@@ -315,8 +315,8 @@ pub fn lay_egg_system(
 mod tests {
     use bevy::prelude::*;
 
-    use super::thinking_system;
-    use crate::mind::{Mind, MindBundle, MindInput, MindOutput};
+    use super::*;
+    use crate::config;
 
     #[test]
     fn mind_thinks() {
@@ -345,6 +345,8 @@ mod tests {
 
     #[test]
     fn mind_bundle_works() {
+        config::initialize_config();
+
         let mut app = App::new();
 
         app.add_system(thinking_system);

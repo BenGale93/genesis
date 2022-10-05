@@ -3,8 +3,7 @@ use bevy_rapier2d::prelude::*;
 use genesis::{config, resources, setup, systems, ui};
 
 fn main() {
-    let config = config::WorldConfig::from_config();
-    config::WORLD_CONFIG_INSTANCE.set(config).unwrap();
+    config::initialize_config();
 
     App::new()
         .add_plugins(DefaultPlugins)
