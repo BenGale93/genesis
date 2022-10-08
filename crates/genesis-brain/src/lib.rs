@@ -199,7 +199,7 @@ impl Brain {
         if let Some(syn) = random_synapse {
             let offset: f64 = thread_rng().sample(StandardNormal);
             let new_weight =
-                Weight::new((syn.weight().as_float() + offset).min(1.0).max(-1.0)).unwrap();
+                Weight::new((syn.weight().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
             syn.set_weight(new_weight);
         }
     }
@@ -216,12 +216,8 @@ impl Brain {
             .unwrap();
 
         let offset: f64 = thread_rng().sample(StandardNormal);
-        let new_bias = Bias::new(
-            (random_neuron.bias().as_float() + offset)
-                .min(1.0)
-                .max(-1.0),
-        )
-        .unwrap();
+        let new_bias =
+            Bias::new((random_neuron.bias().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
 
         random_neuron.set_bias(new_bias);
     }
