@@ -1,19 +1,18 @@
 use bevy::prelude::*;
-use bevy_rapier2d::prelude::Velocity;
+use bevy_egui::{egui, EguiContext};
 
 use crate::{body, ecosystem, interaction, lifecycle, mind, sight::Vision};
 
-#[derive(Component)]
-pub struct EnergyText;
-
 pub fn energy_ui_update_system(
+    mut egui_ctx: ResMut<EguiContext>,
     ecosystem: Res<ecosystem::Ecosystem>,
-    mut query: Query<&mut Text, With<EnergyText>>,
 ) {
-    for mut text in &mut query {
-        let energy = ecosystem.available_energy();
-        text.sections[1].value = format!("{energy}");
-    }
+    let energy = ecosystem.available_energy();
+    egui::Window::new("Global Info")
+        .anchor(egui::Align2::RIGHT_BOTTOM, [-5.0, -5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.label(format!("Global Energy: {energy}"));
+        });
 }
 
 #[derive(Component)]
@@ -45,73 +44,28 @@ pub fn select_bug_system(
 }
 
 type BugInfo<'a> = (
-    &'a Transform,
     &'a body::Age,
     &'a body::Vitality,
-    &'a Velocity,
     &'a Vision,
     &'a body::InternalTimer,
     &'a lifecycle::Generation,
 );
 
-fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<BugInfoText>>) {
-    let mut text = info_text.single_mut();
-    text.sections[1].value = format!("\nPosition: {}", &bug_info.0.translation.truncate());
-    text.sections[2].value = format!("\nRotation: {}", &bug_info.0.rotation.z);
-    text.sections[3].value = format!("\nAge: {}", &bug_info.1);
-    text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
-    text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
-    text.sections[6].value = format!("\nVelocity: {}", &bug_info.3.linvel);
-    text.sections[7].value = format!("\nVisible Bugs: {}", &bug_info.4.visible_bugs());
-    text.sections[8].value = format!("\nVisible Food: {}", &bug_info.4.visible_food());
-    text.sections[9].value = format!("\nInternal Timer: {}", &bug_info.5);
-    text.sections[10].value = format!("\nGeneration: {}", &bug_info.6 .0);
-}
-
-fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
-    let text_style = TextStyle {
-        font: asset_server.load("fonts/calibri.ttf"),
-        font_size: 30.0,
-        color: Color::WHITE,
-    };
-    commands
-        .spawn_bundle(
-            // Create a TextBundle that has a Text with a list of sections.
-            TextBundle::from_sections([
-                TextSection::new("Bug Info", text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style),
-            ])
-            .with_style(Style {
-                align_self: AlignSelf::FlexEnd,
-                ..default()
-            }),
-        )
-        .insert(BugInfoText);
-}
-
-#[derive(Component)]
-pub struct BugInfoText;
-
-pub fn selected_bug_system(
-    mut commands: Commands,
+pub fn bug_info_panel_system(
     bug_query: Query<BugInfo, With<Selected>>,
-    info_panel_query: Query<Entity, With<BugInfoText>>,
-    info_text: Query<&mut Text, With<BugInfoText>>,
-    asset_server: Res<AssetServer>,
+    mut egui_ctx: ResMut<EguiContext>,
 ) {
-    match (bug_query.get_single(), info_panel_query.get_single()) {
-        (Ok(_), Err(_)) => spawn_info_panel(&mut commands, asset_server),
-        (Err(_), Ok(info_panel)) => commands.entity(info_panel).despawn(),
-        (Ok(bug_info), Ok(_)) => populate_bug_info(&bug_info, info_text),
-        _ => (),
+    if let Ok(bug_info) = bug_query.get_single() {
+        egui::Window::new("Bug Info")
+            .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
+            .show(egui_ctx.ctx_mut(), |ui| {
+                ui.label(format!("Age: {}", &bug_info.0));
+                ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
+                ui.label(format!("Health: {}", &bug_info.1.health()));
+                ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
+                ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
+                ui.label(format!("Internal timer: {}", &bug_info.3));
+                ui.label(format!("Generation: {}", &bug_info.4 .0));
+            });
     }
 }
