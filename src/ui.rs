@@ -1,7 +1,13 @@
 use bevy::prelude::*;
 use bevy_egui::{egui, EguiContext};
+use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
-use crate::{body, ecosystem, interaction, lifecycle, mind, sight::Vision};
+use crate::{
+    body,
+    ecosystem::{self, Plant},
+    interaction, lifecycle,
+    sight::Vision,
+};
 
 pub fn energy_ui_update_system(
     mut egui_ctx: ResMut<EguiContext>,
@@ -18,28 +24,33 @@ pub fn energy_ui_update_system(
 #[derive(Component)]
 pub struct Selected;
 
-pub fn select_bug_system(
+pub fn select_sprite_system(
     mut commands: Commands,
+    rapier_context: Res<RapierContext>,
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut bug_query: Query<(Entity, &Transform, &mut Sprite), With<mind::Mind>>,
+    mut sprite_query: Query<(Entity, &mut Sprite)>,
 ) {
+    let filter = QueryFilter::default();
     if !mouse_button.pressed(MouseButton::Left) {
         return;
     }
     // check if the cursor is inside the window and get its position
     if let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) {
-        for (entity, transform, mut sprite) in bug_query.iter_mut() {
-            let dist = (world_pos - transform.translation.truncate()).length();
-            if dist < 9.0 {
-                commands.entity(entity).insert(Selected);
-                sprite.color = Color::RED;
-            } else {
-                commands.entity(entity).remove::<Selected>();
-                sprite.color = Color::WHITE;
-            }
+        for (entity, mut sprite) in sprite_query.iter_mut() {
+            commands.entity(entity).remove::<Selected>();
+            sprite.color = Color::WHITE;
         }
+        rapier_context.intersections_with_point(world_pos, filter, |entity| {
+            for (test_entity, mut sprite) in sprite_query.iter_mut() {
+                if test_entity == entity {
+                    commands.entity(entity).insert(Selected);
+                    sprite.color = Color::RED;
+                }
+            }
+            false
+        });
     }
 }
 
@@ -66,6 +77,37 @@ pub fn bug_info_panel_system(
                 ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
                 ui.label(format!("Internal timer: {}", &bug_info.3));
                 ui.label(format!("Generation: {}", &bug_info.4 .0));
+            });
+    }
+}
+
+type EggInfo<'a> = (&'a body::Age, &'a lifecycle::Generation);
+
+pub fn egg_info_panel_system(
+    egg_query: Query<EggInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+) {
+    if let Ok(egg_info) = egg_query.get_single() {
+        egui::Window::new("Egg Info")
+            .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
+            .show(egui_ctx.ctx_mut(), |ui| {
+                ui.label(format!("Age: {}", &egg_info.0));
+                ui.label(format!("Generation: {}", &egg_info.1 .0));
+            });
+    }
+}
+
+type PlantInfo<'a> = &'a Plant;
+
+pub fn plant_info_panel_system(
+    plant_query: Query<PlantInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+) {
+    if let Ok(plant_info) = plant_query.get_single() {
+        egui::Window::new("Plant Info")
+            .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
+            .show(egui_ctx.ctx_mut(), |ui| {
+                ui.label(format!("Energy: {}", &plant_info.energy()));
             });
     }
 }
