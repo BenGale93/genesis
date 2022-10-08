@@ -8,6 +8,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(interaction::move_camera_system)
         .with_system(ui::select_bug_system)
         .with_system(ui::bug_info_panel_system)
+        .with_system(interaction::camera_zooming_system)
 }
 
 pub fn behavior_system_set() -> SystemSet {

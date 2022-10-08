@@ -1,4 +1,4 @@
-use bevy::{prelude::*, render::camera::RenderTarget};
+use bevy::{input::mouse::MouseWheel, prelude::*, render::camera::RenderTarget};
 
 use crate::config;
 
@@ -8,7 +8,7 @@ pub fn move_camera_system(
     mut camera_query: Query<(&mut Transform, &mut OrthographicProjection), With<Camera>>,
 ) {
     let time_delta = time.delta().as_secs_f32();
-    let (mut transform, mut projection) = camera_query.single_mut();
+    let (mut transform, _) = camera_query.single_mut();
     // Panning.
     let mut x_direction = 0.0;
     let mut y_direction = 0.0;
@@ -32,19 +32,23 @@ pub fn move_camera_system(
 
     transform.translation.x = new_x_position;
     transform.translation.y = new_y_position;
+}
 
-    // Zooming
-    let dist = config::ZOOM_SPEED * time_delta;
-    let mut log_scale = projection.scale.ln();
-
-    if kb_input.pressed(KeyCode::PageUp) {
-        log_scale -= dist;
+pub fn camera_zooming_system(
+    mut mouse_wheel_event_reader: EventReader<MouseWheel>,
+    mut query: Query<(&Camera, &mut Transform)>,
+) {
+    let mut zoom_scalar = 1.0;
+    for mouse_wheel_event in mouse_wheel_event_reader.iter() {
+        zoom_scalar *= 1.0 - config::ZOOM_SPEED * mouse_wheel_event.y;
     }
-    if kb_input.pressed(KeyCode::PageDown) {
-        log_scale += dist;
-    }
 
-    projection.scale = log_scale.exp();
+    for (_, mut transform) in query.iter_mut() {
+        // BUG: for some reason, when camera scale < 1.0, things just disappear!
+        let zoomed = transform.scale * zoom_scalar;
+        let limited = Vec3::new(zoomed.x.max(1.0), zoomed.y.max(1.0), zoomed.z.max(1.0));
+        transform.scale = limited;
+    }
 }
 
 pub fn get_cursor_position(
