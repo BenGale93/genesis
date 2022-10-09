@@ -42,10 +42,10 @@ pub fn select_sprite_system(
             commands.entity(entity).remove::<Selected>();
             sprite.color = Color::WHITE;
         }
-        rapier_context.intersections_with_point(world_pos, filter, |entity| {
-            for (test_entity, mut sprite) in sprite_query.iter_mut() {
-                if test_entity == entity {
-                    commands.entity(entity).insert(Selected);
+        rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
+            for (entity, mut sprite) in sprite_query.iter_mut() {
+                if selected_entity == entity {
+                    commands.entity(selected_entity).insert(Selected);
                     sprite.color = Color::RED;
                 }
             }
