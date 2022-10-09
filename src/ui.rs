@@ -1,5 +1,8 @@
 use bevy::{ecs::schedule::ShouldRun, prelude::*};
-use bevy_egui::{egui, EguiContext};
+use bevy_egui::{
+    egui::{self, WidgetText},
+    EguiContext,
+};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
 use crate::{
@@ -67,10 +70,11 @@ pub fn select_sprite_system(
 #[derive(Debug, Default)]
 pub struct PanelState {
     pub bug_info_panel_state: BugInfoPanel,
+    pub egg_info_panel_state: EggInfoPanel,
 }
 
-fn bug_info_window() -> egui::Window<'static> {
-    egui::Window::new("Bug Info").anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
+fn top_left_info_window(title: impl Into<WidgetText>) -> egui::Window<'static> {
+    egui::Window::new(title).anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -80,7 +84,7 @@ pub enum BugInfoPanel {
     Attributes,
 }
 
-fn panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
+fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
     ui.horizontal(|ui| {
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Live, "Live");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
@@ -103,15 +107,15 @@ pub fn bug_live_info_system(
 ) {
     if let Ok(bug_info) = bug_query.get_single() {
         if panel_state.bug_info_panel_state == BugInfoPanel::Live {
-            bug_info_window().show(egui_ctx.ctx_mut(), |ui| {
-                panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                live_sub_panel(ui, &bug_info);
+            top_left_info_window("Bug Live Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_live_sub_panel(ui, &bug_info);
             });
         }
     }
 }
 
-fn live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
+fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Age: {}", &bug_info.0));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
@@ -141,15 +145,15 @@ pub fn bug_attribute_info_system(
 ) {
     if let Ok(bug_info) = bug_query.get_single() {
         if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
-            bug_info_window().show(egui_ctx.ctx_mut(), |ui| {
-                panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                attribute_sub_panel(ui, &bug_info);
+            top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_attribute_sub_panel(ui, &bug_info);
             });
         }
     }
 }
 
-fn attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
+fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ui.label(format!("Adult Age: {}", &bug_info.0.value()));
     ui.label(format!("Death Age: {}", &bug_info.1.value()));
     ui.label(format!("Eye angle: {:.3}", &bug_info.2.value()));
@@ -168,25 +172,62 @@ fn attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ));
 }
 
-type EggInfo<'a> = (
-    &'a body::Age,
-    &'a attributes::HatchAge,
-    &'a lifecycle::Generation,
-);
+#[derive(Debug, PartialEq, Default)]
+pub enum EggInfoPanel {
+    #[default]
+    Live,
+    Attributes,
+}
 
-pub fn egg_info_panel_system(
-    egg_query: Query<EggInfo, With<Selected>>,
+fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel) {
+    ui.horizontal(|ui| {
+        ui.selectable_value(egg_info_panel_state, EggInfoPanel::Live, "Live");
+        ui.selectable_value(egg_info_panel_state, EggInfoPanel::Attributes, "Attributes");
+    });
+    ui.end_row();
+}
+
+type EggLiveInfo<'a> = (&'a body::Age, &'a lifecycle::Generation);
+
+pub fn egg_live_info_panel_system(
+    egg_query: Query<EggLiveInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
 ) {
     if let Ok(egg_info) = egg_query.get_single() {
-        egui::Window::new("Egg Info")
-            .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
-            .show(egui_ctx.ctx_mut(), |ui| {
-                ui.label(format!("Age: {}", &egg_info.0));
-                ui.label(format!("Hatch age: {}", &egg_info.1.value()));
-                ui.label(format!("Generation: {}", &egg_info.2 .0));
+        if panel_state.egg_info_panel_state == EggInfoPanel::Live {
+            top_left_info_window("Egg Live Info").show(egui_ctx.ctx_mut(), |ui| {
+                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+                egg_live_sub_panel(ui, &egg_info);
             });
+        }
     }
+}
+
+fn egg_live_sub_panel(ui: &mut egui::Ui, egg_info: &EggLiveInfo) {
+    ui.label(format!("Age: {}", &egg_info.0));
+    ui.label(format!("Generation: {}", &egg_info.1 .0));
+}
+
+type EggAttributeInfo<'a> = &'a attributes::HatchAge;
+
+pub fn egg_attribute_info_panel_system(
+    egg_query: Query<EggAttributeInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(egg_info) = egg_query.get_single() {
+        if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
+            top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+                egg_attribute_sub_panel(ui, &egg_info);
+            });
+        }
+    }
+}
+
+fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: &EggAttributeInfo) {
+    ui.label(format!("Hatch age: {}", egg_info.value()));
 }
 
 type PlantInfo<'a> = &'a Plant;
@@ -196,10 +237,8 @@ pub fn plant_info_panel_system(
     mut egui_ctx: ResMut<EguiContext>,
 ) {
     if let Ok(plant_info) = plant_query.get_single() {
-        egui::Window::new("Plant Info")
-            .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
-            .show(egui_ctx.ctx_mut(), |ui| {
-                ui.label(format!("Energy: {}", &plant_info.energy()));
-            });
+        top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
+            ui.label(format!("Energy: {}", &plant_info.energy()));
+        });
     }
 }
