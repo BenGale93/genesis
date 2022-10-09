@@ -3,7 +3,7 @@ use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
 use crate::{
-    body,
+    attributes, body,
     ecosystem::{self, Plant},
     interaction, lifecycle,
     sight::Vision,
@@ -81,7 +81,11 @@ pub fn bug_info_panel_system(
     }
 }
 
-type EggInfo<'a> = (&'a body::Age, &'a lifecycle::Generation);
+type EggInfo<'a> = (
+    &'a body::Age,
+    &'a attributes::HatchAge,
+    &'a lifecycle::Generation,
+);
 
 pub fn egg_info_panel_system(
     egg_query: Query<EggInfo, With<Selected>>,
@@ -92,7 +96,8 @@ pub fn egg_info_panel_system(
             .anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
             .show(egui_ctx.ctx_mut(), |ui| {
                 ui.label(format!("Age: {}", &egg_info.0));
-                ui.label(format!("Generation: {}", &egg_info.1 .0));
+                ui.label(format!("Hatch age: {}", &egg_info.1.value()));
+                ui.label(format!("Generation: {}", &egg_info.2 .0));
             });
     }
 }
