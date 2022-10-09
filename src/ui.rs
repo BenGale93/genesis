@@ -7,6 +7,7 @@ use crate::{
     ecosystem::{self, Plant},
     interaction, lifecycle,
     sight::Vision,
+    spawn::OriginalColor,
 };
 
 pub fn energy_ui_update_system(
@@ -30,7 +31,7 @@ pub fn select_sprite_system(
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut sprite_query: Query<(Entity, &mut Sprite)>,
+    mut sprite_query: Query<(Entity, &mut Sprite, &OriginalColor)>,
 ) {
     let filter = QueryFilter::default();
     if !mouse_button.pressed(MouseButton::Left) {
@@ -38,12 +39,12 @@ pub fn select_sprite_system(
     }
     // check if the cursor is inside the window and get its position
     if let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) {
-        for (entity, mut sprite) in sprite_query.iter_mut() {
+        for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
             commands.entity(entity).remove::<Selected>();
-            sprite.color = Color::WHITE;
+            sprite.color = original_color.0;
         }
         rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
-            for (entity, mut sprite) in sprite_query.iter_mut() {
+            for (entity, mut sprite, _) in sprite_query.iter_mut() {
                 if selected_entity == entity {
                     commands.entity(selected_entity).insert(Selected);
                     sprite.color = Color::RED;
