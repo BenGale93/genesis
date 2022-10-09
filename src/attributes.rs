@@ -271,7 +271,7 @@ pub struct HatchAge {
 
 impl HatchAge {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(10.0, 30.0, 1, 80, 10)
+        AttributeConfig::new(30.0, 60.0, 1, 80, 10)
     }
 }
 

@@ -12,6 +12,9 @@ type BugParts<'a> = (
     lifecycle::Generation,
 );
 
+#[derive(Component, Debug, Deref, DerefMut)]
+pub struct OriginalColor(pub Color);
+
 pub fn spawn_bug(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -26,16 +29,20 @@ pub fn spawn_bug(
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
 
+    let original_color = OriginalColor(Color::WHITE);
+
     commands
         .spawn()
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(size, size)),
+                color: original_color.0,
                 ..default()
             },
             ..default()
         })
+        .insert(original_color)
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 1.0,
@@ -100,6 +107,7 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
     let size = 10.0;
     let range = config::WorldConfig::global().world_size_range();
     let mut rng = rand::thread_rng();
+    let original_color = OriginalColor(Color::GREEN);
 
     commands
         .spawn()
@@ -107,10 +115,12 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
             texture: asset_server.load("food.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(size, size)),
+                color: original_color.0,
                 ..default()
             },
             ..default()
         })
+        .insert(original_color)
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 1.0,
@@ -163,6 +173,7 @@ pub fn spawn_egg(
     let size = 16.0;
 
     let attribute_bundle = attributes::EggAttributeBundle::new(bug_body.genome());
+    let original_color = OriginalColor(Color::WHITE);
 
     commands
         .spawn()
@@ -170,10 +181,12 @@ pub fn spawn_egg(
             texture: asset_server.load("egg.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(size, size)),
+                color: original_color.0,
                 ..default()
             },
             ..default()
         })
+        .insert(original_color)
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 1.0,

@@ -1,117 +1,244 @@
-use bevy::prelude::*;
-use bevy_rapier2d::prelude::Velocity;
+use bevy::{ecs::schedule::ShouldRun, prelude::*};
+use bevy_egui::{
+    egui::{self, WidgetText},
+    EguiContext,
+};
+use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
-use crate::{body, ecosystem, interaction, lifecycle, mind, sight::Vision};
-
-#[derive(Component)]
-pub struct EnergyText;
+use crate::{
+    attributes, body,
+    ecosystem::{self, Plant},
+    interaction, lifecycle,
+    sight::Vision,
+    spawn::OriginalColor,
+};
 
 pub fn energy_ui_update_system(
+    mut egui_ctx: ResMut<EguiContext>,
     ecosystem: Res<ecosystem::Ecosystem>,
-    mut query: Query<&mut Text, With<EnergyText>>,
 ) {
-    for mut text in &mut query {
-        let energy = ecosystem.available_energy();
-        text.sections[1].value = format!("{energy}");
+    let energy = ecosystem.available_energy();
+    egui::Window::new("Global Info")
+        .anchor(egui::Align2::RIGHT_BOTTOM, [-5.0, -5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.label(format!("Global Energy: {energy}"));
+        });
+}
+
+pub fn run_if_not_using_egui(mut egui_context: ResMut<EguiContext>) -> ShouldRun {
+    let ctx = egui_context.ctx_mut();
+    if ctx.is_using_pointer() || ctx.is_pointer_over_area() {
+        ShouldRun::No
+    } else {
+        ShouldRun::Yes
     }
 }
 
 #[derive(Component)]
 pub struct Selected;
 
-pub fn select_bug_system(
+pub fn select_sprite_system(
     mut commands: Commands,
+    rapier_context: Res<RapierContext>,
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut bug_query: Query<(Entity, &Transform, &mut Sprite), With<mind::Mind>>,
+    mut sprite_query: Query<(Entity, &mut Sprite, &OriginalColor)>,
 ) {
+    let filter = QueryFilter::default();
     if !mouse_button.pressed(MouseButton::Left) {
         return;
     }
     // check if the cursor is inside the window and get its position
     if let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) {
-        for (entity, transform, mut sprite) in bug_query.iter_mut() {
-            let dist = (world_pos - transform.translation.truncate()).length();
-            if dist < 9.0 {
-                commands.entity(entity).insert(Selected);
-                sprite.color = Color::RED;
-            } else {
-                commands.entity(entity).remove::<Selected>();
-                sprite.color = Color::WHITE;
-            }
+        for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
+            commands.entity(entity).remove::<Selected>();
+            sprite.color = original_color.0;
         }
+        rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
+            for (entity, mut sprite, _) in sprite_query.iter_mut() {
+                if selected_entity == entity {
+                    commands.entity(selected_entity).insert(Selected);
+                    sprite.color = Color::RED;
+                }
+            }
+            false
+        });
     }
 }
 
-type BugInfo<'a> = (
-    &'a Transform,
+#[derive(Debug, Default)]
+pub struct PanelState {
+    pub bug_info_panel_state: BugInfoPanel,
+    pub egg_info_panel_state: EggInfoPanel,
+}
+
+fn top_left_info_window(title: impl Into<WidgetText>) -> egui::Window<'static> {
+    egui::Window::new(title).anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
+}
+
+#[derive(Debug, PartialEq, Default)]
+pub enum BugInfoPanel {
+    #[default]
+    Live,
+    Attributes,
+}
+
+fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
+    ui.horizontal(|ui| {
+        ui.selectable_value(bug_info_panel_state, BugInfoPanel::Live, "Live");
+        ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
+    });
+    ui.end_row();
+}
+
+type BugLiveInfo<'a> = (
     &'a body::Age,
     &'a body::Vitality,
-    &'a Velocity,
     &'a Vision,
     &'a body::InternalTimer,
     &'a lifecycle::Generation,
 );
 
-fn populate_bug_info(bug_info: &BugInfo, mut info_text: Query<&mut Text, With<BugInfoText>>) {
-    let mut text = info_text.single_mut();
-    text.sections[1].value = format!("\nPosition: {}", &bug_info.0.translation.truncate());
-    text.sections[2].value = format!("\nRotation: {}", &bug_info.0.rotation.z);
-    text.sections[3].value = format!("\nAge: {}", &bug_info.1);
-    text.sections[4].value = format!("\nEnergy: {}", &bug_info.2.energy_store());
-    text.sections[5].value = format!("\nHealth: {}", &bug_info.2.health());
-    text.sections[6].value = format!("\nVelocity: {}", &bug_info.3.linvel);
-    text.sections[7].value = format!("\nVisible Bugs: {}", &bug_info.4.visible_bugs());
-    text.sections[8].value = format!("\nVisible Food: {}", &bug_info.4.visible_food());
-    text.sections[9].value = format!("\nInternal Timer: {}", &bug_info.5);
-    text.sections[10].value = format!("\nGeneration: {}", &bug_info.6 .0);
-}
-
-fn spawn_info_panel(commands: &mut Commands, asset_server: Res<AssetServer>) {
-    let text_style = TextStyle {
-        font: asset_server.load("fonts/calibri.ttf"),
-        font_size: 30.0,
-        color: Color::WHITE,
-    };
-    commands
-        .spawn_bundle(
-            // Create a TextBundle that has a Text with a list of sections.
-            TextBundle::from_sections([
-                TextSection::new("Bug Info", text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style.clone()),
-                TextSection::from_style(text_style),
-            ])
-            .with_style(Style {
-                align_self: AlignSelf::FlexEnd,
-                ..default()
-            }),
-        )
-        .insert(BugInfoText);
-}
-
-#[derive(Component)]
-pub struct BugInfoText;
-
-pub fn selected_bug_system(
-    mut commands: Commands,
-    bug_query: Query<BugInfo, With<Selected>>,
-    info_panel_query: Query<Entity, With<BugInfoText>>,
-    info_text: Query<&mut Text, With<BugInfoText>>,
-    asset_server: Res<AssetServer>,
+pub fn bug_live_info_system(
+    bug_query: Query<BugLiveInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
 ) {
-    match (bug_query.get_single(), info_panel_query.get_single()) {
-        (Ok(_), Err(_)) => spawn_info_panel(&mut commands, asset_server),
-        (Err(_), Ok(info_panel)) => commands.entity(info_panel).despawn(),
-        (Ok(bug_info), Ok(_)) => populate_bug_info(&bug_info, info_text),
-        _ => (),
+    if let Ok(bug_info) = bug_query.get_single() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Live {
+            top_left_info_window("Bug Live Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_live_sub_panel(ui, &bug_info);
+            });
+        }
+    }
+}
+
+fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
+    ui.label(format!("Age: {}", &bug_info.0));
+    ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
+    ui.label(format!("Health: {}", &bug_info.1.health()));
+    ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
+    ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
+    ui.label(format!("Internal timer: {}", &bug_info.3));
+    ui.label(format!("Generation: {}", &bug_info.4 .0));
+}
+
+type BugAttributeInfo<'a> = (
+    &'a attributes::AdultAge,
+    &'a attributes::DeathAge,
+    &'a attributes::EyeAngle,
+    &'a attributes::EyeRange,
+    &'a attributes::MaxRotationRate,
+    &'a attributes::MaxSpeed,
+    &'a attributes::MutationProbability,
+    &'a attributes::OffspringEnergy,
+    &'a attributes::LayEggBoundary,
+    &'a attributes::InternalTimerBoundary,
+);
+
+pub fn bug_attribute_info_system(
+    bug_query: Query<BugAttributeInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(bug_info) = bug_query.get_single() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
+            top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_attribute_sub_panel(ui, &bug_info);
+            });
+        }
+    }
+}
+
+fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
+    ui.label(format!("Adult Age: {}", &bug_info.0.value()));
+    ui.label(format!("Death Age: {}", &bug_info.1.value()));
+    ui.label(format!("Eye angle: {:.3}", &bug_info.2.value()));
+    ui.label(format!("Eye range: {}", &bug_info.3.value()));
+    ui.label(format!("Max rotation: {}", &bug_info.4.value()));
+    ui.label(format!("Max speed: {}", &bug_info.5.value()));
+    ui.label(format!(
+        "Mutation Probability: {:.3}",
+        &bug_info.6.value().as_float()
+    ));
+    ui.label(format!("Offspring energy: {}", &bug_info.7.value()));
+    ui.label(format!("Lay egg boundary: {:.3}", &bug_info.8.value()));
+    ui.label(format!(
+        "Internal timer boundary: {:.3}",
+        &bug_info.9.value()
+    ));
+}
+
+#[derive(Debug, PartialEq, Default)]
+pub enum EggInfoPanel {
+    #[default]
+    Live,
+    Attributes,
+}
+
+fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel) {
+    ui.horizontal(|ui| {
+        ui.selectable_value(egg_info_panel_state, EggInfoPanel::Live, "Live");
+        ui.selectable_value(egg_info_panel_state, EggInfoPanel::Attributes, "Attributes");
+    });
+    ui.end_row();
+}
+
+type EggLiveInfo<'a> = (&'a body::Age, &'a lifecycle::Generation);
+
+pub fn egg_live_info_panel_system(
+    egg_query: Query<EggLiveInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(egg_info) = egg_query.get_single() {
+        if panel_state.egg_info_panel_state == EggInfoPanel::Live {
+            top_left_info_window("Egg Live Info").show(egui_ctx.ctx_mut(), |ui| {
+                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+                egg_live_sub_panel(ui, &egg_info);
+            });
+        }
+    }
+}
+
+fn egg_live_sub_panel(ui: &mut egui::Ui, egg_info: &EggLiveInfo) {
+    ui.label(format!("Age: {}", &egg_info.0));
+    ui.label(format!("Generation: {}", &egg_info.1 .0));
+}
+
+type EggAttributeInfo<'a> = &'a attributes::HatchAge;
+
+pub fn egg_attribute_info_panel_system(
+    egg_query: Query<EggAttributeInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(egg_info) = egg_query.get_single() {
+        if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
+            top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+                egg_attribute_sub_panel(ui, &egg_info);
+            });
+        }
+    }
+}
+
+fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: &EggAttributeInfo) {
+    ui.label(format!("Hatch age: {}", egg_info.value()));
+}
+
+type PlantInfo<'a> = &'a Plant;
+
+pub fn plant_info_panel_system(
+    plant_query: Query<PlantInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+) {
+    if let Ok(plant_info) = plant_query.get_single() {
+        top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
+            ui.label(format!("Energy: {}", &plant_info.energy()));
+        });
     }
 }

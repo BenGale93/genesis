@@ -25,9 +25,9 @@ impl Energy {
             output.push(new_energy);
         }
 
-        for i in 0..starting_energy {
-            output[i as usize] += 1;
-        }
+        (0..starting_energy).for_each(|i| {
+            output[i] += 1;
+        });
 
         output.iter().map(|&e| Energy::new(e)).collect()
     }
