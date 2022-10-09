@@ -12,6 +12,7 @@ fn main() {
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1000.0))
         .add_plugin(RapierDebugRenderPlugin::default())
         .insert_resource(config::BACKGROUND)
+        .insert_resource(ui::PanelState::default())
         .insert_resource(WindowDescriptor {
             title: "Genesis".to_string(),
             ..default()
