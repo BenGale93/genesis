@@ -27,6 +27,7 @@ fn main() {
         .add_system_set(systems::plant_spawning_system_set())
         .add_system_set(systems::slow_behavior_system_set())
         .add_system_set(systems::burnt_energy_system_set())
+        .add_system_set(systems::selection_system_set())
         .add_system(ui::energy_ui_update_system)
         .run();
 }

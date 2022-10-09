@@ -6,11 +6,16 @@ pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(interaction::move_camera_system)
-        .with_system(ui::select_sprite_system)
         .with_system(ui::bug_info_panel_system)
         .with_system(ui::egg_info_panel_system)
         .with_system(ui::plant_info_panel_system)
         .with_system(interaction::camera_zooming_system)
+}
+
+pub fn selection_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_run_criteria(ui::run_if_not_using_egui)
+        .with_system(ui::select_sprite_system)
 }
 
 pub fn behavior_system_set() -> SystemSet {

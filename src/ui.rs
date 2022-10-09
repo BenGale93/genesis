@@ -1,4 +1,4 @@
-use bevy::prelude::*;
+use bevy::{ecs::schedule::ShouldRun, prelude::*};
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
@@ -20,6 +20,15 @@ pub fn energy_ui_update_system(
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.label(format!("Global Energy: {energy}"));
         });
+}
+
+pub fn run_if_not_using_egui(mut egui_context: ResMut<EguiContext>) -> ShouldRun {
+    let ctx = egui_context.ctx_mut();
+    if ctx.is_using_pointer() || ctx.is_pointer_over_area() {
+        ShouldRun::No
+    } else {
+        ShouldRun::Yes
+    }
 }
 
 #[derive(Component)]
