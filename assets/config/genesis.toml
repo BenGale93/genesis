@@ -7,6 +7,63 @@ health_energy = 200
 eating_cost = 10
 rotation_cost = 0.1
 translation_cost = 0.1
-world_size = 2000.0
+world_size = 1000.0
 world_energy = 30000
 plant_energy = 100
+
+[attributes]
+hatch_age = [
+    30.0,
+    60.0,
+    15,
+]
+adult_age = [
+    50.0,
+    70.0,
+    20,
+]
+death_age = [
+    600.0,
+    700.0,
+    50,
+]
+mutation_probability = [
+    0.01,
+    0.35,
+    100,
+]
+max_speed = [
+    100.0,
+    500.0,
+    100,
+]
+max_rotation = [
+    10.0,
+    30.0,
+    20,
+]
+eye_range = [
+    200.0,
+    700.0,
+    100,
+]
+eye_angle = [
+    360.0,
+    30.0,
+    100,
+]
+internal_timer_boundary = [
+    -0.5,
+    0.5,
+    20,
+]
+lay_egg_boundary = [
+    0.0,
+    0.8,
+    30,
+]
+offspring_energy = [
+    400.0,
+    600.0,
+    50,
+]

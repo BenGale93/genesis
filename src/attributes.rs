@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use genesis_genome::Genome;
 use genesis_util::Probability;
 
+use crate::config;
+
 const GENOME_READ_ERROR: &str = "Expected to be able to read from here";
 
 #[derive(Debug)]
@@ -65,7 +67,8 @@ pub struct AdultAge {
 
 impl AdultAge {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(30.0, 50.0, 1, 10, 10)
+        let (min, max, length) = config::WorldConfig::global().attributes.adult_age;
+        AttributeConfig::new(min, max, 0, 0, length)
     }
 }
 
@@ -79,7 +82,8 @@ pub struct DeathAge {
 
 impl DeathAge {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(600.0, 700.0, 1, 10, 10)
+        let (min, max, length) = config::WorldConfig::global().attributes.death_age;
+        AttributeConfig::new(min, max, 0, 4, length)
     }
 }
 
@@ -108,7 +112,10 @@ impl MutationProbability {
     }
 
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(0.0, 0.2, 2, 0, 100)
+        let (min, max, length) = config::WorldConfig::global()
+            .attributes
+            .mutation_probability;
+        AttributeConfig::new(min, max, 1, 0, length)
     }
 }
 
@@ -120,7 +127,8 @@ pub struct MaxSpeed {
 
 impl MaxSpeed {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(100.0, 500.0, 0, 0, 100)
+        let (min, max, length) = config::WorldConfig::global().attributes.max_speed;
+        AttributeConfig::new(min, max, 2, 0, length)
     }
 }
 
@@ -134,7 +142,8 @@ pub struct MaxRotationRate {
 
 impl MaxRotationRate {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(10.0, 30.0, 0, 0, 20)
+        let (min, max, length) = config::WorldConfig::global().attributes.max_rotation;
+        AttributeConfig::new(min, max, 0, 20, length)
     }
 }
 
@@ -148,7 +157,8 @@ pub struct EyeRange {
 
 impl EyeRange {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(200.0, 700.0, 2, 20, 50)
+        let (min, max, length) = config::WorldConfig::global().attributes.eye_range;
+        AttributeConfig::new(min, max, 3, 0, length)
     }
 }
 
@@ -162,7 +172,8 @@ pub struct EyeAngle {
 
 impl EyeAngle {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(f32::to_radians(30.0), f32::to_radians(360.0), 2, 50, 50)
+        let (min, max, length) = config::WorldConfig::global().attributes.eye_angle;
+        AttributeConfig::new(f32::to_radians(min), f32::to_radians(max), 3, 0, length)
     }
 }
 
@@ -176,7 +187,10 @@ pub struct InternalTimerBoundary {
 
 impl InternalTimerBoundary {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(-0.5, 0.5, 0, 70, 10)
+        let (min, max, length) = config::WorldConfig::global()
+            .attributes
+            .internal_timer_boundary;
+        AttributeConfig::new(min, max, 4, 0, length)
     }
 }
 
@@ -190,7 +204,8 @@ pub struct LayEggBoundary {
 
 impl LayEggBoundary {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(0.0, 0.9, 0, 70, 10)
+        let (min, max, length) = config::WorldConfig::global().attributes.lay_egg_boundary;
+        AttributeConfig::new(min, max, 4, 30, length)
     }
 }
 
@@ -217,7 +232,8 @@ impl OffspringEnergy {
         self.value
     }
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(400.0, 600.0, 0, 50, 50)
+        let (min, max, length) = config::WorldConfig::global().attributes.death_age;
+        AttributeConfig::new(min, max, 10, 0, length)
     }
 }
 
@@ -271,7 +287,8 @@ pub struct HatchAge {
 
 impl HatchAge {
     fn default_config() -> AttributeConfig {
-        AttributeConfig::new(30.0, 60.0, 1, 80, 10)
+        let (min, max, length) = config::WorldConfig::global().attributes.hatch_age;
+        AttributeConfig::new(min, max, 10, 5, length)
     }
 }
 
