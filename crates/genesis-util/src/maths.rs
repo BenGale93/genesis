@@ -21,6 +21,10 @@ pub fn closest_object(distances: &[f32]) -> Option<usize> {
         .map(|(index, _)| index)
 }
 
+pub fn linear_interpolate(x: f32, x_min: f32, x_max: f32, y_min: f32, y_max: f32) -> f32 {
+    (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min)
+}
+
 #[derive(Debug)]
 pub struct Cone {
     point: Vec3,

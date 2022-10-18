@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use genesis_genome::Genome;
-use genesis_util::Probability;
+use genesis_util::{maths::linear_interpolate, Probability};
 
 use crate::config;
 
@@ -123,31 +123,96 @@ impl MutationProbability {
 pub struct MaxSpeed {
     value: f32,
     config: AttributeConfig,
+    cost: f32,
 }
 
 impl MaxSpeed {
+    fn new(value: f32, config: AttributeConfig) -> Self {
+        let cost = Self::compute_cost(value, &config);
+        Self {
+            value,
+            config,
+            cost,
+        }
+    }
+
+    pub fn value(&self) -> f32 {
+        self.value
+    }
+
+    pub fn cost(&self) -> f32 {
+        self.cost
+    }
+
+    pub fn from_genome(genome: &Genome) -> Self {
+        let attribute_config = Self::default_config();
+        let value = attribute_config.read_genome(genome);
+        Self::new(value, attribute_config)
+    }
+
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.max_speed;
         AttributeConfig::new(min, max, 2, 0, length)
     }
-}
 
-impl_attribute!(MaxSpeed);
+    fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
+        let cost_bounds = config::WorldConfig::global().translation_cost;
+        linear_interpolate(
+            value,
+            config.lower,
+            config.upper,
+            cost_bounds.0,
+            cost_bounds.1,
+        )
+    }
+}
 
 #[derive(Component, Debug)]
 pub struct MaxRotationRate {
     value: f32,
     config: AttributeConfig,
+    cost: f32,
 }
 
 impl MaxRotationRate {
+    fn new(value: f32, config: AttributeConfig) -> Self {
+        let cost = Self::compute_cost(value, &config);
+        Self {
+            value,
+            config,
+            cost,
+        }
+    }
+
+    pub fn value(&self) -> f32 {
+        self.value
+    }
+
+    pub fn cost(&self) -> f32 {
+        self.cost
+    }
+
+    pub fn from_genome(genome: &Genome) -> Self {
+        let attribute_config = Self::default_config();
+        let value = attribute_config.read_genome(genome);
+        Self::new(value, attribute_config)
+    }
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.max_rotation;
         AttributeConfig::new(min, max, 0, 20, length)
     }
-}
 
-impl_attribute!(MaxRotationRate);
+    fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
+        let cost_bounds = config::WorldConfig::global().rotation_cost;
+        linear_interpolate(
+            value,
+            config.lower,
+            config.upper,
+            cost_bounds.0,
+            cost_bounds.1,
+        )
+    }
+}
 
 #[derive(Component, Debug)]
 pub struct EyeRange {
