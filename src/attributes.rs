@@ -277,6 +277,21 @@ impl LayEggBoundary {
 impl_attribute!(LayEggBoundary);
 
 #[derive(Component, Debug)]
+pub struct EatingBoundary {
+    value: f32,
+    config: AttributeConfig,
+}
+
+impl EatingBoundary {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.eating_boundary;
+        AttributeConfig::new(min, max, 4, 50, length)
+    }
+}
+
+impl_attribute!(EatingBoundary);
+
+#[derive(Component, Debug)]
 pub struct OffspringEnergy {
     value: usize,
     config: AttributeConfig,
@@ -313,6 +328,7 @@ pub struct AttributeBundle {
     pub eye_angle: EyeAngle,
     pub internal_timer_boundary: InternalTimerBoundary,
     pub lay_egg_boundary: LayEggBoundary,
+    pub eating_boundary: EatingBoundary,
     pub offspring_energy: OffspringEnergy,
 }
 
@@ -327,6 +343,7 @@ impl AttributeBundle {
         let eye_angle = EyeAngle::from_genome(genome);
         let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
         let lay_egg_boundary = LayEggBoundary::from_genome(genome);
+        let eating_boundary = EatingBoundary::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
 
         Self {
@@ -339,6 +356,7 @@ impl AttributeBundle {
             eye_angle,
             internal_timer_boundary,
             lay_egg_boundary,
+            eating_boundary,
             offspring_energy,
         }
     }

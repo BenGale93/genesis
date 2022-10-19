@@ -68,6 +68,11 @@ lay_egg_boundary = [
     0.8,
     30,
 ]
+eating_boundary = [
+    -0.5,
+    0.5,
+    20,
+]
 offspring_energy = [
     400.0,
     600.0,

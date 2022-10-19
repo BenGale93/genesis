@@ -136,6 +136,7 @@ type BugAttributeInfo<'a> = (
     &'a attributes::OffspringEnergy,
     &'a attributes::LayEggBoundary,
     &'a attributes::InternalTimerBoundary,
+    &'a attributes::EatingBoundary,
 );
 
 pub fn bug_attribute_info_system(
@@ -172,6 +173,7 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
         "Internal timer boundary: {:.3}",
         &bug_info.9.value()
     ));
+    ui.label(format!("Eating boundary: {:.3}", &bug_info.10.value()));
 }
 
 #[derive(Debug, PartialEq, Default)]

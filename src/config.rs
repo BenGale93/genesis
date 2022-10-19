@@ -55,6 +55,7 @@ pub struct AttributeConfig {
     pub eye_angle: MinMaxLen,
     pub internal_timer_boundary: MinMaxLen,
     pub lay_egg_boundary: MinMaxLen,
+    pub eating_boundary: MinMaxLen,
     pub offspring_energy: MinMaxLen,
 }
 
@@ -71,6 +72,7 @@ impl Default for AttributeConfig {
             eye_angle: (360.0, 30.0, 100),
             internal_timer_boundary: (-0.5, 0.5, 20),
             lay_egg_boundary: (0.0, 0.8, 30),
+            eating_boundary: (-0.5, 0.5, 20),
             offspring_energy: (400.0, 600.0, 50),
         }
     }
