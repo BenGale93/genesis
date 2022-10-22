@@ -91,8 +91,8 @@ pub fn process_sight_system(
         let cone = maths::Cone::new(
             transform.translation,
             transform.rotation,
-            eye_angle.value(),
-            eye_range.value(),
+            **eye_angle,
+            **eye_range,
         )
         .unwrap();
 

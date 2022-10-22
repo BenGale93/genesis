@@ -1,10 +1,19 @@
-use bevy::prelude::*;
+//! Attributes are values that are read from Chromosomes comprised of 0 or 1.
+//!
+//! Adult age and death age are found on chromosome 0.
+//! Mutation probability is found on chromosome 1.
+//! Max speed and max rotation rate are found on chromosome 2.
+//! Translation and rotation costs are linear interpolations of max speed
+//! and max rotation.
+//! Eye range and angle are on chromosome 3 and can either be exactly correlated
+//! inversely correlated.
+//! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
+//! Offspring energy and hatch age are on chromosome 10.
+use bevy::prelude::{Bundle, Component, Deref};
 use genesis_genome::Genome;
 use genesis_util::{maths::linear_interpolate, Probability};
 
 use crate::config;
-
-const GENOME_READ_ERROR: &str = "Expected to be able to read from here";
 
 #[derive(Debug)]
 struct AttributeConfig {
@@ -35,35 +44,29 @@ impl AttributeConfig {
                 self.start,
                 self.length,
             )
-            .expect(GENOME_READ_ERROR)
+            .unwrap_or_else(|_| {
+                panic!(
+                    "Expected to be able to read from chromosome {} at {} for {}",
+                    self.chromosome, self.start, self.length
+                )
+            })
     }
 }
 
-macro_rules! impl_attribute {
+macro_rules! impl_from_genome {
     ($name:ident) => {
         impl $name {
-            fn new(value: f32, config: AttributeConfig) -> Self {
-                Self { value, config }
-            }
-
-            pub fn value(&self) -> f32 {
-                self.value
-            }
-
             pub fn from_genome(genome: &Genome) -> Self {
                 let attribute_config = Self::default_config();
                 let value = attribute_config.read_genome(genome);
-                Self::new(value, attribute_config)
+                $name(value.into())
             }
         }
     };
 }
 
-#[derive(Component, Debug)]
-pub struct AdultAge {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct AdultAge(f32);
 
 impl AdultAge {
     fn default_config() -> AttributeConfig {
@@ -72,13 +75,10 @@ impl AdultAge {
     }
 }
 
-impl_attribute!(AdultAge);
+impl_from_genome!(AdultAge);
 
-#[derive(Component, Debug)]
-pub struct DeathAge {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct DeathAge(f32);
 
 impl DeathAge {
     fn default_config() -> AttributeConfig {
@@ -87,28 +87,17 @@ impl DeathAge {
     }
 }
 
-impl_attribute!(DeathAge);
+impl_from_genome!(DeathAge);
 
-#[derive(Component, Debug)]
-pub struct MutationProbability {
-    value: Probability,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct MutationProbability(Probability);
 
 impl MutationProbability {
-    fn new(value: Probability, config: AttributeConfig) -> Self {
-        Self { value, config }
-    }
-
     pub fn from_genome(genome: &Genome) -> Self {
         let attribute_config = Self::default_config();
         let value = Probability::new(attribute_config.read_genome(genome) as f64)
             .expect("Expected to be between 0.0 and 1.0.");
-        Self::new(value, attribute_config)
-    }
-
-    pub fn value(&self) -> &Probability {
-        &self.value
+        Self(value)
     }
 
     fn default_config() -> AttributeConfig {
@@ -122,20 +111,10 @@ impl MutationProbability {
 #[derive(Component, Debug)]
 pub struct MaxSpeed {
     value: f32,
-    config: AttributeConfig,
     cost: f32,
 }
 
 impl MaxSpeed {
-    fn new(value: f32, config: AttributeConfig) -> Self {
-        let cost = Self::compute_cost(value, &config);
-        Self {
-            value,
-            config,
-            cost,
-        }
-    }
-
     pub fn value(&self) -> f32 {
         self.value
     }
@@ -147,7 +126,8 @@ impl MaxSpeed {
     pub fn from_genome(genome: &Genome) -> Self {
         let attribute_config = Self::default_config();
         let value = attribute_config.read_genome(genome);
-        Self::new(value, attribute_config)
+        let cost = Self::compute_cost(value, &attribute_config);
+        Self { value, cost }
     }
 
     fn default_config() -> AttributeConfig {
@@ -170,20 +150,10 @@ impl MaxSpeed {
 #[derive(Component, Debug)]
 pub struct MaxRotationRate {
     value: f32,
-    config: AttributeConfig,
     cost: f32,
 }
 
 impl MaxRotationRate {
-    fn new(value: f32, config: AttributeConfig) -> Self {
-        let cost = Self::compute_cost(value, &config);
-        Self {
-            value,
-            config,
-            cost,
-        }
-    }
-
     pub fn value(&self) -> f32 {
         self.value
     }
@@ -195,11 +165,12 @@ impl MaxRotationRate {
     pub fn from_genome(genome: &Genome) -> Self {
         let attribute_config = Self::default_config();
         let value = attribute_config.read_genome(genome);
-        Self::new(value, attribute_config)
+        let cost = Self::compute_cost(value, &attribute_config);
+        Self { value, cost }
     }
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.max_rotation;
-        AttributeConfig::new(min, max, 0, 20, length)
+        AttributeConfig::new(min, max, 2, 20, length)
     }
 
     fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
@@ -214,11 +185,8 @@ impl MaxRotationRate {
     }
 }
 
-#[derive(Component, Debug)]
-pub struct EyeRange {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct EyeRange(f32);
 
 impl EyeRange {
     fn default_config() -> AttributeConfig {
@@ -227,13 +195,10 @@ impl EyeRange {
     }
 }
 
-impl_attribute!(EyeRange);
+impl_from_genome!(EyeRange);
 
-#[derive(Component, Debug)]
-pub struct EyeAngle {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct EyeAngle(f32);
 
 impl EyeAngle {
     fn default_config() -> AttributeConfig {
@@ -242,13 +207,10 @@ impl EyeAngle {
     }
 }
 
-impl_attribute!(EyeAngle);
+impl_from_genome!(EyeAngle);
 
-#[derive(Component, Debug)]
-pub struct InternalTimerBoundary {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct InternalTimerBoundary(f64);
 
 impl InternalTimerBoundary {
     fn default_config() -> AttributeConfig {
@@ -259,13 +221,10 @@ impl InternalTimerBoundary {
     }
 }
 
-impl_attribute!(InternalTimerBoundary);
+impl_from_genome!(InternalTimerBoundary);
 
-#[derive(Component, Debug)]
-pub struct LayEggBoundary {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct LayEggBoundary(f64);
 
 impl LayEggBoundary {
     fn default_config() -> AttributeConfig {
@@ -274,13 +233,10 @@ impl LayEggBoundary {
     }
 }
 
-impl_attribute!(LayEggBoundary);
+impl_from_genome!(LayEggBoundary);
 
-#[derive(Component, Debug)]
-pub struct EatingBoundary {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct EatingBoundary(f64);
 
 impl EatingBoundary {
     fn default_config() -> AttributeConfig {
@@ -289,28 +245,18 @@ impl EatingBoundary {
     }
 }
 
-impl_attribute!(EatingBoundary);
+impl_from_genome!(EatingBoundary);
 
-#[derive(Component, Debug)]
-pub struct OffspringEnergy {
-    value: usize,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct OffspringEnergy(usize);
 
 impl OffspringEnergy {
-    fn new(value: usize, config: AttributeConfig) -> Self {
-        Self { value, config }
-    }
-
     pub fn from_genome(genome: &Genome) -> Self {
         let attribute_config = Self::default_config();
         let value = attribute_config.read_genome(genome) as usize;
-        Self::new(value, attribute_config)
+        Self(value)
     }
 
-    pub fn value(&self) -> usize {
-        self.value
-    }
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.death_age;
         AttributeConfig::new(min, max, 10, 0, length)
@@ -362,11 +308,8 @@ impl AttributeBundle {
     }
 }
 
-#[derive(Component, Debug)]
-pub struct HatchAge {
-    value: f32,
-    config: AttributeConfig,
-}
+#[derive(Component, Debug, Deref)]
+pub struct HatchAge(f32);
 
 impl HatchAge {
     fn default_config() -> AttributeConfig {
@@ -375,7 +318,7 @@ impl HatchAge {
     }
 }
 
-impl_attribute!(HatchAge);
+impl_from_genome!(HatchAge);
 
 #[derive(Bundle, Debug)]
 pub struct EggAttributeBundle {

@@ -155,25 +155,22 @@ pub fn bug_attribute_info_system(
 }
 
 fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
-    ui.label(format!("Adult Age: {}", &bug_info.0.value()));
-    ui.label(format!("Death Age: {}", &bug_info.1.value()));
-    ui.label(format!("Eye angle: {:.3}", &bug_info.2.value()));
-    ui.label(format!("Eye range: {}", &bug_info.3.value()));
+    ui.label(format!("Adult Age: {}", **bug_info.0));
+    ui.label(format!("Death Age: {}", **bug_info.1));
+    ui.label(format!("Eye angle: {:.3}", **bug_info.2));
+    ui.label(format!("Eye range: {}", **bug_info.3));
     ui.label(format!("Max rotation: {}", &bug_info.4.value()));
     ui.label(format!("Rotation cost: {}", &bug_info.4.cost()));
     ui.label(format!("Max speed: {}", &bug_info.5.value()));
     ui.label(format!("Movement cost: {}", &bug_info.5.cost()));
     ui.label(format!(
         "Mutation Probability: {:.3}",
-        &bug_info.6.value().as_float()
+        &bug_info.6.as_float()
     ));
-    ui.label(format!("Offspring energy: {}", &bug_info.7.value()));
-    ui.label(format!("Lay egg boundary: {:.3}", &bug_info.8.value()));
-    ui.label(format!(
-        "Internal timer boundary: {:.3}",
-        &bug_info.9.value()
-    ));
-    ui.label(format!("Eating boundary: {:.3}", &bug_info.10.value()));
+    ui.label(format!("Offspring energy: {}", **bug_info.7));
+    ui.label(format!("Lay egg boundary: {:.3}", **bug_info.8));
+    ui.label(format!("Internal timer boundary: {:.3}", **bug_info.9));
+    ui.label(format!("Eating boundary: {:.3}", **bug_info.10));
 }
 
 #[derive(Debug, PartialEq, Default)]
@@ -231,7 +228,7 @@ pub fn egg_attribute_info_panel_system(
 }
 
 fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: &EggAttributeInfo) {
-    ui.label(format!("Hatch age: {}", egg_info.value()));
+    ui.label(format!("Hatch age: {}", ***egg_info));
 }
 
 type PlantInfo<'a> = &'a Plant;

@@ -155,7 +155,7 @@ pub fn kill_bug_system(
     query: Query<(Entity, &body::Vitality, &attributes::DeathAge, &body::Age)>,
 ) {
     for (entity, vitality, death_age, age) in query.iter() {
-        if vitality.health().amount() == 0 || death_age.value() < age.elapsed_secs() {
+        if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
             commands.entity(entity).despawn();
         }
     }

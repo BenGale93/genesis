@@ -20,7 +20,7 @@ pub fn transition_to_adult_system(
     bug_query: Query<(Entity, &body::Age, &attributes::AdultAge), With<Juvenile>>,
 ) {
     for (entity, age, adult_age) in bug_query.iter() {
-        if age.elapsed_secs() > adult_age.value() {
+        if age.elapsed_secs() > **adult_age {
             commands.entity(entity).remove::<Juvenile>().insert(Adult);
         }
     }
@@ -31,7 +31,7 @@ pub fn transition_to_hatching_system(
     egg_query: Query<(Entity, &body::Age, &attributes::HatchAge), Without<Hatching>>,
 ) {
     for (entity, age, hatch_age) in egg_query.iter() {
-        if age.elapsed_secs() > hatch_age.value() {
+        if age.elapsed_secs() > **hatch_age {
             commands.entity(entity).insert(Hatching);
         }
     }

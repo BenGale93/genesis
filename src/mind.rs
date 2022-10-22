@@ -100,7 +100,7 @@ pub fn reset_internal_timer_system(
     )>,
 ) {
     for (mut internal_timer, mind_out, boundary) in query.iter_mut() {
-        if mind_out[config::RESET_TIMER_INDEX] > boundary.value() as f64 {
+        if mind_out[config::RESET_TIMER_INDEX] > **boundary {
             internal_timer.reset();
         }
     }
@@ -125,7 +125,7 @@ pub fn process_eaters_system(
     eating_query: Query<(Entity, &MindOutput, &attributes::EatingBoundary), With<TryingToEat>>,
 ) {
     for (entity, mind_out, eating_boundary) in not_eating_query.iter() {
-        if mind_out[config::EAT_INDEX] > eating_boundary.value() as f64 {
+        if mind_out[config::EAT_INDEX] > **eating_boundary {
             commands
                 .entity(entity)
                 .insert(TryingToEat(Stopwatch::new()));
@@ -133,7 +133,7 @@ pub fn process_eaters_system(
     }
 
     for (entity, mind_out, eating_boundary) in eating_query.iter() {
-        if mind_out[config::EAT_INDEX] <= eating_boundary.value() as f64 {
+        if mind_out[config::EAT_INDEX] <= **eating_boundary {
             commands.entity(entity).remove::<TryingToEat>();
         }
     }
@@ -196,13 +196,13 @@ pub fn process_layers_system(
     laying_query: Query<LayerTest, (With<TryingToLay>, With<lifecycle::Adult>)>,
 ) {
     for (entity, mind_out, boundary) in not_laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] > boundary.value() as f64 {
+        if mind_out[config::REPRODUCE_INDEX] > **boundary {
             commands.entity(entity).insert(TryingToLay);
         }
     }
 
     for (entity, mind_out, boundary) in laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] <= boundary.value() as f64 {
+        if mind_out[config::REPRODUCE_INDEX] <= **boundary {
             commands.entity(entity).remove::<TryingToLay>();
         }
     }
@@ -239,13 +239,13 @@ pub fn lay_egg_system(
     for (transform, bug_body, mind, prob, mut vitality, offspring_energy, generation) in
         parent_query.iter_mut()
     {
-        if vitality.energy_store().amount() < offspring_energy.value() {
+        if vitality.energy_store().amount() < **offspring_energy {
             continue;
         }
-        let energy = vitality.take_energy(offspring_energy.value());
+        let energy = vitality.take_energy(**offspring_energy);
         let location = egg_position(transform);
-        let offspring_body = bug_body.mutate(&mut rng, *prob.value());
-        let offspring_mind = mind.mutate(&mut rng, *prob.value()).into();
+        let offspring_body = bug_body.mutate(&mut rng, **prob);
+        let offspring_mind = mind.mutate(&mut rng, **prob).into();
         spawn::spawn_egg(
             &mut commands,
             &asset_server,
