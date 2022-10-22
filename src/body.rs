@@ -1,4 +1,4 @@
-use std::{fmt, time::Duration};
+use std::fmt;
 
 use anyhow::{anyhow, Result};
 use bevy::{prelude::*, time::Stopwatch};
@@ -16,8 +16,6 @@ use crate::{
 pub struct BugBody {
     genome: Genome,
 }
-
-const GENOME_READ_ERROR: &str = "Expected to be able to read from here";
 
 impl BugBody {
     pub fn new() -> Self {
@@ -93,13 +91,6 @@ impl EnergyReserve {
     }
 
     #[must_use]
-    pub fn eat(&mut self, plant: &mut Plant) -> Energy {
-        let requested_energy = self.available_space();
-        let extracted_energy = plant.take_energy(requested_energy);
-        self.add_energy(extracted_energy)
-    }
-
-    #[must_use]
     pub fn take_all_energy(&mut self) -> Energy {
         let amount = self.amount();
         self.take_energy(amount)
@@ -154,6 +145,7 @@ impl Vitality {
         &self.health
     }
 
+    #[allow(dead_code)]
     pub fn core_reserve(&self) -> &CoreReserve {
         &self.core_reserve
     }
@@ -219,14 +211,6 @@ impl BurntEnergy {
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct Age(pub Stopwatch);
-
-impl Age {
-    pub fn new(seconds: f32) -> Self {
-        let mut age = Age::default();
-        age.tick(Duration::from_secs_f32(seconds));
-        age
-    }
-}
 
 impl Default for Age {
     fn default() -> Self {

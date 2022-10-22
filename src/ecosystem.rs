@@ -16,22 +16,6 @@ impl Energy {
         self.0
     }
 
-    pub fn split(self, divisor: usize) -> Vec<Self> {
-        let mut output = Vec::new();
-        let mut starting_energy = self.0;
-        for _ in 0..divisor {
-            let new_energy = self.0 / divisor;
-            starting_energy -= new_energy;
-            output.push(new_energy);
-        }
-
-        (0..starting_energy).for_each(|i| {
-            output[i] += 1;
-        });
-
-        output.iter().map(|&e| Energy::new(e)).collect()
-    }
-
     #[must_use]
     pub fn take_energy(&mut self, amount: usize) -> Self {
         let to_return = amount.min(self.0);
@@ -101,8 +85,6 @@ pub fn burnt_energy_system(
 
 #[cfg(test)]
 mod tests {
-    use rstest::rstest;
-
     use super::*;
     use crate::{body::Vitality, config, ecosystem};
 
@@ -114,24 +96,6 @@ mod tests {
 
         assert_eq!(energy.amount(), 20);
         assert_eq!(eco_system.available_energy().amount(), 80);
-    }
-
-    #[rstest]
-    #[case((99,3), vec![33,33,33])]
-    #[case((100,3), vec![34,33,33])]
-    #[case((101,3), vec![34,34,33])]
-    #[case((101,4), vec![26,25,25,25])]
-    fn split_doesnt_create_new_energy(
-        #[case] inputs: (usize, usize),
-        #[case] expected: Vec<usize>,
-    ) {
-        let energy = ecosystem::Energy::new(inputs.0);
-
-        let split_energy = energy.split(inputs.1);
-
-        for (exp, e) in expected.iter().zip(split_energy.iter()) {
-            assert_eq!(&e.amount(), exp);
-        }
     }
 
     #[test]
