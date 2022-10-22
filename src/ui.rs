@@ -136,6 +136,7 @@ type BugAttributeInfo<'a> = (
     &'a attributes::OffspringEnergy,
     &'a attributes::LayEggBoundary,
     &'a attributes::InternalTimerBoundary,
+    &'a attributes::EatingBoundary,
 );
 
 pub fn bug_attribute_info_system(
@@ -159,7 +160,9 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ui.label(format!("Eye angle: {:.3}", &bug_info.2.value()));
     ui.label(format!("Eye range: {}", &bug_info.3.value()));
     ui.label(format!("Max rotation: {}", &bug_info.4.value()));
+    ui.label(format!("Rotation cost: {}", &bug_info.4.cost()));
     ui.label(format!("Max speed: {}", &bug_info.5.value()));
+    ui.label(format!("Movement cost: {}", &bug_info.5.cost()));
     ui.label(format!(
         "Mutation Probability: {:.3}",
         &bug_info.6.value().as_float()
@@ -170,6 +173,7 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
         "Internal timer boundary: {:.3}",
         &bug_info.9.value()
     ));
+    ui.label(format!("Eating boundary: {:.3}", &bug_info.10.value()));
 }
 
 #[derive(Debug, PartialEq, Default)]

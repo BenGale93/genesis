@@ -27,11 +27,11 @@ impl MovementSum {
         (tran_floor + rot_floor) as usize
     }
 
-    fn add_translation(&mut self, translation: f32) {
-        self.translation_sum += translation.abs() * config::WorldConfig::global().translation_cost
+    fn add_translation(&mut self, translation: f32, translation_cost: f32) {
+        self.translation_sum += translation.abs() * translation_cost
     }
-    fn add_rotation(&mut self, rotation: f32) {
-        self.rotation_sum += rotation.abs() * config::WorldConfig::global().rotation_cost
+    fn add_rotation(&mut self, rotation: f32, rotation_cost: f32) {
+        self.rotation_sum += rotation.abs() * rotation_cost
     }
 }
 
@@ -49,11 +49,11 @@ pub fn movement_system(
         query.iter_mut()
     {
         let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
-        movement_sum.add_rotation(rotation_factor);
+        movement_sum.add_rotation(rotation_factor, max_rotation.cost());
         velocity.angvel = rotation_factor * max_rotation.value();
 
         let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
-        movement_sum.add_translation(movement_factor);
+        movement_sum.add_translation(movement_factor, max_speed.cost());
         let speed = movement_factor * max_speed.value();
         velocity.linvel = (speed * transform.local_y()).truncate();
     }
