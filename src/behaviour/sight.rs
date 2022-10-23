@@ -1,6 +1,6 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::*;
+use bevy::prelude::{Component, Quat, Query, Transform, With};
 use genesis_util::maths;
 
 use crate::{

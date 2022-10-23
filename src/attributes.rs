@@ -9,7 +9,8 @@
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
 //! Offspring energy and hatch age are on chromosome 10.
-use bevy::prelude::{Bundle, Component, Deref};
+use bevy::prelude::{Bundle, Component};
+use derive_more::Deref;
 use genesis_genome::Genome;
 use genesis_util::{maths::linear_interpolate, Probability};
 

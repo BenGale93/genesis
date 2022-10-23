@@ -1,16 +1,20 @@
-use bevy::{ecs::schedule::ShouldRun, prelude::*};
-use bevy_egui::{
-    egui::{self, WidgetText},
-    EguiContext,
+use bevy::{
+    ecs::schedule::ShouldRun,
+    prelude::{
+        Camera, Color, Commands, Component, Entity, GlobalTransform, Input, MouseButton, Query,
+        Res, ResMut, With,
+    },
+    sprite::Sprite,
+    window::Windows,
 };
+use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
+use super::interaction;
 use crate::{
-    attributes, body,
-    ecosystem::{self, Plant},
-    interaction, lifecycle,
-    sight::Vision,
-    spawn::OriginalColor,
+    attributes,
+    behaviour::{lifecycle, sight, timers},
+    body, ecosystem,
 };
 
 pub fn energy_ui_update_system(
@@ -43,7 +47,7 @@ pub fn select_sprite_system(
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut sprite_query: Query<(Entity, &mut Sprite, &OriginalColor)>,
+    mut sprite_query: Query<(Entity, &mut Sprite, &body::OriginalColor)>,
 ) {
     let filter = QueryFilter::default();
     if !mouse_button.pressed(MouseButton::Left) {
@@ -73,7 +77,7 @@ pub struct PanelState {
     pub egg_info_panel_state: EggInfoPanel,
 }
 
-fn top_left_info_window(title: impl Into<WidgetText>) -> egui::Window<'static> {
+fn top_left_info_window(title: impl Into<egui::WidgetText>) -> egui::Window<'static> {
     egui::Window::new(title).anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
 }
 
@@ -93,10 +97,10 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
 }
 
 type BugLiveInfo<'a> = (
-    &'a body::Age,
+    &'a timers::Age,
     &'a body::Vitality,
-    &'a Vision,
-    &'a body::InternalTimer,
+    &'a sight::Vision,
+    &'a timers::InternalTimer,
     &'a lifecycle::Generation,
 );
 
@@ -188,7 +192,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
     ui.end_row();
 }
 
-type EggLiveInfo<'a> = (&'a body::Age, &'a lifecycle::Generation);
+type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 
 pub fn egg_live_info_panel_system(
     egg_query: Query<EggLiveInfo, With<Selected>>,
@@ -231,7 +235,7 @@ fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: &EggAttributeInfo) {
     ui.label(format!("Hatch age: {}", ***egg_info));
 }
 
-type PlantInfo<'a> = &'a Plant;
+type PlantInfo<'a> = &'a ecosystem::Plant;
 
 pub fn plant_info_panel_system(
     plant_query: Query<PlantInfo, With<Selected>>,
