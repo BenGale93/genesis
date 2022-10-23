@@ -1,7 +1,7 @@
-use bevy::prelude::*;
+use bevy::prelude::{Component, Query, Transform};
 use bevy_rapier2d::prelude::Velocity;
 
-use crate::{attributes, body, config, mind};
+use crate::{attributes, config, mind};
 
 #[derive(Component, Debug)]
 pub struct MovementSum {
@@ -17,7 +17,7 @@ impl MovementSum {
         }
     }
 
-    fn uint_portion(&mut self) -> usize {
+    pub fn uint_portion(&mut self) -> usize {
         let tran_floor = self.translation_sum.floor();
         self.translation_sum -= tran_floor;
 
@@ -56,18 +56,5 @@ pub fn movement_system(
         movement_sum.add_translation(movement_factor, max_speed.cost());
         let speed = movement_factor * max_speed.value();
         velocity.linvel = (speed * transform.local_y()).truncate();
-    }
-}
-
-pub fn movement_energy_burn_system(
-    mut query: Query<(
-        &mut body::Vitality,
-        &mut MovementSum,
-        &mut body::BurntEnergy,
-    )>,
-) {
-    for (mut vitality, mut movement_sum, mut burnt_energy) in query.iter_mut() {
-        let energy = vitality.take_energy(movement_sum.uint_portion());
-        burnt_energy.add_energy(energy)
     }
 }

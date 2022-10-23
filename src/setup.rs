@@ -1,10 +1,16 @@
-use bevy::prelude::*;
+use bevy::prelude::{Camera2dBundle, Commands, ResMut, SystemSet, Vec2};
 use bevy_rapier2d::prelude::RapierConfiguration;
 
-pub fn camera_setup(mut commands: Commands) {
+fn camera_setup(mut commands: Commands) {
     commands.spawn_bundle(Camera2dBundle::default());
 }
 
-pub fn physics_setup(mut rapier_config: ResMut<RapierConfiguration>) {
+fn physics_setup(mut rapier_config: ResMut<RapierConfiguration>) {
     rapier_config.gravity = Vec2::ZERO;
+}
+
+pub fn setup_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_system(camera_setup)
+        .with_system(physics_setup)
 }

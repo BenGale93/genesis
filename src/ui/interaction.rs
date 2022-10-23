@@ -1,4 +1,13 @@
-use bevy::{input::mouse::MouseWheel, prelude::*, render::camera::RenderTarget};
+use bevy::{
+    input::mouse::MouseWheel,
+    prelude::{
+        Camera, EventReader, GlobalTransform, Input, KeyCode, OrthographicProjection, Query, Res,
+        Transform, Vec2, Vec3, With,
+    },
+    render::camera::RenderTarget,
+    time::Time,
+    window::Windows,
+};
 
 use crate::config;
 
