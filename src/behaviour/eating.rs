@@ -1,5 +1,7 @@
 use bevy::{
-    prelude::{Commands, Component, Entity, Query, Res, Transform, With, Without},
+    prelude::{
+        Commands, Component, DespawnRecursiveExt, Entity, Query, Res, Transform, With, Without,
+    },
     time::Stopwatch,
 };
 use bevy_rapier2d::prelude::RapierContext;
@@ -58,7 +60,7 @@ pub fn eating_system(
                         let leftover = vitality.eat(&mut plant_energy);
                         burnt_energy.add_energy(leftover);
                         if plant_energy.energy().amount() == 0 {
-                            commands.entity(plant_entity).despawn();
+                            commands.entity(plant_entity).despawn_recursive();
                         }
                     }
                 }

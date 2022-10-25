@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
-        default, AssetServer, Color, Commands, Component, Entity, Query, Res, ResMut, Transform,
-        Vec2, Vec3, With, Without,
+        default, AssetServer, Color, Commands, Component, DespawnRecursiveExt, Entity, Query, Res,
+        ResMut, Transform, Vec2, Vec3, With, Without,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
@@ -63,7 +63,7 @@ pub fn hatch_egg_system(
     mut hatch_query: Query<Egg, With<Hatching>>,
 ) {
     for (entity, mut vitality, transform, mind, body, generation) in hatch_query.iter_mut() {
-        commands.entity(entity).despawn();
+        commands.entity(entity).despawn_recursive();
         spawn_bug(
             &mut commands,
             &asset_server,
@@ -209,7 +209,7 @@ pub fn kill_bug_system(
 ) {
     for (entity, vitality, death_age, age) in query.iter() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
-            commands.entity(entity).despawn();
+            commands.entity(entity).despawn_recursive();
         }
     }
 }
