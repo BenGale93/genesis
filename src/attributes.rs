@@ -259,7 +259,7 @@ impl OffspringEnergy {
     }
 
     fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.death_age;
+        let (min, max, length) = config::WorldConfig::global().attributes.offspring_energy;
         AttributeConfig::new(min, max, 10, 0, length)
     }
 }
