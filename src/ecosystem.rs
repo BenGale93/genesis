@@ -2,7 +2,7 @@ extern crate derive_more;
 use bevy::prelude::Component;
 use derive_more::{Add, Constructor, Display, Sub};
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
 pub struct Energy(usize);
 
 impl Energy {
@@ -21,6 +21,10 @@ impl Energy {
         Energy::new(to_return)
     }
 
+    pub fn add_energy(&mut self, energy: Energy) {
+        self.0 += energy.0;
+    }
+
     pub fn new_empty() -> Self {
         Self(0)
     }
@@ -36,8 +40,8 @@ impl Plant {
         self.energy.take_energy(amount)
     }
 
-    pub fn energy(&self) -> Energy {
-        self.energy
+    pub fn energy(&self) -> &Energy {
+        &self.energy
     }
 }
 
@@ -53,22 +57,21 @@ impl Ecosystem {
         }
     }
 
-    pub fn available_energy(&self) -> Energy {
-        self.energy
+    pub fn available_energy(&self) -> &Energy {
+        &self.energy
     }
 
     pub fn request_energy(&mut self, units: usize) -> Option<Energy> {
-        let requested_energy = Energy(units);
-        if requested_energy > self.energy {
+        if units > self.energy.0 {
             None
         } else {
-            self.energy = self.energy - requested_energy;
+            let requested_energy = self.energy.take_energy(units);
             Some(requested_energy)
         }
     }
 
     pub fn return_energy(&mut self, energy: Energy) {
-        self.energy = self.energy + energy;
+        self.energy.add_energy(energy);
     }
 }
 

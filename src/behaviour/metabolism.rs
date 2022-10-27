@@ -17,10 +17,6 @@ impl BurntEnergy {
 }
 
 impl BurntEnergy {
-    pub fn add_energy(&mut self, energy: ecosystem::Energy) {
-        self.0 = self.0 + energy;
-    }
-
     pub fn return_energy(&mut self) -> ecosystem::Energy {
         let amount = self.amount();
         self.take_energy(amount)

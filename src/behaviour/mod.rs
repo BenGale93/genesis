@@ -24,10 +24,10 @@ pub fn behaviour_system_set() -> SystemSet {
         .with_system(movement::movement_system.after(thinking::thinking_system))
         .with_system(eating::process_eaters_system.after(thinking::thinking_system))
         .with_system(lifecycle::process_layers_system.after(thinking::thinking_system))
-        .with_system(lifecycle::kill_bug_system)
         .with_system(sight::process_sight_system)
         .with_system(lifecycle::transition_to_adult_system)
         .with_system(lifecycle::transition_to_hatching_system)
+        .with_system(lifecycle::kill_bug_system)
 }
 
 pub fn egg_spawning_system_set() -> SystemSet {

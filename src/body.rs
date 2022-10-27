@@ -81,7 +81,7 @@ impl EnergyReserve {
     #[must_use]
     fn add_energy(&mut self, mut energy: ecosystem::Energy) -> ecosystem::Energy {
         let energy_taken = energy.take_energy(self.available_space());
-        self.energy = self.energy + energy_taken;
+        self.energy.add_energy(energy_taken);
         energy
     }
 
