@@ -85,7 +85,6 @@ pub fn process_layers_system(
 ) {
     for (entity, mind_out, boundary) in not_laying_query.iter() {
         if mind_out[config::REPRODUCE_INDEX] > **boundary {
-            // This line can cause a panic but can't quite figure out why.
             commands.entity(entity).insert(TryingToLay);
         }
     }
