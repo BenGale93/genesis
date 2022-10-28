@@ -1,14 +1,11 @@
 mod gui;
 mod interaction;
 
-use bevy::{prelude::SystemSet, time::FixedTimestep};
+use bevy::prelude::SystemSet;
 pub use gui::PanelState;
-
-use crate::config;
 
 pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(interaction::move_camera_system)
         .with_system(gui::bug_live_info_system)
         .with_system(gui::bug_attribute_info_system)
