@@ -120,12 +120,12 @@ pub fn bug_live_info_system(
 }
 
 fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
-    ui.label(format!("Age: {}", &bug_info.0));
+    ui.label(format!("Age: {:.2}", &bug_info.0.elapsed_secs()));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
     ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
     ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
-    ui.label(format!("Internal timer: {}", &bug_info.3));
+    ui.label(format!("Internal timer: {:.2}", &bug_info.3.elapsed_secs()));
     ui.label(format!("Generation: {}", &bug_info.4 .0));
 }
 
@@ -210,7 +210,7 @@ pub fn egg_live_info_panel_system(
 }
 
 fn egg_live_sub_panel(ui: &mut egui::Ui, egg_info: &EggLiveInfo) {
-    ui.label(format!("Age: {}", &egg_info.0));
+    ui.label(format!("Age: {:.2}", &egg_info.0.elapsed_secs()));
     ui.label(format!("Generation: {}", &egg_info.1 .0));
 }
 
