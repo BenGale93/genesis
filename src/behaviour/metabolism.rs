@@ -4,8 +4,8 @@ use bevy::{
 };
 use derive_more::{Add, Deref, DerefMut, From};
 
-use super::{eating::TryingToEat, movement::MovementSum};
-use crate::{body, config, ecosystem, mind::Mind};
+use super::{eating::TryingToEat, movement::MovementSum, thinking::ThinkingSum};
+use crate::{body, config, ecosystem};
 
 #[derive(Component, Debug, PartialEq, Eq, Deref, DerefMut, From, Add)]
 pub struct BurntEnergy(ecosystem::Energy);
@@ -32,10 +32,14 @@ pub fn burnt_energy_system(
     }
 }
 
-pub fn thinking_energy_system(mut query: Query<(&Mind, &mut body::Vitality, &mut BurntEnergy)>) {
-    for (bug_brain, mut vitality, mut burnt_energy) in query.iter_mut() {
-        let thought_energy = vitality.take_energy(bug_brain.synapses().len());
-        burnt_energy.add_energy(thought_energy);
+pub fn thinking_energy_system(
+    mut query: Query<(&mut body::Vitality, &mut ThinkingSum, &mut BurntEnergy)>,
+) {
+    for (mut vitality, mut thoughts, mut burnt_energy) in query.iter_mut() {
+        let thought_cost = thoughts.uint_portion();
+        if thought_cost >= 1 {
+            burnt_energy.add_energy(vitality.take_energy(thought_cost));
+        }
     }
 }
 
@@ -57,7 +61,9 @@ pub fn movement_energy_burn_system(
     mut query: Query<(&mut body::Vitality, &mut MovementSum, &mut BurntEnergy)>,
 ) {
     for (mut vitality, mut movement_sum, mut burnt_energy) in query.iter_mut() {
-        let energy = vitality.take_energy(movement_sum.uint_portion());
-        burnt_energy.add_energy(energy)
+        let movement_cost = movement_sum.uint_portion();
+        if movement_cost >= 1 {
+            burnt_energy.add_energy(vitality.take_energy(movement_cost));
+        }
     }
 }

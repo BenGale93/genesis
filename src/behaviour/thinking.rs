@@ -1,7 +1,7 @@
-use bevy::prelude::Query;
+use bevy::prelude::{Component, Query};
 
 use super::{sight::Vision, timers};
-use crate::{body, config, mind};
+use crate::{attributes, body, config, mind};
 
 const CONST: f64 = 1.0;
 
@@ -34,10 +34,39 @@ pub fn sensory_system(
     }
 }
 
-pub fn thinking_system(mut query: Query<(&mind::MindInput, &mind::Mind, &mut mind::MindOutput)>) {
-    for (input, bug_brain, mut output) in query.iter_mut() {
+#[derive(Component, Debug)]
+pub struct ThinkingSum(f32);
+
+impl ThinkingSum {
+    pub fn new() -> Self {
+        Self(0.0)
+    }
+
+    pub fn add_thought(&mut self, synapses: usize, cost: f32) {
+        self.0 += synapses as f32 * cost
+    }
+
+    pub fn uint_portion(&mut self) -> usize {
+        let thought_floor = self.0.floor();
+        self.0 -= thought_floor;
+
+        thought_floor as usize
+    }
+}
+
+pub fn thinking_system(
+    mut query: Query<(
+        &mind::MindInput,
+        &mind::Mind,
+        &mut mind::MindOutput,
+        &mut ThinkingSum,
+        &attributes::CostOfThought,
+    )>,
+) {
+    for (input, bug_brain, mut output, mut thoughts, cost) in query.iter_mut() {
         let x = bug_brain.activate(input).expect("Wrong length vector");
         output.0 = x;
+        thoughts.add_thought(bug_brain.synapses().len(), **cost);
     }
 }
 

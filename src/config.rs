@@ -56,6 +56,7 @@ pub struct AttributeConfig {
     pub internal_timer_boundary: MinMaxLen,
     pub lay_egg_boundary: MinMaxLen,
     pub eating_boundary: MinMaxLen,
+    pub cost_of_thought: MinMaxLen,
     pub offspring_energy: MinMaxLen,
 }
 
@@ -73,6 +74,7 @@ impl Default for AttributeConfig {
             internal_timer_boundary: (-0.5, 0.5, 20),
             lay_egg_boundary: (0.0, 0.8, 30),
             eating_boundary: (-0.5, 0.5, 20),
+            cost_of_thought: (0.002, 0.005, 10),
             offspring_energy: (400.0, 600.0, 50),
         }
     }

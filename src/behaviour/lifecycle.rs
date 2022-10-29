@@ -11,7 +11,7 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 use rand::Rng;
 
-use super::{metabolism, movement, sight};
+use super::{metabolism, movement, sight, thinking};
 use crate::{attributes, behaviour::timers, body, config, ecosystem, mind};
 
 #[derive(Component, Debug)]
@@ -198,6 +198,7 @@ fn spawn_bug(
         .insert(metabolism::BurntEnergy::new())
         .insert(timers::Heart::new())
         .insert(timers::InternalTimer::new())
+        .insert(thinking::ThinkingSum::new())
         .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);

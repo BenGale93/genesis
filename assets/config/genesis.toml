@@ -73,6 +73,11 @@ eating_boundary = [
     0.5,
     20,
 ]
+cost_of_thought = [
+    0.002,
+    0.005,
+    10,
+]
 offspring_energy = [
     400.0,
     600.0,
