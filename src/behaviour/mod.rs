@@ -28,6 +28,7 @@ pub fn time_step_system_set() -> SystemSet {
         .with_system(lifecycle::transition_to_adult_system)
         .with_system(lifecycle::transition_to_hatching_system)
         .with_system(lifecycle::spawn_plant_system)
+        .with_system(eating::attempted_to_eat_system.after(eating::eating_system))
 }
 
 pub fn egg_spawning_system_set() -> SystemSet {
@@ -41,7 +42,6 @@ pub fn slow_behaviour_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(eating::eating_system.after(eating::process_eaters_system))
         .with_system(lifecycle::lay_egg_system.after(lifecycle::process_layers_system))
-        .with_system(metabolism::attempted_to_eat_system.after(eating::eating_system))
 }
 
 pub fn metabolism_system_set() -> SystemSet {
@@ -50,6 +50,7 @@ pub fn metabolism_system_set() -> SystemSet {
         .with_system(metabolism::burnt_energy_system)
         .with_system(metabolism::thinking_energy_system)
         .with_system(metabolism::movement_energy_burn_system)
+        .with_system(metabolism::eating_energy_system)
 }
 
 pub fn despawn_system_set() -> SystemSet {

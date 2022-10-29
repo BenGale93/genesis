@@ -1,11 +1,8 @@
-use bevy::{
-    prelude::{Component, Query, Res, ResMut},
-    time::Time,
-};
+use bevy::prelude::{Component, Query, ResMut};
 use derive_more::{Add, Deref, DerefMut, From};
 
-use super::{eating::TryingToEat, movement::MovementSum, thinking::ThinkingSum};
-use crate::{body, config, ecosystem};
+use super::{eating::EatingSum, movement::MovementSum, thinking::ThinkingSum};
+use crate::{body, ecosystem};
 
 #[derive(Component, Debug, PartialEq, Eq, Deref, DerefMut, From, Add)]
 pub struct BurntEnergy(ecosystem::Energy);
@@ -43,16 +40,13 @@ pub fn thinking_energy_system(
     }
 }
 
-pub fn attempted_to_eat_system(
-    time: Res<Time>,
-    mut bug_query: Query<(&mut body::Vitality, &mut TryingToEat, &mut BurntEnergy)>,
+pub fn eating_energy_system(
+    mut query: Query<(&mut body::Vitality, &mut EatingSum, &mut BurntEnergy)>,
 ) {
-    for (mut vitality, mut trying_to_eat, mut burnt_energy) in bug_query.iter_mut() {
-        trying_to_eat.tick(time.delta());
-        if trying_to_eat.elapsed().as_secs_f32() >= 1.0 {
-            burnt_energy
-                .add_energy(vitality.take_energy(config::WorldConfig::global().eating_cost));
-            trying_to_eat.reset()
+    for (mut vitality, mut eating_sum, mut burnt_energy) in query.iter_mut() {
+        let eating_cost = eating_sum.uint_portion();
+        if eating_cost >= 1 {
+            burnt_energy.add_energy(vitality.take_energy(eating_cost));
         }
     }
 }
