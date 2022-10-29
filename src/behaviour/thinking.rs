@@ -73,6 +73,7 @@ pub fn thinking_system(
 #[cfg(test)]
 mod tests {
     use bevy::prelude::*;
+    use genesis_genome::Genome;
 
     use super::*;
     use crate::{
@@ -82,11 +83,13 @@ mod tests {
 
     #[test]
     fn mind_thinks() {
+        config::initialize_config();
         let mut app = App::new();
 
         app.add_system(thinking_system);
 
         let mut test_mind: Mind = genesis_brain::Brain::new(1, 1).into();
+        let genome = Genome::new(10, 100);
 
         test_mind.add_random_synapse();
 
@@ -96,6 +99,8 @@ mod tests {
             .insert(test_mind)
             .insert(MindInput(vec![1.0]))
             .insert(MindOutput(vec![0.0]))
+            .insert(ThinkingSum::new())
+            .insert(attributes::CostOfThought::from_genome(&genome))
             .id();
 
         app.update();
