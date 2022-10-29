@@ -2,7 +2,7 @@ use bevy::{
     prelude::{
         Commands, Component, DespawnRecursiveExt, Entity, Query, Res, Transform, With, Without,
     },
-    time::Stopwatch,
+    time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::RapierContext;
 use derive_more::{Deref, DerefMut};
@@ -33,6 +33,40 @@ pub fn process_eaters_system(
     for (entity, mind_out, eating_boundary) in eating_query.iter() {
         if mind_out[config::EAT_INDEX] <= **eating_boundary {
             commands.entity(entity).remove::<TryingToEat>();
+        }
+    }
+}
+
+#[derive(Component, Debug)]
+pub struct EatingSum(f32);
+
+impl EatingSum {
+    pub fn new() -> Self {
+        Self(0.0)
+    }
+
+    pub fn add_eating_time(&mut self, time: f32, cost: f32) {
+        self.0 += time * cost
+    }
+
+    pub fn uint_portion(&mut self) -> usize {
+        let eating_floor = self.0.floor();
+        self.0 -= eating_floor;
+
+        eating_floor as usize
+    }
+}
+
+pub fn attempted_to_eat_system(
+    time: Res<Time>,
+    mut bug_query: Query<(&mut TryingToEat, &mut EatingSum, &attributes::CostOfEating)>,
+) {
+    for (mut trying_to_eat, mut eating_sum, cost) in bug_query.iter_mut() {
+        trying_to_eat.tick(time.delta());
+        let time_spent = trying_to_eat.elapsed().as_secs_f32();
+        if time_spent >= 1.0 {
+            eating_sum.add_eating_time(time_spent, **cost);
+            trying_to_eat.reset()
         }
     }
 }

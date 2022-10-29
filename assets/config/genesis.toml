@@ -4,7 +4,6 @@ mutations = 3
 start_energy = 1000
 core_energy = 100
 health_energy = 200
-eating_cost = 10
 rotation_cost = [
     0.05,
     0.15,
@@ -72,6 +71,16 @@ eating_boundary = [
     -0.5,
     0.5,
     20,
+]
+cost_of_thought = [
+    0.002,
+    0.005,
+    10,
+]
+cost_of_eating = [
+    0.5,
+    0.4,
+    10,
 ]
 offspring_energy = [
     400.0,
