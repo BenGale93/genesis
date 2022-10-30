@@ -10,22 +10,46 @@ use bevy::{
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
-use super::interaction;
+use super::{interaction, statistics};
 use crate::{
     attributes,
     behaviour::{lifecycle, sight, timers},
     body, ecosystem,
 };
 
-pub fn energy_ui_update_system(
+#[allow(clippy::too_many_arguments)]
+pub fn global_ui_update_system(
     mut egui_ctx: ResMut<EguiContext>,
-    ecosystem: Res<ecosystem::Ecosystem>,
+    global_stats: Res<statistics::GlobalStatistics>,
 ) {
-    let energy = ecosystem.available_energy();
     egui::Window::new("Global Info")
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5.0, -5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.label(format!("Global Energy: {energy}"));
+            ui.label(format!(
+                "Global energy: {}",
+                global_stats.energy_stats().current_available_energy()
+            ));
+            ui.label(format!("Time elapsed: {:.2}", global_stats.time_elapsed()));
+            ui.label(format!(
+                "Max generation: {}",
+                global_stats.current_max_generation()
+            ));
+            ui.label(format!(
+                "Number of adults: {}",
+                global_stats.count_stats().current_adults()
+            ));
+            ui.label(format!(
+                "Number of juveniles: {}",
+                global_stats.count_stats().current_juveniles()
+            ));
+            ui.label(format!(
+                "Number of eggs: {}",
+                global_stats.count_stats().current_eggs()
+            ));
+            ui.label(format!(
+                "Total food energy: {}",
+                global_stats.energy_stats().current_food_energy()
+            ));
         });
 }
 
