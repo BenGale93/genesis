@@ -23,7 +23,9 @@ pub struct Juvenile;
 #[derive(Component, Debug)]
 pub struct Adult;
 
-#[derive(Component, Debug, Deref, DerefMut, Clone, Copy, From, Add)]
+#[derive(
+    Component, Debug, Deref, DerefMut, Clone, Copy, From, Add, Ord, PartialOrd, Eq, PartialEq,
+)]
 pub struct Generation(pub usize);
 
 pub fn transition_to_adult_system(
@@ -216,6 +218,9 @@ pub fn kill_bug_system(
     }
 }
 
+#[derive(Component)]
+pub struct EggMarker;
+
 fn spawn_egg(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -232,6 +237,7 @@ fn spawn_egg(
 
     commands
         .spawn()
+        .insert(EggMarker)
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("egg.png"),
             sprite: Sprite {
