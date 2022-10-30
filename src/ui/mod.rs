@@ -2,7 +2,13 @@ mod gui;
 mod interaction;
 mod statistics;
 
-use bevy::{prelude::SystemSet, time::FixedTimestep};
+use std::fs;
+
+use bevy::{
+    app::AppExit,
+    prelude::{EventReader, Res, SystemSet},
+    time::FixedTimestep,
+};
 pub use gui::PanelState;
 pub use statistics::GlobalStatistics;
 
@@ -31,4 +37,11 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::max_generation_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::time_elapsed_system)
+}
+
+pub fn save_on_close(events: EventReader<AppExit>, global_stats: Res<GlobalStatistics>) {
+    if !events.is_empty() {
+        let j = serde_json::to_string_pretty(global_stats.as_ref()).unwrap();
+        fs::write("./run_data.json", j).expect("Unable to write file");
+    }
 }
