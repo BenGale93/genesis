@@ -1114,9 +1114,9 @@ dependencies = [
 
 [[package]]
 name = "confy"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5069e3065d9ad485706017d12bb4b4318170b8087358c163c2dfce50b6b38275"
+checksum = "e37668cb35145dcfaa1931a5f37fde375eeae8068b4c0d2f289da28a270b2d2c"
 dependencies = [
  "directories",
  "serde",
@@ -1454,11 +1454,10 @@ dependencies = [
 
 [[package]]
 name = "directories"
-version = "2.0.2"
+version = "4.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "551a778172a450d7fc12e629ca3b0428d00f6afa9a43da1b630d54604e97371c"
+checksum = "f51c5d4ddabd36886dd3e1438cb358cdcb0d7c499cb99cb4ac2e38e18b5cb210"
 dependencies = [
- "cfg-if 0.1.10",
  "dirs-sys",
 ]
 
