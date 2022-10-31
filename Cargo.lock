@@ -593,9 +593,9 @@ checksum = "d92d5679e89602a18682a37846573dcd1979410179e14204280460ba9fb8713a"
 
 [[package]]
 name = "bevy_rapier2d"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b8e0108d726673a74936b61d392253315a58d20a1ae5622f9663fd35683cc368"
+checksum = "c75900b1242f0c590fe102645ba3bde98e6330b623e6fba5ed0c399991dfcdc0"
 dependencies = [
  "bevy",
  "bitflags",
@@ -2875,9 +2875,9 @@ dependencies = [
 
 [[package]]
 name = "parry2d"
-version = "0.10.0"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee29895c34e7dae094c8ea355af4f6fb3f3ab6b76ea037b49bc51bf5972d2464"
+checksum = "f2451e4bf2c6ba705bf584f94bb51772e22977e37c82575ce2445dd797eb35a9"
 dependencies = [
  "approx",
  "arrayvec",
@@ -3067,9 +3067,9 @@ checksum = "63e935c45e09cc6dcf00d2f0b2d630a58f4095320223d47fc68918722f0538b6"
 
 [[package]]
 name = "rapier2d"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "daba24ce52b431f4bb3ac798f457db72de6b6cc4718201227a466d81ba705637"
+checksum = "12435d8c8ea7eee77be71f90e87fea038e9630baf89008e4602f68fe39fcac06"
 dependencies = [
  "approx",
  "arrayvec",
@@ -3301,9 +3301,9 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 
 [[package]]
 name = "simba"
-version = "0.7.2"
+version = "0.7.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c48e45e5961033db030b56ad67aef22e9c908c493a6e8348c0a0f6b93433cd77"
+checksum = "2f3fd720c48c53cace224ae62bef1bbff363a70c68c4802a78b5cc6159618176"
 dependencies = [
  "approx",
  "num-complex",
