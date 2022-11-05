@@ -214,6 +214,9 @@ pub fn kill_bug_system(
     }
 }
 
+#[derive(Component)]
+pub struct EggMarker;
+
 fn spawn_egg(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
@@ -252,6 +255,7 @@ fn spawn_egg(
         .insert(bug_body)
         .insert(mind)
         .insert(generation)
+        .insert(EggMarker)
         .insert(timers::Age::default())
         .insert(metabolism::BurntEnergy::new())
         .insert(body::Vitality::new(energy));

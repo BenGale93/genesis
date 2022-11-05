@@ -195,7 +195,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
 type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 
 pub fn egg_live_info_panel_system(
-    egg_query: Query<EggLiveInfo, With<Selected>>,
+    egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggMarker>)>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<PanelState>,
 ) {
