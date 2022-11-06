@@ -229,15 +229,15 @@ impl Brain {
     }
 
     pub fn mutate_neuron_activation(&mut self) {
-        let mut non_input_neurons: Vec<&mut Neuron> = self
+        let mut hidden_neurons: Vec<&mut Neuron> = self
             .neurons
             .iter_mut()
-            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .filter(|n| matches!(n.kind(), NeuronKind::Hidden))
             .collect();
 
-        let random_neuron = non_input_neurons
-            .choose_mut(&mut rand::thread_rng())
-            .unwrap();
+        let Some(random_neuron) = hidden_neurons.choose_mut(&mut rand::thread_rng()) else {
+            return;
+        };
 
         random_neuron.set_activation(random::<ActivationFunctionKind>());
     }
