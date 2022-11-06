@@ -14,7 +14,7 @@ use super::interaction;
 use crate::{
     attributes,
     behaviour::{lifecycle, sight, timers},
-    body, ecosystem,
+    body, ecosystem, mind,
 };
 
 pub fn energy_ui_update_system(
@@ -86,12 +86,14 @@ pub enum BugInfoPanel {
     #[default]
     Live,
     Attributes,
+    Brain,
 }
 
 fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
     ui.horizontal(|ui| {
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Live, "Live");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
+        ui.selectable_value(bug_info_panel_state, BugInfoPanel::Brain, "Brain");
     });
     ui.end_row();
 }
@@ -175,6 +177,57 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ui.label(format!("Lay egg boundary: {:.3}", **bug_info.8));
     ui.label(format!("Internal timer boundary: {:.3}", **bug_info.9));
     ui.label(format!("Eating boundary: {:.3}", **bug_info.10));
+}
+
+type BugBrainInfo<'a> = (&'a mind::MindInput, &'a mind::Mind, &'a mind::MindOutput);
+
+pub fn bug_brain_info_system(
+    brain_query: Query<BugBrainInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(bug_info) = brain_query.get_single() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Brain {
+            top_left_info_window("Bug Brain Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_brain_sub_panel(ui, &bug_info);
+            });
+        }
+    }
+}
+
+const RADIUS: f32 = 20.0;
+const SPACING: f32 = 20.0;
+const START_POS: (f32, f32) = (30.0, 100.0);
+
+fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
+    let (mind_in, mind, mind_out) = brain_info;
+
+    let mut values: Vec<f64> = mind_in.iter().copied().collect();
+    let mut output_values: Vec<f64> = mind_out.iter().copied().collect();
+    values.append(&mut output_values);
+
+    let neuron_layout = mind.layout_neurons(&START_POS, RADIUS, SPACING);
+
+    ui.allocate_exact_size(egui::Vec2::new(1000.0, 680.0), egui::Sense::hover());
+    for neuron_position in neuron_layout {
+        let Some((x, y)) = neuron_position.pos else {
+            continue;
+        };
+        let gui_pos = egui::Pos2::new(x, y);
+        ui.painter()
+            .circle_filled(gui_pos, RADIUS, ui.visuals().text_color());
+        let pos_val = values.get(neuron_position.index);
+        if let Some(val) = pos_val {
+            ui.painter().text(
+                gui_pos,
+                egui::Align2::CENTER_CENTER,
+                format!("{:.2}", val),
+                egui::FontId::default(),
+                egui::Color32::WHITE,
+            );
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Default)]

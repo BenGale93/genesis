@@ -14,6 +14,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(gui::plant_info_panel_system)
         .with_system(interaction::camera_zooming_system)
         .with_system(gui::energy_ui_update_system)
+        .with_system(gui::bug_brain_info_system)
 }
 
 pub fn selection_system_set() -> SystemSet {

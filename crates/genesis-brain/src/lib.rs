@@ -15,6 +15,12 @@ use rand_distr::StandardNormal;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
+#[derive(Debug)]
+pub struct NeuronPosition {
+    pub index: usize,
+    pub pos: Option<(f32, f32)>,
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Brain {
     inputs: usize,
@@ -234,6 +240,58 @@ impl Brain {
             .unwrap();
 
         random_neuron.set_activation(random::<ActivationFunctionKind>());
+    }
+
+    pub fn layout_neurons(
+        &self,
+        start: &(f32, f32),
+        radius: f32,
+        spacing: f32,
+    ) -> Vec<NeuronPosition> {
+        let max_layer = 10;
+        let impossible_layer = max_layer + 1;
+        let layers = feed_forward_layers(&self.neurons, &self.synapses);
+
+        let mut positions = Vec::new();
+        let total_hidden_layers = layers.len();
+
+        let mut layer_index = 0;
+        let mut offsets: Vec<usize> = vec![0; impossible_layer + 1];
+        for (k, neuron) in self.neurons().iter().enumerate() {
+            match neuron.kind() {
+                NeuronKind::Input => layer_index = 0,
+                NeuronKind::Output => layer_index = max_layer,
+                NeuronKind::Hidden => {
+                    for (i, layer) in layers.iter().enumerate() {
+                        if layer.contains(&k) {
+                            layer_index = (max_layer / total_hidden_layers) * (i + 1);
+                            break;
+                        }
+                        layer_index = impossible_layer
+                    }
+                }
+            }
+
+            let offset = &mut offsets[layer_index];
+
+            let position: NeuronPosition = if layer_index == impossible_layer {
+                NeuronPosition {
+                    index: k,
+                    pos: None,
+                }
+            } else {
+                NeuronPosition {
+                    index: k,
+                    pos: Some((
+                        start.0 + *offset as f32 * (2.0 * radius + spacing),
+                        start.1 + layer_index as f32 * (2.0 * radius + spacing),
+                    )),
+                }
+            };
+            *offset += 1;
+            positions.push(position);
+        }
+        positions
     }
 
     fn can_connect(&self, from: usize, to: usize) -> bool {
