@@ -11,7 +11,7 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 use rand::Rng;
 
-use super::{metabolism, movement, sight};
+use super::{eating, metabolism, movement, sight, thinking};
 use crate::{attributes, behaviour::timers, body, config, ecosystem, mind};
 
 #[derive(Component, Debug)]
@@ -23,7 +23,9 @@ pub struct Juvenile;
 #[derive(Component, Debug)]
 pub struct Adult;
 
-#[derive(Component, Debug, Deref, DerefMut, Clone, Copy, From, Add)]
+#[derive(
+    Component, Debug, Deref, DerefMut, Clone, Copy, From, Add, Ord, PartialOrd, Eq, PartialEq,
+)]
 pub struct Generation(pub usize);
 
 pub fn transition_to_adult_system(
@@ -198,6 +200,8 @@ fn spawn_bug(
         .insert(metabolism::BurntEnergy::new())
         .insert(timers::Heart::new())
         .insert(timers::InternalTimer::new())
+        .insert(thinking::ThinkingSum::new())
+        .insert(eating::EatingSum::new())
         .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
@@ -233,6 +237,7 @@ fn spawn_egg(
 
     commands
         .spawn()
+        .insert(EggMarker)
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("egg.png"),
             sprite: Sprite {

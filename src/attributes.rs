@@ -8,6 +8,7 @@
 //! Eye range and angle are on chromosome 3 and can either be exactly correlated
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
+//! Cost of thought and cost of eating can be found on chromosome 5.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
@@ -249,6 +250,30 @@ impl EatingBoundary {
 impl_from_genome!(EatingBoundary);
 
 #[derive(Component, Debug, Deref)]
+pub struct CostOfThought(f32);
+
+impl CostOfThought {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_thought;
+        AttributeConfig::new(min, max, 5, 0, length)
+    }
+}
+
+impl_from_genome!(CostOfThought);
+
+#[derive(Component, Debug, Deref)]
+pub struct CostOfEating(f32);
+
+impl CostOfEating {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_eating;
+        AttributeConfig::new(min, max, 5, 5, length)
+    }
+}
+
+impl_from_genome!(CostOfEating);
+
+#[derive(Component, Debug, Deref)]
 pub struct OffspringEnergy(usize);
 
 impl OffspringEnergy {
@@ -276,6 +301,8 @@ pub struct AttributeBundle {
     pub internal_timer_boundary: InternalTimerBoundary,
     pub lay_egg_boundary: LayEggBoundary,
     pub eating_boundary: EatingBoundary,
+    pub cost_of_thought: CostOfThought,
+    pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
 }
 
@@ -291,6 +318,8 @@ impl AttributeBundle {
         let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
         let lay_egg_boundary = LayEggBoundary::from_genome(genome);
         let eating_boundary = EatingBoundary::from_genome(genome);
+        let cost_of_thought = CostOfThought::from_genome(genome);
+        let cost_of_eating = CostOfEating::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
 
         Self {
@@ -304,6 +333,8 @@ impl AttributeBundle {
             internal_timer_boundary,
             lay_egg_boundary,
             eating_boundary,
+            cost_of_thought,
+            cost_of_eating,
             offspring_energy,
         }
     }
