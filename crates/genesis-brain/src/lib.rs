@@ -95,7 +95,7 @@ impl Brain {
                 2..4 => new_brain.mutate_synapse_weight(),
                 4..6 => new_brain.mutate_neuron_bias(),
                 6..8 => new_brain.mutate_neuron_activation(),
-                8..12 => new_brain.add_random_neuron(),
+                8..10 => new_brain.add_random_neuron(),
                 _ => new_brain.add_random_synapse(),
             }
         }
