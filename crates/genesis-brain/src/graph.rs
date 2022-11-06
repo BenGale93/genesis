@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use crate::{NeuronKind, Neurons, NeuronsExt, Synapses};
+use crate::{NeuronKind, Neurons, NeuronsExt, Synapse, Synapses};
 
 pub fn creates_cycle(synapses: &Synapses, from: usize, to: usize) -> bool {
     let mut visited = HashSet::from([to]);
@@ -30,8 +30,11 @@ pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSe
 
     let mut layers = Vec::new();
 
+    let active_synapses: Vec<&Synapse> =
+        synapses.iter().filter(|synapse| synapse.active()).collect();
+
     loop {
-        let candidates = synapses.iter().filter_map(|synapse| {
+        let candidates = active_synapses.iter().filter_map(|synapse| {
             (visited.contains(&synapse.from()) && !visited.contains(&synapse.to()))
                 .then(|| synapse.to())
         });
@@ -40,7 +43,7 @@ pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSe
 
         for n in c {
             if required.contains(&n)
-                && synapses
+                && active_synapses
                     .iter()
                     .filter_map(|synapse| (synapse.to() == n).then(|| synapse.from()))
                     .all(|from| visited.contains(&from))

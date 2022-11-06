@@ -480,7 +480,7 @@ impl Brain {
 mod tests {
     use genesis_util::Weight;
 
-    use crate::{activation::ActivationFunctionKind, SynapsesExt};
+    use crate::{activation::ActivationFunctionKind, graph::feed_forward_layers, SynapsesExt};
 
     #[test]
     fn add_new_synapse_from_out_to_in() {
@@ -879,5 +879,17 @@ mod tests {
             test_brain.neurons()[0].activation(),
             &ActivationFunctionKind::Identity
         );
+    }
+
+    #[test]
+    fn brain_with_deactivated_neuron() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_neuron();
+        let layers = feed_forward_layers(test_brain.neurons(), test_brain.synapses());
+        assert_eq!(layers.len(), 1);
     }
 }
