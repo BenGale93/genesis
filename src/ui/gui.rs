@@ -9,6 +9,7 @@ use bevy::{
 };
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
+use genesis_util::color;
 
 use super::interaction;
 use crate::{
@@ -199,6 +200,7 @@ pub fn bug_brain_info_system(
 const RADIUS: f32 = 20.0;
 const SPACING: f32 = 20.0;
 const START_POS: (f32, f32) = (30.0, 100.0);
+const COLOR_ARRAY: &[(u8, u8, u8)] = &[(255, 0, 0), (160, 160, 160), (0, 150, 0)];
 
 fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
     let (mind_in, mind, mind_out) = brain_info;
@@ -210,13 +212,38 @@ fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
     let neuron_layout = mind.layout_neurons(&START_POS, RADIUS, SPACING);
 
     ui.allocate_exact_size(egui::Vec2::new(1000.0, 680.0), egui::Sense::hover());
-    for neuron_position in neuron_layout {
+    for syn in mind.synapses() {
+        let start_pos = &neuron_layout[syn.from()];
+        let end_pos = &neuron_layout[syn.to()];
+
+        let Some((start_x, start_y)) = start_pos.pos else {
+            continue;
+        };
+        let Some((end_x, end_y)) = end_pos.pos else {
+            continue;
+        };
+
+        let color = if !syn.active() {
+            egui::Color32::BLACK
+        } else {
+            let (r, g, b) = color::interpolate_color(syn.weight(), COLOR_ARRAY);
+            egui::Color32::from_rgb(r, g, b)
+        };
+
+        ui.painter().line_segment(
+            [egui::pos2(start_x, start_y), egui::pos2(end_x, end_y)],
+            egui::Stroke::new(5.0, color),
+        )
+    }
+    for neuron_position in &neuron_layout {
         let Some((x, y)) = neuron_position.pos else {
             continue;
         };
         let gui_pos = egui::Pos2::new(x, y);
-        ui.painter()
-            .circle_filled(gui_pos, RADIUS, ui.visuals().text_color());
+
+        let (r, g, b) = color::interpolate_color(neuron_position.bias, COLOR_ARRAY);
+        let color = egui::Color32::from_rgb(r, g, b);
+        ui.painter().circle_filled(gui_pos, RADIUS, color);
         let pos_val = values.get(neuron_position.index);
         if let Some(val) = pos_val {
             ui.painter().text(

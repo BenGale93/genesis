@@ -19,6 +19,7 @@ pub use synapse::{create_synapses, Synapse, Synapses};
 pub struct NeuronPosition {
     pub index: usize,
     pub pos: Option<(f32, f32)>,
+    pub bias: Bias,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -274,22 +275,21 @@ impl Brain {
 
             let offset = &mut offsets[layer_index];
 
-            let position: NeuronPosition = if layer_index == impossible_layer {
-                NeuronPosition {
-                    index: k,
-                    pos: None,
-                }
+            let pos = if layer_index == impossible_layer {
+                None
             } else {
-                NeuronPosition {
-                    index: k,
-                    pos: Some((
-                        start.0 + *offset as f32 * (2.0 * radius + spacing),
-                        start.1 + layer_index as f32 * (2.0 * radius + spacing),
-                    )),
-                }
+                Some((
+                    start.0 + *offset as f32 * (2.0 * radius + spacing),
+                    start.1 + layer_index as f32 * (2.0 * radius + spacing),
+                ))
             };
+            positions.push(NeuronPosition {
+                index: k,
+                pos,
+                bias: neuron.bias(),
+            });
+
             *offset += 1;
-            positions.push(position);
         }
         positions
     }
