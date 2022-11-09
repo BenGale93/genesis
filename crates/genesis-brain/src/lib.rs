@@ -16,7 +16,7 @@ use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
 #[derive(Debug)]
-pub struct NeuronPosition {
+pub struct GuiNeuron {
     pub index: usize,
     pub pos: Option<(f32, f32)>,
     pub bias: Bias,
@@ -243,12 +243,7 @@ impl Brain {
         random_neuron.set_activation(random::<ActivationFunctionKind>());
     }
 
-    pub fn layout_neurons(
-        &self,
-        start: &(f32, f32),
-        radius: f32,
-        spacing: f32,
-    ) -> Vec<NeuronPosition> {
+    pub fn layout_neurons(&self, start: &(f32, f32), radius: f32, spacing: f32) -> Vec<GuiNeuron> {
         let max_layer = 10;
         let impossible_layer = max_layer + 1;
         let layers = feed_forward_layers(&self.neurons, &self.synapses);
@@ -283,7 +278,7 @@ impl Brain {
                     start.1 + layer_index as f32 * (2.0 * radius + spacing),
                 ))
             };
-            positions.push(NeuronPosition {
+            positions.push(GuiNeuron {
                 index: k,
                 pos,
                 bias: neuron.bias(),
