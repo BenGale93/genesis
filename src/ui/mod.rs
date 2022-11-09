@@ -1,3 +1,4 @@
+mod brain_panel;
 mod gui;
 mod interaction;
 mod statistics;
