@@ -552,7 +552,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "db5394e86c5708d3aa506c6e98ec4ed2a4083a7a018c6693d9ac0e77ebfabfc2"
 dependencies = [
- "glam",
+ "glam 0.21.3",
 ]
 
 [[package]]
@@ -561,7 +561,7 @@ version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "40b299a61175a6f7e7398f83cd5b50920fd8bad4df674e614ad94f25f8426509"
 dependencies = [
- "glam",
+ "glam 0.21.3",
 ]
 
 [[package]]
@@ -615,7 +615,7 @@ dependencies = [
  "bevy_utils",
  "downcast-rs",
  "erased-serde",
- "glam",
+ "glam 0.21.3",
  "once_cell",
  "parking_lot 0.12.1",
  "serde",
@@ -1519,7 +1519,7 @@ checksum = "0a516181e9a36e8982cb37933c5e7dba638c42938cacde46ee4e5b4156f881b9"
 dependencies = [
  "const_panic",
  "encase_derive",
- "glam",
+ "glam 0.21.3",
  "thiserror",
 ]
 
@@ -1758,7 +1758,7 @@ dependencies = [
 name = "genesis-util"
 version = "0.1.0"
 dependencies = [
- "glam",
+ "glam 0.22.0",
  "nalgebra",
  "ndarray",
  "rand",
@@ -1831,6 +1831,12 @@ dependencies = [
  "bytemuck",
  "serde",
 ]
+
+[[package]]
+name = "glam"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12f597d56c1bd55a811a1be189459e8fad2bbc272616375602443bdfb37fa774"
 
 [[package]]
 name = "glob"
@@ -2005,7 +2011,7 @@ version = "7.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9652f2ed7ee9c6374a061039f60fc6e25d7adac7fa10f83365669af3b24b0bf0"
 dependencies = [
- "glam",
+ "glam 0.21.3",
  "once_cell",
 ]
 
@@ -2428,7 +2434,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da388c517f7c8540918d00f7aed9864c1ead01a14a0cc21513b171857119de12"
 dependencies = [
  "approx",
- "glam",
+ "glam 0.21.3",
  "matrixmultiply",
  "nalgebra-macros",
  "num-complex",
