@@ -10,7 +10,7 @@ use bevy::{
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
-use super::{interaction, statistics};
+use super::{brain_panel, interaction, statistics};
 use crate::{
     attributes,
     behaviour::{lifecycle, sight, timers},
@@ -110,12 +110,14 @@ pub enum BugInfoPanel {
     #[default]
     Live,
     Attributes,
+    Brain,
 }
 
 fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
     ui.horizontal(|ui| {
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Live, "Live");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
+        ui.selectable_value(bug_info_panel_state, BugInfoPanel::Brain, "Brain");
     });
     ui.end_row();
 }
@@ -205,6 +207,21 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ui.label(format!("Cost of eating: {:.3}", **bug_info.12));
 }
 
+pub fn bug_brain_info_system(
+    brain_query: Query<brain_panel::BugBrainInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(bug_info) = brain_query.get_single() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Brain {
+            top_left_info_window("Bug Brain Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                brain_panel::bug_brain_sub_panel(ui, &bug_info);
+            });
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Default)]
 pub enum EggInfoPanel {
     #[default]
@@ -223,7 +240,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
 type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 
 pub fn egg_live_info_panel_system(
-    egg_query: Query<EggLiveInfo, With<Selected>>,
+    egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggMarker>)>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<PanelState>,
 ) {

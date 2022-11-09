@@ -1,3 +1,4 @@
+pub mod color;
 pub mod maths;
 pub mod probability;
 pub mod util_error;

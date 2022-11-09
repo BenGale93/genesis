@@ -15,6 +15,13 @@ use rand_distr::StandardNormal;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
+#[derive(Debug)]
+pub struct GuiNeuron {
+    pub index: usize,
+    pub pos: Option<(f32, f32)>,
+    pub bias: Bias,
+}
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Brain {
     inputs: usize,
@@ -95,7 +102,7 @@ impl Brain {
                 2..4 => new_brain.mutate_synapse_weight(),
                 4..6 => new_brain.mutate_neuron_bias(),
                 6..8 => new_brain.mutate_neuron_activation(),
-                8..12 => new_brain.add_random_neuron(),
+                8..10 => new_brain.add_random_neuron(),
                 _ => new_brain.add_random_synapse(),
             }
         }
@@ -223,17 +230,63 @@ impl Brain {
     }
 
     pub fn mutate_neuron_activation(&mut self) {
-        let mut non_input_neurons: Vec<&mut Neuron> = self
+        let mut hidden_neurons: Vec<&mut Neuron> = self
             .neurons
             .iter_mut()
-            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
+            .filter(|n| matches!(n.kind(), NeuronKind::Hidden))
             .collect();
 
-        let random_neuron = non_input_neurons
-            .choose_mut(&mut rand::thread_rng())
-            .unwrap();
+        let Some(random_neuron) = hidden_neurons.choose_mut(&mut rand::thread_rng()) else {
+            return;
+        };
 
         random_neuron.set_activation(random::<ActivationFunctionKind>());
+    }
+
+    pub fn layout_neurons(&self, start: &(f32, f32), radius: f32, spacing: f32) -> Vec<GuiNeuron> {
+        let max_layer = 10;
+        let impossible_layer = max_layer + 1;
+        let layers = feed_forward_layers(&self.neurons, &self.synapses);
+
+        let mut positions = Vec::new();
+        let total_hidden_layers = layers.len();
+
+        let mut layer_index = 0;
+        let mut offsets: Vec<usize> = vec![0; impossible_layer + 1];
+        for (k, neuron) in self.neurons().iter().enumerate() {
+            match neuron.kind() {
+                NeuronKind::Input => layer_index = 0,
+                NeuronKind::Output => layer_index = max_layer,
+                NeuronKind::Hidden => {
+                    for (i, layer) in layers.iter().enumerate() {
+                        if layer.contains(&k) {
+                            layer_index = (max_layer / total_hidden_layers) * (i + 1);
+                            break;
+                        }
+                        layer_index = impossible_layer
+                    }
+                }
+            }
+
+            let offset = &mut offsets[layer_index];
+
+            let pos = if layer_index == impossible_layer {
+                None
+            } else {
+                Some((
+                    start.0 + *offset as f32 * (2.0 * radius + spacing),
+                    start.1 + layer_index as f32 * (2.0 * radius + spacing),
+                ))
+            };
+            positions.push(GuiNeuron {
+                index: k,
+                pos,
+                bias: neuron.bias(),
+            });
+
+            *offset += 1;
+        }
+        positions
     }
 
     fn can_connect(&self, from: usize, to: usize) -> bool {
@@ -422,7 +475,7 @@ impl Brain {
 mod tests {
     use genesis_util::Weight;
 
-    use crate::{activation::ActivationFunctionKind, SynapsesExt};
+    use crate::{activation::ActivationFunctionKind, graph::feed_forward_layers, SynapsesExt};
 
     #[test]
     fn add_new_synapse_from_out_to_in() {
@@ -821,5 +874,17 @@ mod tests {
             test_brain.neurons()[0].activation(),
             &ActivationFunctionKind::Identity
         );
+    }
+
+    #[test]
+    fn brain_with_deactivated_neuron() {
+        let mut test_brain = super::Brain::new(3, 3);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.deactivate_random_neuron();
+        let layers = feed_forward_layers(test_brain.neurons(), test_brain.synapses());
+        assert_eq!(layers.len(), 1);
     }
 }

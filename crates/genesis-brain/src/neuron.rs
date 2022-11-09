@@ -23,7 +23,8 @@ impl Neuron {
     pub fn new(kind: NeuronKind) -> Self {
         let activation = match kind {
             NeuronKind::Input => activation::ActivationFunctionKind::Identity,
-            _ => random::<ActivationFunctionKind>(),
+            NeuronKind::Output => activation::ActivationFunctionKind::Tanh,
+            NeuronKind::Hidden => random::<ActivationFunctionKind>(),
         };
 
         let bias = match kind {
