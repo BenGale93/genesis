@@ -11,7 +11,10 @@ use bevy::{
     time::FixedTimestep,
 };
 pub use gui::PanelState;
+use serde_derive::Serialize;
 pub use statistics::GlobalStatistics;
+
+use crate::config::WorldConfig;
 
 pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
@@ -41,9 +44,25 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::time_elapsed_system)
 }
 
+#[derive(Debug, Serialize)]
+struct RunInfo<'a> {
+    run_config: &'a WorldConfig,
+    global_stats: &'a GlobalStatistics,
+}
+
+impl<'a> RunInfo<'a> {
+    fn new(run_config: &'a WorldConfig, global_stats: &'a GlobalStatistics) -> Self {
+        Self {
+            run_config,
+            global_stats,
+        }
+    }
+}
+
 pub fn save_on_close(events: EventReader<AppExit>, global_stats: Res<GlobalStatistics>) {
     if !events.is_empty() {
-        let j = serde_json::to_string_pretty(global_stats.as_ref()).unwrap();
-        fs::write("./run_data.json", j).expect("Unable to write file");
+        let run_info = RunInfo::new(WorldConfig::global(), &global_stats);
+        let j = serde_json::to_string_pretty(&run_info).unwrap();
+        fs::write("./run_data.json", j).expect("Unable to write file.");
     }
 }
