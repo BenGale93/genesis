@@ -1,7 +1,8 @@
 use std::fmt;
 
 use anyhow::{anyhow, Result};
-use bevy::prelude::{Color, Component};
+use bevy::prelude::{Color, Component, Vec2};
+use bevy_rapier2d::prelude::Collider;
 use derive_more::{Deref, DerefMut};
 use genesis_genome::Genome;
 use genesis_util::Probability;
@@ -89,12 +90,6 @@ impl EnergyReserve {
     fn take_energy(&mut self, amount: usize) -> ecosystem::Energy {
         self.energy.take_energy(amount)
     }
-
-    #[must_use]
-    fn take_all_energy(&mut self) -> ecosystem::Energy {
-        let amount = self.amount();
-        self.take_energy(amount)
-    }
 }
 impl fmt::Display for EnergyReserve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -118,17 +113,23 @@ pub struct Vitality {
     core_reserve: CoreReserve,
 }
 
+const CORE_MULTIPLIER: usize = 2;
+const HEALTH_MULTIPLIER: usize = 3;
+const ENERGY_MULTIPLIER: usize = 7;
+
 impl Vitality {
-    pub fn new(mut total_energy: ecosystem::Energy) -> Self {
-        let core_energy = config::WorldConfig::global().core_energy;
-        let core_reserve = CoreReserve(total_energy.take_energy(core_energy));
+    pub fn new(size: usize, mut total_energy: ecosystem::Energy) -> Self {
+        let core_energy = total_energy.take_energy(CORE_MULTIPLIER * size);
+        let core_reserve = CoreReserve(core_energy);
 
-        let health_energy = config::WorldConfig::global().health_energy;
-        let health = Health(
-            EnergyReserve::new(total_energy.take_energy(health_energy), health_energy).unwrap(),
-        );
+        let health_energy = total_energy.take_energy(HEALTH_MULTIPLIER * size);
+        let health = Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size).unwrap());
 
-        let energy_limit = config::WorldConfig::global().start_energy - core_energy - health_energy;
+        let energy_limit = if total_energy.amount() < ENERGY_MULTIPLIER * size {
+            ENERGY_MULTIPLIER * size
+        } else {
+            total_energy.amount()
+        };
         let energy_store = EnergyStore(EnergyReserve::new(total_energy, energy_limit).unwrap());
         Self {
             energy_store,
@@ -177,14 +178,21 @@ impl Vitality {
         let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
+}
 
-    #[must_use]
-    pub fn move_all_energy(&mut self) -> ecosystem::Energy {
-        let core_energy = self.core_reserve.amount();
-        let mut moved_energy = self.core_reserve.take_energy(core_energy);
+#[derive(Debug, Component, DerefMut, Deref)]
+pub struct Size(pub f32);
 
-        moved_energy = moved_energy + self.health.take_all_energy();
-        moved_energy = moved_energy + self.energy_store.take_all_energy();
-        moved_energy
+impl Size {
+    pub fn sprite(&self) -> Vec2 {
+        Vec2::splat(self.0)
+    }
+
+    pub fn collider(&self) -> Collider {
+        Collider::capsule(
+            Vec2::new(0.0, -self.0 / 5.5),
+            Vec2::new(0.0, self.0 / 5.5),
+            self.0 / 3.5,
+        )
     }
 }

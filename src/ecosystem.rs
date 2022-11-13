@@ -77,8 +77,7 @@ impl Ecosystem {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{body::Vitality, config, ecosystem};
+    use crate::ecosystem;
 
     #[test]
     fn request_energy_success() {
@@ -88,19 +87,5 @@ mod tests {
 
         assert_eq!(energy.amount(), 20);
         assert_eq!(eco_system.available_energy().amount(), 80);
-    }
-
-    #[test]
-    fn move_all_energy_empties_vitality() {
-        config::initialize_config();
-        let initial_energy = Energy::new(1000);
-        let mut vitality = Vitality::new(initial_energy);
-
-        let moved_energy = vitality.move_all_energy();
-
-        assert_eq!(vitality.health().amount(), 0);
-        assert_eq!(vitality.energy_store().amount(), 0);
-        assert_eq!(vitality.core_reserve().amount(), 0);
-        assert_eq!(moved_energy.amount(), 1000);
     }
 }

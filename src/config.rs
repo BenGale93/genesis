@@ -59,6 +59,7 @@ pub struct AttributeConfig {
     pub cost_of_thought: MinMaxLen,
     pub cost_of_eating: MinMaxLen,
     pub offspring_energy: MinMaxLen,
+    pub hatch_size: MinMaxLen,
 }
 
 impl Default for AttributeConfig {
@@ -78,6 +79,7 @@ impl Default for AttributeConfig {
             cost_of_thought: (0.002, 0.005, 10),
             cost_of_eating: (0.5, 0.4, 10),
             offspring_energy: (400.0, 600.0, 50),
+            hatch_size: (20.0, 35.0, 15),
         }
     }
 }
@@ -88,8 +90,6 @@ pub struct WorldConfig {
     pub initial_synapse_count: usize,
     pub mutations: usize,
     pub start_energy: usize,
-    pub core_energy: usize,
-    pub health_energy: usize,
     pub rotation_cost: (f32, f32),
     pub translation_cost: (f32, f32),
     pub world_size: f32,
@@ -120,9 +120,7 @@ impl Default for WorldConfig {
             start_num: 10,
             initial_synapse_count: 3,
             mutations: 3,
-            start_energy: 1000,
-            core_energy: 100,
-            health_energy: 200,
+            start_energy: 800,
             rotation_cost: (0.05, 0.15),
             translation_cost: (0.05, 0.15),
             world_size: 1000.0,

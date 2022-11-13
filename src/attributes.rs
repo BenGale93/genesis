@@ -9,6 +9,7 @@
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
 //! Cost of thought and cost of eating can be found on chromosome 5.
+//! Size related attributes are on chromosome 6.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
@@ -289,6 +290,18 @@ impl OffspringEnergy {
     }
 }
 
+#[derive(Component, Debug, Deref)]
+pub struct HatchSize(f32);
+
+impl HatchSize {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.hatch_size;
+        AttributeConfig::new(min, max, 0, 6, length)
+    }
+}
+
+impl_from_genome!(HatchSize);
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -304,6 +317,7 @@ pub struct AttributeBundle {
     pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
+    pub hatch_size: HatchSize,
 }
 
 impl AttributeBundle {
@@ -321,6 +335,7 @@ impl AttributeBundle {
         let cost_of_thought = CostOfThought::from_genome(genome);
         let cost_of_eating = CostOfEating::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
+        let hatch_size = HatchSize::from_genome(genome);
 
         Self {
             adult_age,
@@ -336,6 +351,7 @@ impl AttributeBundle {
             cost_of_thought,
             cost_of_eating,
             offspring_energy,
+            hatch_size,
         }
     }
 }
