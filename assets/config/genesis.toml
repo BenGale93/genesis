@@ -65,6 +65,11 @@ lay_egg_boundary = [
     0.8,
     30,
 ]
+want_to_grow_boundary = [
+    -0.5,
+    0.5,
+    20,
+]
 eating_boundary = [
     -0.5,
     0.5,

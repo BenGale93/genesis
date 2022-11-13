@@ -125,7 +125,6 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
 type BugLiveInfo<'a> = (
     &'a timers::Age,
     &'a body::Vitality,
-    &'a body::Size,
     &'a sight::Vision,
     &'a timers::InternalTimer,
     &'a lifecycle::Generation,
@@ -150,11 +149,11 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Age: {:.2}", &bug_info.0.elapsed_secs()));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
-    ui.label(format!("Size: {}", &bug_info.2 .0));
-    ui.label(format!("Visible Bugs: {}", &bug_info.3.visible_bugs()));
-    ui.label(format!("Visible Food: {}", &bug_info.3.visible_food()));
-    ui.label(format!("Internal timer: {:.2}", &bug_info.4.elapsed_secs()));
-    ui.label(format!("Generation: {}", &bug_info.5 .0));
+    ui.label(format!("Size: {}", &bug_info.1.size().value()));
+    ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
+    ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
+    ui.label(format!("Internal timer: {:.2}", &bug_info.3.elapsed_secs()));
+    ui.label(format!("Generation: {}", &bug_info.4 .0));
 }
 
 type BugAttributeInfo<'a> = (
@@ -168,6 +167,7 @@ type BugAttributeInfo<'a> = (
     &'a attributes::OffspringEnergy,
     &'a attributes::LayEggBoundary,
     &'a attributes::InternalTimerBoundary,
+    &'a attributes::WantToGrowBoundary,
     &'a attributes::EatingBoundary,
     &'a attributes::CostOfThought,
     &'a attributes::CostOfEating,
@@ -204,9 +204,10 @@ fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
     ui.label(format!("Offspring energy: {}", **bug_info.7));
     ui.label(format!("Lay egg boundary: {:.3}", **bug_info.8));
     ui.label(format!("Internal timer boundary: {:.3}", **bug_info.9));
-    ui.label(format!("Eating boundary: {:.3}", **bug_info.10));
-    ui.label(format!("Cost of thought: {:.3}", **bug_info.11));
-    ui.label(format!("Cost of eating: {:.3}", **bug_info.12));
+    ui.label(format!("Growing boundary: {:.3}", **bug_info.10));
+    ui.label(format!("Eating boundary: {:.3}", **bug_info.11));
+    ui.label(format!("Cost of thought: {:.3}", **bug_info.12));
+    ui.label(format!("Cost of eating: {:.3}", **bug_info.13));
 }
 
 pub fn bug_brain_info_system(

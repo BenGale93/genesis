@@ -239,6 +239,20 @@ impl LayEggBoundary {
 impl_from_genome!(LayEggBoundary);
 
 #[derive(Component, Debug, Deref)]
+pub struct WantToGrowBoundary(f64);
+
+impl WantToGrowBoundary {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global()
+            .attributes
+            .want_to_grow_boundary;
+        AttributeConfig::new(min, max, 4, 60, length)
+    }
+}
+
+impl_from_genome!(WantToGrowBoundary);
+
+#[derive(Component, Debug, Deref)]
 pub struct EatingBoundary(f64);
 
 impl EatingBoundary {
@@ -313,6 +327,7 @@ pub struct AttributeBundle {
     pub eye_angle: EyeAngle,
     pub internal_timer_boundary: InternalTimerBoundary,
     pub lay_egg_boundary: LayEggBoundary,
+    pub want_to_grow_boundary: WantToGrowBoundary,
     pub eating_boundary: EatingBoundary,
     pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
@@ -331,6 +346,7 @@ impl AttributeBundle {
         let eye_angle = EyeAngle::from_genome(genome);
         let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
         let lay_egg_boundary = LayEggBoundary::from_genome(genome);
+        let want_to_grow_boundary = WantToGrowBoundary::from_genome(genome);
         let eating_boundary = EatingBoundary::from_genome(genome);
         let cost_of_thought = CostOfThought::from_genome(genome);
         let cost_of_eating = CostOfEating::from_genome(genome);
@@ -347,6 +363,7 @@ impl AttributeBundle {
             eye_angle,
             internal_timer_boundary,
             lay_egg_boundary,
+            want_to_grow_boundary,
             eating_boundary,
             cost_of_thought,
             cost_of_eating,

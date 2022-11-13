@@ -108,6 +108,7 @@ pub struct CoreReserve(ecosystem::Energy);
 
 #[derive(Component, Debug)]
 pub struct Vitality {
+    size: Size,
     energy_store: EnergyStore,
     health: Health,
     core_reserve: CoreReserve,
@@ -118,20 +119,24 @@ const HEALTH_MULTIPLIER: usize = 3;
 const ENERGY_MULTIPLIER: usize = 7;
 
 impl Vitality {
-    pub fn new(size: usize, mut total_energy: ecosystem::Energy) -> Self {
-        let core_energy = total_energy.take_energy(CORE_MULTIPLIER * size);
+    pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> Self {
+        let size_uint = size.as_uint();
+        let core_energy = total_energy.take_energy(CORE_MULTIPLIER * size_uint);
         let core_reserve = CoreReserve(core_energy);
 
-        let health_energy = total_energy.take_energy(HEALTH_MULTIPLIER * size);
-        let health = Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size).unwrap());
+        let health_energy = total_energy.take_energy(HEALTH_MULTIPLIER * size_uint);
+        let health =
+            Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size_uint).unwrap());
 
-        let energy_limit = if total_energy.amount() < ENERGY_MULTIPLIER * size {
-            ENERGY_MULTIPLIER * size
+        let energy_limit = if total_energy.amount() < ENERGY_MULTIPLIER * size_uint {
+            ENERGY_MULTIPLIER * size_uint
         } else {
             total_energy.amount()
         };
         let energy_store = EnergyStore(EnergyReserve::new(total_energy, energy_limit).unwrap());
+
         Self {
+            size,
             energy_store,
             health,
             core_reserve,
@@ -178,12 +183,44 @@ impl Vitality {
         let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
+
+    pub fn size(&self) -> &Size {
+        &self.size
+    }
+
+    pub fn grow(&mut self) -> Result<()> {
+        if self.energy_store().amount() < CORE_MULTIPLIER + HEALTH_MULTIPLIER {
+            return Err(anyhow!("Can't grow."));
+        }
+        let core_growing_energy = self.energy_store.take_energy(CORE_MULTIPLIER);
+        self.core_reserve.add_energy(core_growing_energy);
+
+        let health_growing_energy = self.energy_store.take_energy(HEALTH_MULTIPLIER);
+        self.health.energy_limit += HEALTH_MULTIPLIER;
+
+        if self.health.add_energy(health_growing_energy) != ecosystem::Energy::new_empty() {
+            panic!("Tried to grow and couldn't add all the energy to health.")
+        };
+
+        self.energy_store.energy_limit += ENERGY_MULTIPLIER;
+
+        self.size.0 += 1.0;
+        Ok(())
+    }
 }
 
-#[derive(Debug, Component, DerefMut, Deref)]
-pub struct Size(pub f32);
+#[derive(Debug, DerefMut, Deref)]
+pub struct Size(f32);
 
 impl Size {
+    pub fn new(size: f32) -> Self {
+        Size(size)
+    }
+
+    pub fn value(&self) -> f32 {
+        self.0
+    }
+
     pub fn sprite(&self) -> Vec2 {
         Vec2::splat(self.0)
     }
@@ -194,5 +231,9 @@ impl Size {
             Vec2::new(0.0, self.0 / 5.5),
             self.0 / 3.5,
         )
+    }
+
+    pub fn as_uint(&self) -> usize {
+        self.0 as usize
     }
 }

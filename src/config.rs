@@ -14,7 +14,7 @@ pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
 pub const INPUT_NEURONS: usize = 14;
-pub const OUTPUT_NEURONS: usize = 5;
+pub const OUTPUT_NEURONS: usize = 6;
 pub const CHROMOSOME_COUNT: usize = 20;
 pub const CHROMOSOME_LEN: usize = 100;
 
@@ -24,6 +24,7 @@ pub const ROTATE_INDEX: usize = 1;
 pub const REPRODUCE_INDEX: usize = 2;
 pub const EAT_INDEX: usize = 3;
 pub const RESET_TIMER_INDEX: usize = 4;
+pub const WANT_TO_GROWN_INDEX: usize = 5;
 
 // Inputs
 pub const CONSTANT_INDEX: usize = 0;
@@ -55,6 +56,7 @@ pub struct AttributeConfig {
     pub eye_angle: MinMaxLen,
     pub internal_timer_boundary: MinMaxLen,
     pub lay_egg_boundary: MinMaxLen,
+    pub want_to_grow_boundary: MinMaxLen,
     pub eating_boundary: MinMaxLen,
     pub cost_of_thought: MinMaxLen,
     pub cost_of_eating: MinMaxLen,
@@ -75,6 +77,7 @@ impl Default for AttributeConfig {
             eye_angle: (360.0, 30.0, 100),
             internal_timer_boundary: (-0.5, 0.5, 20),
             lay_egg_boundary: (0.0, 0.8, 30),
+            want_to_grow_boundary: (-0.5, 0.5, 20),
             eating_boundary: (-0.5, 0.5, 20),
             cost_of_thought: (0.002, 0.005, 10),
             cost_of_eating: (0.5, 0.4, 10),
