@@ -21,7 +21,7 @@ path = "src/lib.rs"
 genesis-brain = { path = "crates/genesis-brain" }
 genesis-genome = { path = "crates/genesis-genome" }
 genesis-util = { path = "crates/genesis-util/"}
-bevy = { version = "0.8.1", features = [] }
+bevy = { version = "0.9.0", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.37"
 derive_more = "0.99.17"
