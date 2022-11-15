@@ -199,6 +199,7 @@ fn spawn_bug(
         .insert(thinking::ThinkingSum::new())
         .insert(eating::EatingSum::new())
         .insert(growth::GrowingSum::new())
+        .insert(growth::SizeSum::new())
         .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);

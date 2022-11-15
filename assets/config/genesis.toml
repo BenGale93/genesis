@@ -3,13 +3,14 @@ initial_synapse_count = 3
 mutations = 3
 start_energy = 800
 rotation_cost = [
-    0.05,
-    0.15,
+    0.02,
+    0.1,
 ]
 translation_cost = [
-    0.05,
-    0.15,
+    0.02,
+    0.1,
 ]
+unit_size_cost = 0.02
 world_size = 1000.0
 world_energy = 30000
 plant_energy = 100
@@ -76,13 +77,13 @@ eating_boundary = [
     20,
 ]
 cost_of_thought = [
-    0.002,
-    0.005,
+    0.001,
+    0.003,
     10,
 ]
 cost_of_eating = [
-    0.5,
-    0.4,
+    0.3,
+    0.2,
     10,
 ]
 offspring_energy = [
@@ -101,7 +102,7 @@ max_size = [
     20,
 ]
 growth_rate = [
-    0.03,
-    0.07,
+    0.05,
+    0.1,
     20,
 ]

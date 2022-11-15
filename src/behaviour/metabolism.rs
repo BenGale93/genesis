@@ -1,7 +1,7 @@
 use bevy::prelude::{Component, Query, ResMut};
 use derive_more::{Add, Deref, DerefMut, From};
 
-use super::{eating::EatingSum, movement::MovementSum, thinking::ThinkingSum};
+use super::{eating::EatingSum, growth::SizeSum, movement::MovementSum, thinking::ThinkingSum};
 use crate::{body, ecosystem};
 
 #[derive(Component, Debug, PartialEq, Eq, Deref, DerefMut, From, Add)]
@@ -58,6 +58,15 @@ pub fn movement_energy_burn_system(
         let movement_cost = movement_sum.uint_portion();
         if movement_cost >= 1 {
             burnt_energy.add_energy(vitality.take_energy(movement_cost));
+        }
+    }
+}
+
+pub fn size_energy_system(mut query: Query<(&mut body::Vitality, &mut SizeSum, &mut BurntEnergy)>) {
+    for (mut vitality, mut size_sum, mut burnt_energy) in query.iter_mut() {
+        let size_cost = size_sum.uint_portion();
+        if size_cost >= 1 {
+            burnt_energy.add_energy(vitality.take_energy(size_cost));
         }
     }
 }

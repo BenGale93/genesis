@@ -90,3 +90,30 @@ pub fn grow_bug_system(
         *collider = vitality.size().collider();
     }
 }
+
+#[derive(Component, Debug)]
+pub struct SizeSum(f32);
+
+impl SizeSum {
+    pub fn new() -> Self {
+        Self(0.0)
+    }
+
+    pub fn add_existence_time(&mut self, time: f32, cost: f32) {
+        self.0 += time * cost
+    }
+
+    pub fn uint_portion(&mut self) -> usize {
+        let size_floor = self.0.floor();
+        self.0 -= size_floor;
+
+        size_floor as usize
+    }
+}
+
+pub fn existence_system(time: Res<Time>, mut bug_query: Query<(&body::Vitality, &mut SizeSum)>) {
+    for (vitality, mut size_sum) in bug_query.iter_mut() {
+        let rate = vitality.size().current_size() * config::WorldConfig::global().unit_size_cost;
+        size_sum.add_existence_time(time.delta_seconds(), rate);
+    }
+}
