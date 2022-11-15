@@ -188,52 +188,68 @@ impl Vitality {
         &self.size
     }
 
-    pub fn grow(&mut self) -> Result<()> {
-        if self.energy_store().amount() < CORE_MULTIPLIER + HEALTH_MULTIPLIER {
+    pub fn grow(&mut self, amount: usize) -> Result<()> {
+        if self.size.at_max_size()
+            || (self.energy_store().amount() < amount * (CORE_MULTIPLIER + HEALTH_MULTIPLIER))
+        {
             return Err(anyhow!("Can't grow."));
         }
-        let core_growing_energy = self.energy_store.take_energy(CORE_MULTIPLIER);
+        let core_growing_energy = self.energy_store.take_energy(amount * CORE_MULTIPLIER);
         self.core_reserve.add_energy(core_growing_energy);
 
-        let health_growing_energy = self.energy_store.take_energy(HEALTH_MULTIPLIER);
-        self.health.energy_limit += HEALTH_MULTIPLIER;
+        let health_growing_energy = self.energy_store.take_energy(amount * HEALTH_MULTIPLIER);
+        self.health.energy_limit += amount * HEALTH_MULTIPLIER;
 
         if self.health.add_energy(health_growing_energy) != ecosystem::Energy::new_empty() {
             panic!("Tried to grow and couldn't add all the energy to health.")
         };
 
-        self.energy_store.energy_limit += ENERGY_MULTIPLIER;
+        self.energy_store.energy_limit += amount * ENERGY_MULTIPLIER;
 
-        self.size.0 += 1.0;
+        self.size.grow(amount as f32);
         Ok(())
     }
 }
 
-#[derive(Debug, DerefMut, Deref)]
-pub struct Size(f32);
+#[derive(Debug)]
+pub struct Size {
+    current_size: f32,
+    max_size: f32,
+}
 
 impl Size {
-    pub fn new(size: f32) -> Self {
-        Size(size)
+    pub fn new(size: f32, max_size: f32) -> Self {
+        Self {
+            current_size: size,
+            max_size,
+        }
     }
 
-    pub fn value(&self) -> f32 {
-        self.0
+    pub fn current_size(&self) -> f32 {
+        self.current_size
+    }
+
+    pub fn grow(&mut self, increment: f32) {
+        self.current_size = (self.current_size + increment).min(self.max_size);
     }
 
     pub fn sprite(&self) -> Vec2 {
-        Vec2::splat(self.0)
+        Vec2::splat(self.current_size)
     }
 
     pub fn collider(&self) -> Collider {
         Collider::capsule(
-            Vec2::new(0.0, -self.0 / 5.5),
-            Vec2::new(0.0, self.0 / 5.5),
-            self.0 / 3.5,
+            Vec2::new(0.0, -self.current_size / 5.5),
+            Vec2::new(0.0, self.current_size / 5.5),
+            self.current_size / 3.5,
         )
     }
 
     pub fn as_uint(&self) -> usize {
-        self.0 as usize
+        self.current_size as usize
+    }
+
+    pub fn at_max_size(&self) -> bool {
+        self.current_size == self.max_size
     }
 }

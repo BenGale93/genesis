@@ -6,6 +6,7 @@ use bevy::{
 use crate::config;
 
 pub mod eating;
+pub mod growth;
 pub mod lifecycle;
 pub mod metabolism;
 pub mod movement;
@@ -25,11 +26,12 @@ pub fn time_step_system_set() -> SystemSet {
         .with_system(movement::movement_system.after(thinking::thinking_system))
         .with_system(eating::process_eaters_system.after(thinking::thinking_system))
         .with_system(lifecycle::process_layers_system.after(thinking::thinking_system))
-        .with_system(lifecycle::process_growers_system.after(thinking::thinking_system))
+        .with_system(growth::process_growers_system.after(thinking::thinking_system))
         .with_system(lifecycle::transition_to_adult_system)
         .with_system(lifecycle::transition_to_hatching_system)
         .with_system(lifecycle::spawn_plant_system)
-        .with_system(eating::attempted_to_eat_system.after(eating::eating_system))
+        .with_system(eating::attempted_to_eat_system.after(eating::process_eaters_system))
+        .with_system(growth::attempted_to_grow_system.after(growth::process_growers_system))
 }
 
 pub fn egg_spawning_system_set() -> SystemSet {
@@ -41,9 +43,9 @@ pub fn egg_spawning_system_set() -> SystemSet {
 pub fn slow_behaviour_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(0.1))
-        .with_system(eating::eating_system.after(eating::process_eaters_system))
+        .with_system(eating::eating_system.after(eating::attempted_to_eat_system))
         .with_system(lifecycle::lay_egg_system.after(lifecycle::process_layers_system))
-        .with_system(lifecycle::grow_bug_system.after(lifecycle::process_growers_system))
+        .with_system(growth::grow_bug_system.after(growth::attempted_to_grow_system))
 }
 
 pub fn metabolism_system_set() -> SystemSet {

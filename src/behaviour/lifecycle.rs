@@ -11,7 +11,7 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 use rand::Rng;
 
-use super::{eating, metabolism, movement, sight, thinking};
+use super::{eating, growth, metabolism, movement, sight, thinking};
 use crate::{attributes, behaviour::timers, body, config, ecosystem, mind};
 
 #[derive(Component, Debug)]
@@ -164,7 +164,7 @@ fn spawn_bug(
 
     let original_color = body::OriginalColor(Color::WHITE);
 
-    let size = body::Size::new(*attribute_bundle.hatch_size);
+    let size = body::Size::new(*attribute_bundle.hatch_size, *attribute_bundle.max_size);
 
     commands
         .spawn()
@@ -198,6 +198,7 @@ fn spawn_bug(
         .insert(timers::InternalTimer::new())
         .insert(thinking::ThinkingSum::new())
         .insert(eating::EatingSum::new())
+        .insert(growth::GrowingSum::new())
         .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
@@ -344,45 +345,5 @@ pub fn spawn_plant_system(
             Some(e) => e,
         };
         spawn_plant(&mut commands, asset_server, energy)
-    }
-}
-
-#[derive(Component)]
-pub struct TryingToGrow;
-
-type GrowerTest<'a> = (
-    Entity,
-    &'a mind::MindOutput,
-    &'a attributes::WantToGrowBoundary,
-);
-
-pub fn process_growers_system(
-    mut commands: Commands,
-    not_growing_query: Query<GrowerTest, Without<TryingToGrow>>,
-    growing_query: Query<GrowerTest, With<TryingToGrow>>,
-) {
-    for (entity, mind_out, boundary) in not_growing_query.iter() {
-        if mind_out[config::WANT_TO_GROWN_INDEX] > **boundary {
-            commands.entity(entity).insert(TryingToGrow);
-        }
-    }
-
-    for (entity, mind_out, boundary) in growing_query.iter() {
-        if mind_out[config::WANT_TO_GROWN_INDEX] <= **boundary {
-            commands.entity(entity).remove::<TryingToGrow>();
-        }
-    }
-}
-
-pub fn grow_bug_system(
-    mut grower_query: Query<(&mut body::Vitality, &mut Sprite, &mut Collider), With<TryingToGrow>>,
-) {
-    for (mut vitality, mut sprite, mut collider) in grower_query.iter_mut() {
-        match vitality.grow() {
-            Ok(()) => (),
-            Err(_) => continue,
-        };
-        sprite.custom_size = Some(vitality.size().sprite());
-        *collider = vitality.size().collider();
     }
 }

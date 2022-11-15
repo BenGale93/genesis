@@ -8,7 +8,7 @@
 //! Eye range and angle are on chromosome 3 and can either be exactly correlated
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
-//! Cost of thought and cost of eating can be found on chromosome 5.
+//! Cost of thought, growth rate, and cost of eating can be found on chromosome 5.
 //! Size related attributes are on chromosome 6.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
@@ -316,6 +316,29 @@ impl HatchSize {
 
 impl_from_genome!(HatchSize);
 
+#[derive(Component, Debug, Deref)]
+pub struct MaxSize(f32);
+
+impl MaxSize {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.max_size;
+        AttributeConfig::new(min, max, 0, 6, length)
+    }
+}
+
+impl_from_genome!(MaxSize);
+
+#[derive(Component, Debug, Deref)]
+pub struct GrowthRate(f32);
+
+impl GrowthRate {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.growth_rate;
+        AttributeConfig::new(min, max, 0, 5, length)
+    }
+}
+
+impl_from_genome!(GrowthRate);
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -333,6 +356,8 @@ pub struct AttributeBundle {
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
     pub hatch_size: HatchSize,
+    pub max_size: MaxSize,
+    pub growth_rate: GrowthRate,
 }
 
 impl AttributeBundle {
@@ -352,6 +377,8 @@ impl AttributeBundle {
         let cost_of_eating = CostOfEating::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
         let hatch_size = HatchSize::from_genome(genome);
+        let max_size = MaxSize::from_genome(genome);
+        let growth_rate = GrowthRate::from_genome(genome);
 
         Self {
             adult_age,
@@ -369,6 +396,8 @@ impl AttributeBundle {
             cost_of_eating,
             offspring_energy,
             hatch_size,
+            max_size,
+            growth_rate,
         }
     }
 }

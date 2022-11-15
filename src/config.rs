@@ -62,6 +62,8 @@ pub struct AttributeConfig {
     pub cost_of_eating: MinMaxLen,
     pub offspring_energy: MinMaxLen,
     pub hatch_size: MinMaxLen,
+    pub max_size: MinMaxLen,
+    pub growth_rate: MinMaxLen,
 }
 
 impl Default for AttributeConfig {
@@ -83,6 +85,8 @@ impl Default for AttributeConfig {
             cost_of_eating: (0.5, 0.4, 10),
             offspring_energy: (400.0, 600.0, 50),
             hatch_size: (20.0, 35.0, 15),
+            max_size: (80.0, 100.0, 20),
+            growth_rate: (0.03, 0.07, 20),
         }
     }
 }
