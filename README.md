@@ -10,6 +10,6 @@ project for me to learn Rust.
 The following projects have helped inspire this one:
 
 * [The Bibites](https://leocaussan.itch.io/);
-* [NEAT-Python](https://neat-python.readthedocs.io/en/latest/); and
-* [NEAT-rs](https://github.com/stjepangolemac/neat-rs).
+* [NEAT-Python](https://neat-python.readthedocs.io/en/latest/);
+* [NEAT-rs](https://github.com/stjepangolemac/neat-rs); and
 * [Shorelark](https://github.com/Patryk27/shorelark).
