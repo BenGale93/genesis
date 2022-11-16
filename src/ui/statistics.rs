@@ -101,7 +101,7 @@ pub fn count_system(
     mut global_stats: ResMut<GlobalStatistics>,
     adult_query: Query<&lifecycle::Adult>,
     juvenile_query: Query<&lifecycle::Juvenile>,
-    egg_query: Query<&lifecycle::EggMarker>,
+    egg_query: Query<&lifecycle::EggEnergy>,
 ) {
     let stats = global_stats.count_stats_mut();
 

@@ -11,7 +11,7 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 use rand::Rng;
 
-use super::{eating, metabolism, movement, sight, thinking};
+use super::{eating, growth, metabolism, movement, sight, thinking};
 use crate::{attributes, behaviour::timers, body, config, ecosystem, mind};
 
 #[derive(Component, Debug)]
@@ -52,7 +52,7 @@ pub fn transition_to_hatching_system(
 
 type Egg<'a> = (
     Entity,
-    &'a mut body::Vitality,
+    &'a mut EggEnergy,
     &'a Transform,
     &'a mind::Mind,
     &'a body::BugBody,
@@ -64,12 +64,12 @@ pub fn hatch_egg_system(
     asset_server: Res<AssetServer>,
     mut hatch_query: Query<Egg, With<Hatching>>,
 ) {
-    for (entity, mut vitality, transform, mind, body, generation) in hatch_query.iter_mut() {
+    for (entity, mut egg_energy, transform, mind, body, generation) in hatch_query.iter_mut() {
         commands.entity(entity).despawn_recursive();
         spawn_bug(
             &mut commands,
             &asset_server,
-            vitality.move_all_energy(),
+            egg_energy.move_all_energy(),
             (body.clone(), mind.clone(), transform, *generation),
         )
     }
@@ -156,8 +156,6 @@ fn spawn_bug(
     energy: ecosystem::Energy,
     bug_parts: BugParts,
 ) {
-    let size = 30.0;
-
     let (bug_body, mind, transform, generation) = bug_parts;
     let mind_bundle = mind::MindBundle::new(mind);
     let transform_bundle = TransformBundle::from(*transform);
@@ -166,12 +164,14 @@ fn spawn_bug(
 
     let original_color = body::OriginalColor(Color::WHITE);
 
+    let size = body::Size::new(*attribute_bundle.hatch_size, *attribute_bundle.max_size);
+
     commands
         .spawn()
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(size, size)),
+                custom_size: Some(size.sprite()),
                 color: original_color.0,
                 ..default()
             },
@@ -184,11 +184,7 @@ fn spawn_bug(
             angular_damping: 1.0,
         })
         .insert_bundle(transform_bundle)
-        .insert(Collider::capsule(
-            Vec2::new(0.0, -6.0),
-            Vec2::new(0.0, 6.0),
-            9.0,
-        ))
+        .insert(size.collider())
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(movement::MovementSum::new())
@@ -196,12 +192,14 @@ fn spawn_bug(
         .insert(timers::Age::default())
         .insert(Juvenile)
         .insert(sight::Vision::new())
-        .insert(body::Vitality::new(energy))
+        .insert(body::Vitality::new(size, energy))
         .insert(metabolism::BurntEnergy::new())
         .insert(timers::Heart::new())
         .insert(timers::InternalTimer::new())
         .insert(thinking::ThinkingSum::new())
         .insert(eating::EatingSum::new())
+        .insert(growth::GrowingSum::new())
+        .insert(growth::SizeSum::new())
         .insert(generation)
         .insert_bundle(attribute_bundle)
         .insert_bundle(mind_bundle);
@@ -219,7 +217,14 @@ pub fn kill_bug_system(
 }
 
 #[derive(Component)]
-pub struct EggMarker;
+pub struct EggEnergy(ecosystem::Energy);
+
+impl EggEnergy {
+    #[must_use]
+    pub fn move_all_energy(&mut self) -> ecosystem::Energy {
+        self.0.take_energy(self.0.amount())
+    }
+}
 
 fn spawn_egg(
     commands: &mut Commands,
@@ -237,7 +242,7 @@ fn spawn_egg(
 
     commands
         .spawn()
-        .insert(EggMarker)
+        .insert(EggEnergy(energy))
         .insert_bundle(SpriteBundle {
             texture: asset_server.load("egg.png"),
             sprite: Sprite {
@@ -260,10 +265,8 @@ fn spawn_egg(
         .insert(bug_body)
         .insert(mind)
         .insert(generation)
-        .insert(EggMarker)
         .insert(timers::Age::default())
-        .insert(metabolism::BurntEnergy::new())
-        .insert(body::Vitality::new(energy));
+        .insert(metabolism::BurntEnergy::new());
 }
 
 pub fn spawn_egg_system(

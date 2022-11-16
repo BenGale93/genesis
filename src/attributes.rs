@@ -8,7 +8,8 @@
 //! Eye range and angle are on chromosome 3 and can either be exactly correlated
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
-//! Cost of thought and cost of eating can be found on chromosome 5.
+//! Cost of thought, growth rate, and cost of eating can be found on chromosome 5.
+//! Size related attributes are on chromosome 10.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
@@ -238,6 +239,20 @@ impl LayEggBoundary {
 impl_from_genome!(LayEggBoundary);
 
 #[derive(Component, Debug, Deref)]
+pub struct WantToGrowBoundary(f64);
+
+impl WantToGrowBoundary {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global()
+            .attributes
+            .want_to_grow_boundary;
+        AttributeConfig::new(min, max, 4, 60, length)
+    }
+}
+
+impl_from_genome!(WantToGrowBoundary);
+
+#[derive(Component, Debug, Deref)]
 pub struct EatingBoundary(f64);
 
 impl EatingBoundary {
@@ -289,6 +304,41 @@ impl OffspringEnergy {
     }
 }
 
+#[derive(Component, Debug, Deref)]
+pub struct HatchSize(f32);
+
+impl HatchSize {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.hatch_size;
+        AttributeConfig::new(min, max, 10, 3, length)
+    }
+}
+
+impl_from_genome!(HatchSize);
+
+#[derive(Component, Debug, Deref)]
+pub struct MaxSize(f32);
+
+impl MaxSize {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.max_size;
+        AttributeConfig::new(min, max, 10, 8, length)
+    }
+}
+
+impl_from_genome!(MaxSize);
+
+#[derive(Component, Debug, Deref)]
+pub struct GrowthRate(f32);
+
+impl GrowthRate {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.growth_rate;
+        AttributeConfig::new(min, max, 0, 5, length)
+    }
+}
+
+impl_from_genome!(GrowthRate);
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -300,10 +350,14 @@ pub struct AttributeBundle {
     pub eye_angle: EyeAngle,
     pub internal_timer_boundary: InternalTimerBoundary,
     pub lay_egg_boundary: LayEggBoundary,
+    pub want_to_grow_boundary: WantToGrowBoundary,
     pub eating_boundary: EatingBoundary,
     pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
+    pub hatch_size: HatchSize,
+    pub max_size: MaxSize,
+    pub growth_rate: GrowthRate,
 }
 
 impl AttributeBundle {
@@ -317,10 +371,14 @@ impl AttributeBundle {
         let eye_angle = EyeAngle::from_genome(genome);
         let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
         let lay_egg_boundary = LayEggBoundary::from_genome(genome);
+        let want_to_grow_boundary = WantToGrowBoundary::from_genome(genome);
         let eating_boundary = EatingBoundary::from_genome(genome);
         let cost_of_thought = CostOfThought::from_genome(genome);
         let cost_of_eating = CostOfEating::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
+        let hatch_size = HatchSize::from_genome(genome);
+        let max_size = MaxSize::from_genome(genome);
+        let growth_rate = GrowthRate::from_genome(genome);
 
         Self {
             adult_age,
@@ -332,10 +390,14 @@ impl AttributeBundle {
             eye_angle,
             internal_timer_boundary,
             lay_egg_boundary,
+            want_to_grow_boundary,
             eating_boundary,
             cost_of_thought,
             cost_of_eating,
             offspring_energy,
+            hatch_size,
+            max_size,
+            growth_rate,
         }
     }
 }

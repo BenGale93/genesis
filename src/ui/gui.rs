@@ -149,13 +149,14 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Age: {:.2}", &bug_info.0.elapsed_secs()));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
+    ui.label(format!("Size: {}", &bug_info.1.size().current_size()));
     ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
     ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
     ui.label(format!("Internal timer: {:.2}", &bug_info.3.elapsed_secs()));
     ui.label(format!("Generation: {}", &bug_info.4 .0));
 }
 
-type BugAttributeInfo<'a> = (
+type BugAttributeInfoPart1<'a> = (
     &'a attributes::AdultAge,
     &'a attributes::DeathAge,
     &'a attributes::EyeAngle,
@@ -166,45 +167,62 @@ type BugAttributeInfo<'a> = (
     &'a attributes::OffspringEnergy,
     &'a attributes::LayEggBoundary,
     &'a attributes::InternalTimerBoundary,
+    &'a attributes::WantToGrowBoundary,
     &'a attributes::EatingBoundary,
     &'a attributes::CostOfThought,
     &'a attributes::CostOfEating,
+    &'a attributes::MaxSize,
 );
 
+type BugAttributeInfoPart2<'a> = (&'a attributes::GrowthRate,);
+
 pub fn bug_attribute_info_system(
-    bug_query: Query<BugAttributeInfo, With<Selected>>,
+    bug_query_part1: Query<BugAttributeInfoPart1, With<Selected>>,
+    bug_query_part2: Query<BugAttributeInfoPart2, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<PanelState>,
 ) {
-    if let Ok(bug_info) = bug_query.get_single() {
+    if let (Ok(bug_info_part1), Ok(bug_info_part2)) =
+        (bug_query_part1.get_single(), bug_query_part2.get_single())
+    {
         if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
             top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
                 bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                bug_attribute_sub_panel(ui, &bug_info);
+                bug_attribute_sub_panel(ui, &bug_info_part1, &bug_info_part2);
             });
         }
     }
 }
 
-fn bug_attribute_sub_panel(ui: &mut egui::Ui, bug_info: &BugAttributeInfo) {
-    ui.label(format!("Adult Age: {}", **bug_info.0));
-    ui.label(format!("Death Age: {}", **bug_info.1));
-    ui.label(format!("Eye angle: {:.3}", **bug_info.2));
-    ui.label(format!("Eye range: {}", **bug_info.3));
-    ui.label(format!("Max rotation: {}", &bug_info.4.value()));
-    ui.label(format!("Rotation cost: {:.3}", &bug_info.4.cost()));
-    ui.label(format!("Max speed: {}", &bug_info.5.value()));
-    ui.label(format!("Movement cost: {:.3}", &bug_info.5.cost()));
+fn bug_attribute_sub_panel(
+    ui: &mut egui::Ui,
+    bug_info_part1: &BugAttributeInfoPart1,
+    bug_info_part2: &BugAttributeInfoPart2,
+) {
+    ui.label(format!("Adult Age: {}", **bug_info_part1.0));
+    ui.label(format!("Death Age: {}", **bug_info_part1.1));
+    ui.label(format!("Eye angle: {:.3}", **bug_info_part1.2));
+    ui.label(format!("Eye range: {}", **bug_info_part1.3));
+    ui.label(format!("Max rotation: {}", &bug_info_part1.4.value()));
+    ui.label(format!("Rotation cost: {:.3}", &bug_info_part1.4.cost()));
+    ui.label(format!("Max speed: {}", &bug_info_part1.5.value()));
+    ui.label(format!("Movement cost: {:.3}", &bug_info_part1.5.cost()));
     ui.label(format!(
         "Mutation Probability: {:.3}",
-        &bug_info.6.as_float()
+        &bug_info_part1.6.as_float()
     ));
-    ui.label(format!("Offspring energy: {}", **bug_info.7));
-    ui.label(format!("Lay egg boundary: {:.3}", **bug_info.8));
-    ui.label(format!("Internal timer boundary: {:.3}", **bug_info.9));
-    ui.label(format!("Eating boundary: {:.3}", **bug_info.10));
-    ui.label(format!("Cost of thought: {:.3}", **bug_info.11));
-    ui.label(format!("Cost of eating: {:.3}", **bug_info.12));
+    ui.label(format!("Offspring energy: {}", **bug_info_part1.7));
+    ui.label(format!("Lay egg boundary: {:.3}", **bug_info_part1.8));
+    ui.label(format!(
+        "Internal timer boundary: {:.3}",
+        **bug_info_part1.9
+    ));
+    ui.label(format!("Growing boundary: {:.3}", **bug_info_part1.10));
+    ui.label(format!("Eating boundary: {:.3}", **bug_info_part1.11));
+    ui.label(format!("Cost of thought: {:.3}", **bug_info_part1.12));
+    ui.label(format!("Cost of eating: {:.3}", **bug_info_part1.13));
+    ui.label(format!("Maximum size: {:.3}", **bug_info_part1.14));
+    ui.label(format!("Growth rate: {:.3}", **bug_info_part2.0));
 }
 
 pub fn bug_brain_info_system(
@@ -240,7 +258,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
 type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 
 pub fn egg_live_info_panel_system(
-    egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggMarker>)>,
+    egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggEnergy>)>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<PanelState>,
 ) {

@@ -10,7 +10,7 @@ const RADIUS: f32 = 20.0;
 const SPACING: f32 = 20.0;
 const START_POS: (f32, f32) = (30.0, 100.0);
 const COLOR_ARRAY: &[(u8, u8, u8)] = &[(255, 0, 0), (160, 160, 160), (0, 150, 0)];
-const NEURON_NAMES: [&str; 19] = [
+const NEURON_NAMES: [&str; 20] = [
     "Constant",
     "Movement",
     "Rotation",
@@ -30,6 +30,7 @@ const NEURON_NAMES: [&str; 19] = [
     "Reproduce",
     "Eat",
     "Reset timer",
+    "Want to grow",
 ];
 
 fn paint_synapses(ui: &mut egui::Ui, synapses: &Synapses, neuron_layout: &[GuiNeuron]) {

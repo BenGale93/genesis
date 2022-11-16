@@ -9,3 +9,6 @@ test-all:
 
 test PACKAGE:
     @cargo nextest run -p {{PACKAGE}}
+
+clean:
+    @rm assets/config/genesis.toml

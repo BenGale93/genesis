@@ -1,7 +1,8 @@
 use std::fmt;
 
 use anyhow::{anyhow, Result};
-use bevy::prelude::{Color, Component};
+use bevy::prelude::{Color, Component, Vec2};
+use bevy_rapier2d::prelude::Collider;
 use derive_more::{Deref, DerefMut};
 use genesis_genome::Genome;
 use genesis_util::Probability;
@@ -89,12 +90,6 @@ impl EnergyReserve {
     fn take_energy(&mut self, amount: usize) -> ecosystem::Energy {
         self.energy.take_energy(amount)
     }
-
-    #[must_use]
-    fn take_all_energy(&mut self) -> ecosystem::Energy {
-        let amount = self.amount();
-        self.take_energy(amount)
-    }
 }
 impl fmt::Display for EnergyReserve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -113,24 +108,35 @@ pub struct CoreReserve(ecosystem::Energy);
 
 #[derive(Component, Debug)]
 pub struct Vitality {
+    size: Size,
     energy_store: EnergyStore,
     health: Health,
     core_reserve: CoreReserve,
 }
 
+const CORE_MULTIPLIER: usize = 2;
+const HEALTH_MULTIPLIER: usize = 3;
+const ENERGY_MULTIPLIER: usize = 7;
+
 impl Vitality {
-    pub fn new(mut total_energy: ecosystem::Energy) -> Self {
-        let core_energy = config::WorldConfig::global().core_energy;
-        let core_reserve = CoreReserve(total_energy.take_energy(core_energy));
+    pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> Self {
+        let size_uint = size.as_uint();
+        let core_energy = total_energy.take_energy(CORE_MULTIPLIER * size_uint);
+        let core_reserve = CoreReserve(core_energy);
 
-        let health_energy = config::WorldConfig::global().health_energy;
-        let health = Health(
-            EnergyReserve::new(total_energy.take_energy(health_energy), health_energy).unwrap(),
-        );
+        let health_energy = total_energy.take_energy(HEALTH_MULTIPLIER * size_uint);
+        let health =
+            Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size_uint).unwrap());
 
-        let energy_limit = config::WorldConfig::global().start_energy - core_energy - health_energy;
+        let energy_limit = if total_energy.amount() < ENERGY_MULTIPLIER * size_uint {
+            ENERGY_MULTIPLIER * size_uint
+        } else {
+            total_energy.amount()
+        };
         let energy_store = EnergyStore(EnergyReserve::new(total_energy, energy_limit).unwrap());
+
         Self {
+            size,
             energy_store,
             health,
             core_reserve,
@@ -178,13 +184,72 @@ impl Vitality {
         self.add_energy(extracted_energy)
     }
 
-    #[must_use]
-    pub fn move_all_energy(&mut self) -> ecosystem::Energy {
-        let core_energy = self.core_reserve.amount();
-        let mut moved_energy = self.core_reserve.take_energy(core_energy);
+    pub fn size(&self) -> &Size {
+        &self.size
+    }
 
-        moved_energy = moved_energy + self.health.take_all_energy();
-        moved_energy = moved_energy + self.energy_store.take_all_energy();
-        moved_energy
+    pub fn grow(&mut self, amount: usize) -> Result<()> {
+        if self.size.at_max_size()
+            || (self.energy_store().amount() < amount * (CORE_MULTIPLIER + HEALTH_MULTIPLIER))
+        {
+            return Err(anyhow!("Can't grow."));
+        }
+        let core_growing_energy = self.energy_store.take_energy(amount * CORE_MULTIPLIER);
+        self.core_reserve.add_energy(core_growing_energy);
+
+        let health_growing_energy = self.energy_store.take_energy(amount * HEALTH_MULTIPLIER);
+        self.health.energy_limit += amount * HEALTH_MULTIPLIER;
+
+        if self.health.add_energy(health_growing_energy) != ecosystem::Energy::new_empty() {
+            panic!("Tried to grow and couldn't add all the energy to health.")
+        };
+
+        self.energy_store.energy_limit += amount * ENERGY_MULTIPLIER;
+
+        self.size.grow(amount as f32);
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub struct Size {
+    current_size: f32,
+    max_size: f32,
+}
+
+impl Size {
+    pub fn new(size: f32, max_size: f32) -> Self {
+        Self {
+            current_size: size,
+            max_size,
+        }
+    }
+
+    pub fn current_size(&self) -> f32 {
+        self.current_size
+    }
+
+    pub fn grow(&mut self, increment: f32) {
+        self.current_size = (self.current_size + increment).min(self.max_size);
+    }
+
+    pub fn sprite(&self) -> Vec2 {
+        Vec2::splat(self.current_size)
+    }
+
+    pub fn collider(&self) -> Collider {
+        Collider::capsule(
+            Vec2::new(0.0, -self.current_size / 5.5),
+            Vec2::new(0.0, self.current_size / 5.5),
+            self.current_size / 3.5,
+        )
+    }
+
+    pub fn as_uint(&self) -> usize {
+        self.current_size as usize
+    }
+
+    pub fn at_max_size(&self) -> bool {
+        self.current_size == self.max_size
     }
 }
