@@ -9,7 +9,7 @@
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
 //! Cost of thought, growth rate, and cost of eating can be found on chromosome 5.
-//! Size related attributes are on chromosome 6.
+//! Size related attributes are on chromosome 10.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
@@ -310,7 +310,7 @@ pub struct HatchSize(f32);
 impl HatchSize {
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.hatch_size;
-        AttributeConfig::new(min, max, 0, 6, length)
+        AttributeConfig::new(min, max, 10, 3, length)
     }
 }
 
@@ -322,7 +322,7 @@ pub struct MaxSize(f32);
 impl MaxSize {
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.max_size;
-        AttributeConfig::new(min, max, 0, 6, length)
+        AttributeConfig::new(min, max, 10, 8, length)
     }
 }
 
