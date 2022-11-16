@@ -3,7 +3,7 @@ authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
 name = "genesis"
 version = "0.1.0"
 edition = "2021"
-license = "Apache-2.0"
+license = "MIT"
 repository = "https://github.com/BenGale93/genesis"
 readme = "./README.md"
 

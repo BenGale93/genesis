@@ -3,7 +3,7 @@ authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
 name = "genesis-util"
 version = "0.1.0"
 edition = "2021"
-license = "Apache-2.0"
+license = "MIT"
 
 [dependencies]
 rand = "0.8.5"
