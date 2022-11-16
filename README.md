@@ -12,3 +12,4 @@ The following projects have helped inspire this one:
 * [The Bibites](https://leocaussan.itch.io/);
 * [NEAT-Python](https://neat-python.readthedocs.io/en/latest/); and
 * [NEAT-rs](https://github.com/stjepangolemac/neat-rs).
+* [Shorelark](https://github.com/Patryk27/shorelark).
