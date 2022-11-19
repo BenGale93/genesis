@@ -71,13 +71,27 @@ pub fn attempted_to_eat_system(
     }
 }
 
+#[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
+pub struct EnergyConsumed(pub usize);
+
 pub fn eating_system(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
-    mut bug_query: Query<(Entity, &mut Vitality, &Transform, &mut BurntEnergy), With<TryingToEat>>,
+    mut bug_query: Query<
+        (
+            Entity,
+            &mut Vitality,
+            &Transform,
+            &mut BurntEnergy,
+            &mut EnergyConsumed,
+        ),
+        With<TryingToEat>,
+    >,
     mut plant_query: Query<(Entity, &mut Plant, &Transform)>,
 ) {
-    for (bug_entity, mut vitality, bug_transform, mut burnt_energy) in bug_query.iter_mut() {
+    for (bug_entity, mut vitality, bug_transform, mut burnt_energy, mut energy_consumed) in
+        bug_query.iter_mut()
+    {
         for contact_pair in rapier_context.contacts_with(bug_entity) {
             let other_collider = if contact_pair.collider1() == bug_entity {
                 contact_pair.collider2()
@@ -91,7 +105,9 @@ pub fn eating_system(
                     );
                     let rebased_angle = maths::rebased_angle(angle, bug_transform.rotation.z);
                     if rebased_angle < 0.5 {
+                        let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
+                        energy_consumed.0 += initial_plant_energy - leftover.amount();
                         burnt_energy.add_energy(leftover);
                         if plant_energy.energy().amount() == 0 {
                             commands.entity(plant_entity).despawn_recursive();

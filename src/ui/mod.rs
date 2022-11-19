@@ -27,6 +27,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(interaction::camera_zooming_system)
         .with_system(gui::global_ui_update_system)
         .with_system(gui::bug_brain_info_system)
+        .with_system(gui::bug_stats_info_system)
 }
 
 pub fn selection_system_set() -> SystemSet {
@@ -42,6 +43,7 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::max_generation_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::time_elapsed_system)
+        .with_system(statistics::performance_stats_system)
 }
 
 #[derive(Debug, Serialize)]

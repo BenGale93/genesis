@@ -13,7 +13,7 @@ use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use super::{brain_panel, interaction, statistics};
 use crate::{
     attributes,
-    behaviour::{lifecycle, sight, timers},
+    behaviour::{eating, lifecycle, sight, timers},
     body, ecosystem,
 };
 
@@ -49,6 +49,16 @@ pub fn global_ui_update_system(
             ui.label(format!(
                 "Total food energy: {}",
                 global_stats.energy_stats().current_food_energy()
+            ));
+            ui.label(format!(
+                "Highest energy consumed: {}",
+                global_stats
+                    .performance_stats()
+                    .current_highest_energy_consumed()
+            ));
+            ui.label(format!(
+                "Most eggs laid: {}",
+                global_stats.performance_stats().current_most_eggs_laid()
             ));
         });
 }
@@ -111,6 +121,7 @@ pub enum BugInfoPanel {
     Live,
     Attributes,
     Brain,
+    Stats,
 }
 
 fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
@@ -118,6 +129,7 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Live, "Live");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Brain, "Brain");
+        ui.selectable_value(bug_info_panel_state, BugInfoPanel::Stats, "Statistics");
     });
     ui.end_row();
 }
@@ -238,6 +250,28 @@ pub fn bug_brain_info_system(
             });
         }
     }
+}
+
+type BugStatsInfo<'a> = (&'a eating::EnergyConsumed, &'a lifecycle::EggsLaid);
+
+pub fn bug_stats_info_system(
+    bug_query: Query<BugStatsInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<PanelState>,
+) {
+    if let Ok(bug_info) = bug_query.get_single() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Stats {
+            top_left_info_window("Bug Statistics").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                bug_stat_sub_panel(ui, &bug_info);
+            });
+        }
+    }
+}
+
+fn bug_stat_sub_panel(ui: &mut egui::Ui, bug_stats: &BugStatsInfo) {
+    ui.label(format!("Energy consumed: {}", **bug_stats.0));
+    ui.label(format!("Eggs laid: {}", **bug_stats.1));
 }
 
 #[derive(Debug, PartialEq, Default)]
