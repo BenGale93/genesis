@@ -17,50 +17,83 @@ use crate::{
     body, ecosystem,
 };
 
-#[allow(clippy::too_many_arguments)]
+#[derive(Debug, Default, Resource)]
+pub struct GlobalPanelState(pub GlobalPanel);
+
+#[derive(Debug, PartialEq, Default)]
+pub enum GlobalPanel {
+    #[default]
+    Environment,
+    Population,
+}
+
+fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel) {
+    ui.horizontal(|ui| {
+        ui.selectable_value(global_panel_state, GlobalPanel::Environment, "Environment");
+        ui.selectable_value(
+            global_panel_state,
+            GlobalPanel::Population,
+            "Population Statistics",
+        );
+    });
+    ui.end_row();
+}
+
 pub fn global_ui_update_system(
-    mut egui_ctx: ResMut<EguiContext>,
     global_stats: Res<statistics::GlobalStatistics>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<GlobalPanelState>,
 ) {
     egui::Window::new("Global Info")
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5.0, -5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
-            ui.label(format!(
-                "Global energy: {}",
-                global_stats.energy_stats().current_available_energy()
-            ));
-            ui.label(format!("Time elapsed: {:.2}", global_stats.time_elapsed()));
-            ui.label(format!(
-                "Max generation: {}",
-                global_stats.current_max_generation()
-            ));
-            ui.label(format!(
-                "Number of adults: {}",
-                global_stats.count_stats().current_adults()
-            ));
-            ui.label(format!(
-                "Number of juveniles: {}",
-                global_stats.count_stats().current_juveniles()
-            ));
-            ui.label(format!(
-                "Number of eggs: {}",
-                global_stats.count_stats().current_eggs()
-            ));
-            ui.label(format!(
-                "Total food energy: {}",
-                global_stats.energy_stats().current_food_energy()
-            ));
-            ui.label(format!(
-                "Highest energy consumed: {}",
-                global_stats
-                    .performance_stats()
-                    .current_highest_energy_consumed()
-            ));
-            ui.label(format!(
-                "Most eggs laid: {}",
-                global_stats.performance_stats().current_most_eggs_laid()
-            ));
+            global_panel_buttons(ui, &mut panel_state.0);
+            match panel_state.0 {
+                GlobalPanel::Environment => environment_sub_panel(ui, &global_stats),
+                GlobalPanel::Population => population_sub_panel(ui, &global_stats),
+            };
         });
+}
+
+fn environment_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::GlobalStatistics>) {
+    ui.label(format!(
+        "Global energy: {}",
+        global_stats.energy_stats().current_available_energy()
+    ));
+    ui.label(format!("Time elapsed: {:.2}", global_stats.time_elapsed()));
+    ui.label(format!(
+        "Max generation: {}",
+        global_stats.current_max_generation()
+    ));
+    ui.label(format!(
+        "Number of adults: {}",
+        global_stats.count_stats().current_adults()
+    ));
+    ui.label(format!(
+        "Number of juveniles: {}",
+        global_stats.count_stats().current_juveniles()
+    ));
+    ui.label(format!(
+        "Number of eggs: {}",
+        global_stats.count_stats().current_eggs()
+    ));
+    ui.label(format!(
+        "Total food energy: {}",
+        global_stats.energy_stats().current_food_energy()
+    ));
+}
+
+fn population_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::GlobalStatistics>) {
+    ui.label(format!(
+        "Highest energy consumed: {}",
+        global_stats
+            .performance_stats()
+            .current_highest_energy_consumed()
+    ));
+    ui.label(format!(
+        "Most eggs laid: {}",
+        global_stats.performance_stats().current_most_eggs_laid()
+    ));
 }
 
 pub fn run_if_not_using_egui(mut egui_context: ResMut<EguiContext>) -> ShouldRun {
@@ -106,7 +139,7 @@ pub fn select_sprite_system(
 }
 
 #[derive(Debug, Default, Resource)]
-pub struct PanelState {
+pub struct EntityPanelState {
     pub bug_info_panel_state: BugInfoPanel,
     pub egg_info_panel_state: EggInfoPanel,
 }
@@ -145,7 +178,7 @@ type BugLiveInfo<'a> = (
 pub fn bug_live_info_system(
     bug_query: Query<BugLiveInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let Ok(bug_info) = bug_query.get_single() {
         if panel_state.bug_info_panel_state == BugInfoPanel::Live {
@@ -192,7 +225,7 @@ pub fn bug_attribute_info_system(
     bug_query_part1: Query<BugAttributeInfoPart1, With<Selected>>,
     bug_query_part2: Query<BugAttributeInfoPart2, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let (Ok(bug_info_part1), Ok(bug_info_part2)) =
         (bug_query_part1.get_single(), bug_query_part2.get_single())
@@ -240,7 +273,7 @@ fn bug_attribute_sub_panel(
 pub fn bug_brain_info_system(
     brain_query: Query<brain_panel::BugBrainInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let Ok(bug_info) = brain_query.get_single() {
         if panel_state.bug_info_panel_state == BugInfoPanel::Brain {
@@ -257,7 +290,7 @@ type BugStatsInfo<'a> = (&'a eating::EnergyConsumed, &'a lifecycle::EggsLaid);
 pub fn bug_stats_info_system(
     bug_query: Query<BugStatsInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let Ok(bug_info) = bug_query.get_single() {
         if panel_state.bug_info_panel_state == BugInfoPanel::Stats {
@@ -294,7 +327,7 @@ type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 pub fn egg_live_info_panel_system(
     egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggEnergy>)>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let Ok(egg_info) = egg_query.get_single() {
         if panel_state.egg_info_panel_state == EggInfoPanel::Live {
@@ -316,7 +349,7 @@ type EggAttributeInfo<'a> = &'a attributes::HatchAge;
 pub fn egg_attribute_info_panel_system(
     egg_query: Query<EggAttributeInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<PanelState>,
+    mut panel_state: ResMut<EntityPanelState>,
 ) {
     if let Ok(egg_info) = egg_query.get_single() {
         if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {

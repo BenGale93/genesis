@@ -10,7 +10,7 @@ use bevy::{
     prelude::{EventReader, Res, SystemSet},
     time::FixedTimestep,
 };
-pub use gui::PanelState;
+pub use gui::{EntityPanelState, GlobalPanelState};
 use serde_derive::Serialize;
 pub use statistics::GlobalStatistics;
 
