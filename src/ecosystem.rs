@@ -1,5 +1,5 @@
 extern crate derive_more;
-use bevy::prelude::Component;
+use bevy::prelude::{Component, Resource};
 use derive_more::{Add, Constructor, Display, Sub};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
@@ -45,7 +45,7 @@ impl Plant {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Resource)]
 pub struct Ecosystem {
     energy: Energy,
 }

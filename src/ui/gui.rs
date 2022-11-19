@@ -2,7 +2,7 @@ use bevy::{
     ecs::schedule::ShouldRun,
     prelude::{
         Camera, Color, Commands, Component, Entity, GlobalTransform, Input, MouseButton, Query,
-        Res, ResMut, With,
+        Res, ResMut, Resource, With,
     },
     sprite::Sprite,
     window::Windows,
@@ -95,7 +95,7 @@ pub fn select_sprite_system(
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Resource)]
 pub struct PanelState {
     pub bug_info_panel_state: BugInfoPanel,
     pub egg_info_panel_state: EggInfoPanel,

@@ -167,8 +167,7 @@ fn spawn_bug(
     let size = body::Size::new(*attribute_bundle.hatch_size, *attribute_bundle.max_size);
 
     commands
-        .spawn()
-        .insert_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
                 custom_size: Some(size.sprite()),
@@ -183,7 +182,7 @@ fn spawn_bug(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert_bundle(transform_bundle)
+        .insert(transform_bundle)
         .insert(size.collider())
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
@@ -201,8 +200,8 @@ fn spawn_bug(
         .insert(growth::GrowingSum::new())
         .insert(growth::SizeSum::new())
         .insert(generation)
-        .insert_bundle(attribute_bundle)
-        .insert_bundle(mind_bundle);
+        .insert(attribute_bundle)
+        .insert(mind_bundle);
 }
 
 pub fn kill_bug_system(
@@ -241,9 +240,8 @@ fn spawn_egg(
     let original_color = body::OriginalColor(Color::WHITE);
 
     commands
-        .spawn()
-        .insert(EggEnergy(energy))
-        .insert_bundle(SpriteBundle {
+        .spawn(EggEnergy(energy))
+        .insert(SpriteBundle {
             texture: asset_server.load("egg.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(size, size)),
@@ -258,8 +256,8 @@ fn spawn_egg(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert_bundle(TransformBundle::from(Transform::from_translation(location)))
-        .insert_bundle(attribute_bundle)
+        .insert(TransformBundle::from(Transform::from_translation(location)))
+        .insert(attribute_bundle)
         .insert(Collider::ball(size / 2.0))
         .insert(Velocity::zero())
         .insert(bug_body)
@@ -309,8 +307,7 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
     let original_color = body::OriginalColor(Color::GREEN);
 
     commands
-        .spawn()
-        .insert_bundle(SpriteBundle {
+        .spawn(SpriteBundle {
             texture: asset_server.load("food.png"),
             sprite: Sprite {
                 custom_size: Some(Vec2::new(size, size)),
@@ -325,7 +322,7 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert_bundle(TransformBundle::from(Transform::from_xyz(
+        .insert(TransformBundle::from(Transform::from_xyz(
             rng.gen_range(range.clone()),
             rng.gen_range(range),
             0.0,
