@@ -110,6 +110,9 @@ fn egg_position(parent_transform: &Transform) -> Vec3 {
     egg_pos
 }
 
+#[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
+pub struct EggsLaid(pub usize);
+
 type Parent<'a> = (
     &'a Transform,
     &'a body::BugBody,
@@ -118,6 +121,7 @@ type Parent<'a> = (
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
     &'a Generation,
+    &'a mut EggsLaid,
 );
 
 pub fn lay_egg_system(
@@ -126,8 +130,16 @@ pub fn lay_egg_system(
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
     let mut rng = rand::thread_rng();
-    for (transform, bug_body, mind, prob, mut vitality, offspring_energy, generation) in
-        parent_query.iter_mut()
+    for (
+        transform,
+        bug_body,
+        mind,
+        prob,
+        mut vitality,
+        offspring_energy,
+        generation,
+        mut eggs_laid,
+    ) in parent_query.iter_mut()
     {
         if vitality.energy_store().amount() < **offspring_energy {
             continue;
@@ -136,6 +148,7 @@ pub fn lay_egg_system(
         let location = egg_position(transform);
         let offspring_body = bug_body.mutate(&mut rng, **prob);
         let offspring_mind = mind.mutate(&mut rng, **prob).into();
+        eggs_laid.0 += 1;
         spawn_egg(
             &mut commands,
             &asset_server,
@@ -200,6 +213,8 @@ fn spawn_bug(
         .insert(growth::GrowingSum::new())
         .insert(growth::SizeSum::new())
         .insert(generation)
+        .insert(eating::EnergyConsumed(0))
+        .insert(EggsLaid(0))
         .insert(attribute_bundle)
         .insert(mind_bundle);
 }
