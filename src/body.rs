@@ -116,7 +116,7 @@ pub struct Vitality {
 
 const CORE_MULTIPLIER: usize = 2;
 const HEALTH_MULTIPLIER: usize = 3;
-const ENERGY_MULTIPLIER: usize = 7;
+const ENERGY_MULTIPLIER: usize = 40;
 
 impl Vitality {
     pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> Self {
