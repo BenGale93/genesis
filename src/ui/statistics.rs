@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Query, Res, ResMut},
+    prelude::{Query, Res, ResMut, Resource},
     time::Time,
 };
 use derive_getters::Getters;
@@ -66,7 +66,7 @@ impl EnergyStatistics {
     }
 }
 
-#[derive(Debug, Getters, Serialize)]
+#[derive(Debug, Getters, Serialize, Resource)]
 pub struct GlobalStatistics {
     time_elapsed: f64,
     max_generation: Vec<usize>,
@@ -141,5 +141,5 @@ pub fn energy_stats_system(
 }
 
 pub fn time_elapsed_system(time: Res<Time>, mut global_stats: ResMut<GlobalStatistics>) {
-    global_stats.time_elapsed = time.seconds_since_startup();
+    global_stats.time_elapsed = time.elapsed_seconds_f64();
 }

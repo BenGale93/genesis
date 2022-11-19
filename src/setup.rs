@@ -2,7 +2,7 @@ use bevy::prelude::{Camera2dBundle, Commands, ResMut, SystemSet, Vec2};
 use bevy_rapier2d::prelude::RapierConfiguration;
 
 fn camera_setup(mut commands: Commands) {
-    commands.spawn_bundle(Camera2dBundle::default());
+    commands.spawn(Camera2dBundle::default());
 }
 
 fn physics_setup(mut rapier_config: ResMut<RapierConfiguration>) {

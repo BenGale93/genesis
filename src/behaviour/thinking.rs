@@ -95,8 +95,7 @@ mod tests {
 
         let bug_id = app
             .world
-            .spawn()
-            .insert(test_mind)
+            .spawn(test_mind)
             .insert(MindInput(vec![1.0]))
             .insert(MindOutput(vec![0.0]))
             .insert(ThinkingSum::new())
@@ -119,7 +118,7 @@ mod tests {
         app.add_system(thinking_system);
         let mind = Mind::random(3, 2);
 
-        let bug_id = app.world.spawn().insert_bundle(MindBundle::new(mind)).id();
+        let bug_id = app.world.spawn(MindBundle::new(mind)).id();
 
         app.update();
 

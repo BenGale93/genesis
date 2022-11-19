@@ -8,6 +8,6 @@ license = "MIT"
 [dependencies]
 rand = "0.8.5"
 thiserror = "1.0.37"
-nalgebra = "0.31.2"
-glam = "0.21.3"
+nalgebra = "0.31.4"
+glam = "0.22.0"
 ndarray = "0.15.6"

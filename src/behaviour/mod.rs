@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{ParallelSystemDescriptorCoercion, SystemSet},
+    prelude::{IntoSystemDescriptor, SystemSet},
     time::FixedTimestep,
 };
 
