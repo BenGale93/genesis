@@ -24,17 +24,13 @@ pub struct GlobalPanelState(pub GlobalPanel);
 pub enum GlobalPanel {
     #[default]
     Environment,
-    Population,
+    Performance,
 }
 
 fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel) {
     ui.horizontal(|ui| {
         ui.selectable_value(global_panel_state, GlobalPanel::Environment, "Environment");
-        ui.selectable_value(
-            global_panel_state,
-            GlobalPanel::Population,
-            "Population Statistics",
-        );
+        ui.selectable_value(global_panel_state, GlobalPanel::Performance, "Performance");
     });
     ui.end_row();
 }
@@ -50,7 +46,9 @@ pub fn global_ui_update_system(
             global_panel_buttons(ui, &mut panel_state.0);
             match panel_state.0 {
                 GlobalPanel::Environment => environment_sub_panel(ui, &global_stats),
-                GlobalPanel::Population => population_sub_panel(ui, &global_stats),
+                GlobalPanel::Performance => {
+                    population_sub_panel(ui, global_stats.performance_stats())
+                }
             };
         });
 }
@@ -61,10 +59,6 @@ fn environment_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::Globa
         global_stats.energy_stats().current_available_energy()
     ));
     ui.label(format!("Time elapsed: {:.2}", global_stats.time_elapsed()));
-    ui.label(format!(
-        "Max generation: {}",
-        global_stats.current_max_generation()
-    ));
     ui.label(format!(
         "Number of adults: {}",
         global_stats.count_stats().current_adults()
@@ -83,16 +77,21 @@ fn environment_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::Globa
     ));
 }
 
-fn population_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::GlobalStatistics>) {
+fn population_sub_panel(
+    ui: &mut egui::Ui,
+    performance_stats: &statistics::BugPerformanceStatistics,
+) {
     ui.label(format!(
         "Highest energy consumed: {}",
-        global_stats
-            .performance_stats()
-            .current_highest_energy_consumed()
+        performance_stats.current_highest_energy_consumed()
     ));
     ui.label(format!(
         "Most eggs laid: {}",
-        global_stats.performance_stats().current_most_eggs_laid()
+        performance_stats.current_most_eggs_laid()
+    ));
+    ui.label(format!(
+        "Max generation: {}",
+        performance_stats.current_max_generation()
     ));
 }
 

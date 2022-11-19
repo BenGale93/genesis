@@ -40,7 +40,6 @@ pub fn global_statistics_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(statistics::count_system)
-        .with_system(statistics::max_generation_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::time_elapsed_system)
         .with_system(statistics::performance_stats_system)

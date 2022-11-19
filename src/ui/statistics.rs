@@ -73,6 +73,7 @@ impl EnergyStatistics {
 pub struct BugPerformanceStatistics {
     highest_energy_consumed: Vec<usize>,
     most_eggs_laid: Vec<usize>,
+    max_generation: Vec<usize>,
 }
 
 impl BugPerformanceStatistics {
@@ -80,6 +81,7 @@ impl BugPerformanceStatistics {
         Self {
             highest_energy_consumed: vec![],
             most_eggs_laid: vec![],
+            max_generation: vec![],
         }
     }
 
@@ -90,12 +92,15 @@ impl BugPerformanceStatistics {
     pub fn current_most_eggs_laid(&self) -> usize {
         last_element(&self.most_eggs_laid)
     }
+
+    pub fn current_max_generation(&self) -> usize {
+        last_element(&self.max_generation)
+    }
 }
 
 #[derive(Debug, Getters, Serialize, Resource)]
 pub struct GlobalStatistics {
     time_elapsed: f64,
-    max_generation: Vec<usize>,
     count_stats: CountStatistics,
     energy_stats: EnergyStatistics,
     performance_stats: BugPerformanceStatistics,
@@ -105,15 +110,10 @@ impl GlobalStatistics {
     pub fn new() -> Self {
         Self {
             time_elapsed: 0.0,
-            max_generation: vec![],
             count_stats: CountStatistics::new(),
             energy_stats: EnergyStatistics::new(),
             performance_stats: BugPerformanceStatistics::new(),
         }
-    }
-
-    pub fn current_max_generation(&self) -> usize {
-        last_element(&self.max_generation)
     }
 
     pub fn count_stats_mut(&mut self) -> &mut CountStatistics {
@@ -146,18 +146,6 @@ pub fn count_system(
     stats.eggs.push(eggs);
 }
 
-pub fn max_generation_system(
-    mut stats: ResMut<GlobalStatistics>,
-    generation_query: Query<&lifecycle::Generation>,
-) {
-    let max_generation = generation_query
-        .into_iter()
-        .max()
-        .unwrap_or(&lifecycle::Generation(0));
-
-    stats.max_generation.push(**max_generation)
-}
-
 pub fn energy_stats_system(
     mut global_stats: ResMut<GlobalStatistics>,
     ecosystem: Res<ecosystem::Ecosystem>,
@@ -174,20 +162,27 @@ pub fn energy_stats_system(
 
 pub fn performance_stats_system(
     mut global_stats: ResMut<GlobalStatistics>,
-    performance_query: Query<(&eating::EnergyConsumed, &lifecycle::EggsLaid)>,
+    performance_query: Query<(
+        &eating::EnergyConsumed,
+        &lifecycle::EggsLaid,
+        &lifecycle::Generation,
+    )>,
 ) {
     let stats = global_stats.performance_stats_mut();
 
     let mut max_consumption = eating::EnergyConsumed(0);
     let mut max_eggs = lifecycle::EggsLaid(0);
+    let mut max_generation = lifecycle::Generation(0);
 
-    for (energy_consumed, eggs_laid) in performance_query.into_iter() {
+    for (energy_consumed, eggs_laid, generation) in performance_query.into_iter() {
         max_consumption = max_consumption.max(*energy_consumed);
         max_eggs = max_eggs.max(*eggs_laid);
+        max_generation = max_generation.max(*generation);
     }
 
     stats.highest_energy_consumed.push(*max_consumption);
     stats.most_eggs_laid.push(*max_eggs);
+    stats.max_generation.push(*max_generation);
 }
 
 pub fn time_elapsed_system(time: Res<Time>, mut global_stats: ResMut<GlobalStatistics>) {
