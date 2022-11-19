@@ -116,7 +116,12 @@ pub struct Vitality {
 
 const CORE_MULTIPLIER: usize = 2;
 const HEALTH_MULTIPLIER: usize = 3;
-const ENERGY_MULTIPLIER: usize = 40;
+
+fn energy_limit(size: usize) -> usize {
+    let size_f = size as f32;
+
+    ((320.0 * size_f) / (0.15 * size_f + 5.0)) as usize
+}
 
 impl Vitality {
     pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> Self {
@@ -128,8 +133,9 @@ impl Vitality {
         let health =
             Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size_uint).unwrap());
 
-        let energy_limit = if total_energy.amount() < ENERGY_MULTIPLIER * size_uint {
-            ENERGY_MULTIPLIER * size_uint
+        let standard_energy_limit = energy_limit(size.as_uint());
+        let energy_limit = if total_energy.amount() < standard_energy_limit {
+            standard_energy_limit
         } else {
             total_energy.amount()
         };
@@ -204,9 +210,9 @@ impl Vitality {
             panic!("Tried to grow and couldn't add all the energy to health.")
         };
 
-        self.energy_store.energy_limit += amount * ENERGY_MULTIPLIER;
-
         self.size.grow(amount as f32);
+
+        self.energy_store.energy_limit = energy_limit(self.size.as_uint());
         Ok(())
     }
 }
