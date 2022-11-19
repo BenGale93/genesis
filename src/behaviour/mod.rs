@@ -52,11 +52,7 @@ pub fn slow_behaviour_system_set() -> SystemSet {
 pub fn metabolism_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(1.0))
-        .with_system(metabolism::burnt_energy_system)
-        .with_system(metabolism::thinking_energy_system)
-        .with_system(metabolism::movement_energy_burn_system)
-        .with_system(metabolism::eating_energy_system)
-        .with_system(metabolism::size_energy_system)
+        .with_system(metabolism::energy_return_system)
 }
 
 pub fn despawn_system_set() -> SystemSet {
