@@ -157,11 +157,6 @@ impl Vitality {
         &self.health
     }
 
-    #[allow(dead_code)]
-    pub fn core_reserve(&self) -> &CoreReserve {
-        &self.core_reserve
-    }
-
     #[must_use]
     pub fn available_space(&self) -> usize {
         self.health().available_space() + self.energy_store().available_space()
@@ -214,6 +209,14 @@ impl Vitality {
 
         self.energy_store.energy_limit = energy_limit(self.size.as_uint());
         Ok(())
+    }
+
+    #[must_use]
+    pub fn take_all_energy(&mut self) -> ecosystem::Energy {
+        let mut returning_energy = self.energy_store.0.energy.take_all_energy();
+        returning_energy = returning_energy + self.health.0.energy.take_all_energy();
+        returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
+        returning_energy
     }
 }
 

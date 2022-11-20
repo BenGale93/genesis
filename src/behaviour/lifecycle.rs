@@ -221,10 +221,17 @@ fn spawn_bug(
 
 pub fn kill_bug_system(
     mut commands: Commands,
-    query: Query<(Entity, &body::Vitality, &attributes::DeathAge, &timers::Age)>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    mut query: Query<(
+        Entity,
+        &mut body::Vitality,
+        &attributes::DeathAge,
+        &timers::Age,
+    )>,
 ) {
-    for (entity, vitality, death_age, age) in query.iter() {
+    for (entity, mut vitality, death_age, age) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
+            ecosystem.return_energy(vitality.take_all_energy());
             commands.entity(entity).despawn_recursive();
         }
     }
