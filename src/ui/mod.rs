@@ -43,6 +43,7 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::time_elapsed_system)
         .with_system(statistics::performance_stats_system)
+        .with_system(statistics::attribute_stats_system)
 }
 
 #[derive(Debug, Serialize)]

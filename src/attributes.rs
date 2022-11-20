@@ -426,3 +426,23 @@ impl EggAttributeBundle {
         Self { hatch_age }
     }
 }
+
+pub type BugAttributesPart1<'a> = (
+    &'a AdultAge,
+    &'a DeathAge,
+    &'a EyeAngle,
+    &'a EyeRange,
+    &'a MaxRotationRate,
+    &'a MaxSpeed,
+    &'a MutationProbability,
+    &'a OffspringEnergy,
+    &'a LayEggBoundary,
+    &'a InternalTimerBoundary,
+    &'a WantToGrowBoundary,
+    &'a EatingBoundary,
+    &'a CostOfThought,
+    &'a CostOfEating,
+    &'a MaxSize,
+);
+
+pub type BugAttributesPart2<'a> = (&'a GrowthRate,);

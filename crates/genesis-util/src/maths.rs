@@ -1,9 +1,19 @@
-use std::f32::consts::PI;
+use std::{f32::consts::PI, iter::Sum, ops::Div};
 
 use glam::{Quat, Vec3};
 use nalgebra::wrap;
 
 use crate::util_error::GenesisUtilError;
+
+pub fn mean<T>(numbers: Vec<T>) -> f32
+where
+    T: Copy + Sum + Div<f32, Output = f32>,
+{
+    let len = numbers.len();
+    let sum: T = numbers.into_iter().sum();
+
+    sum / len as f32
+}
 
 pub fn angle_to_point(diff: Vec3) -> f32 {
     diff.y.atan2(diff.x)
