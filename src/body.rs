@@ -106,6 +106,13 @@ struct Health(EnergyReserve);
 #[derive(Debug, PartialEq, Eq, Deref, DerefMut)]
 pub struct CoreReserve(ecosystem::Energy);
 
+impl CoreReserve {
+    #[must_use]
+    pub fn return_energy(&mut self) -> ecosystem::Energy {
+        self.0.take_energy(self.0.amount())
+    }
+}
+
 #[derive(Component, Debug)]
 pub struct Vitality {
     size: Size,
@@ -157,9 +164,8 @@ impl Vitality {
         &self.health
     }
 
-    #[allow(dead_code)]
-    pub fn core_reserve(&self) -> &CoreReserve {
-        &self.core_reserve
+    pub fn core_reserve_mut(&mut self) -> &mut CoreReserve {
+        &mut self.core_reserve
     }
 
     #[must_use]
