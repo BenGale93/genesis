@@ -200,29 +200,9 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Generation: {}", &bug_info.4 .0));
 }
 
-type BugAttributeInfoPart1<'a> = (
-    &'a attributes::AdultAge,
-    &'a attributes::DeathAge,
-    &'a attributes::EyeAngle,
-    &'a attributes::EyeRange,
-    &'a attributes::MaxRotationRate,
-    &'a attributes::MaxSpeed,
-    &'a attributes::MutationProbability,
-    &'a attributes::OffspringEnergy,
-    &'a attributes::LayEggBoundary,
-    &'a attributes::InternalTimerBoundary,
-    &'a attributes::WantToGrowBoundary,
-    &'a attributes::EatingBoundary,
-    &'a attributes::CostOfThought,
-    &'a attributes::CostOfEating,
-    &'a attributes::MaxSize,
-);
-
-type BugAttributeInfoPart2<'a> = (&'a attributes::GrowthRate,);
-
 pub fn bug_attribute_info_system(
-    bug_query_part1: Query<BugAttributeInfoPart1, With<Selected>>,
-    bug_query_part2: Query<BugAttributeInfoPart2, With<Selected>>,
+    bug_query_part1: Query<attributes::BugAttributesPart1, With<Selected>>,
+    bug_query_part2: Query<attributes::BugAttributesPart2, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
@@ -240,8 +220,8 @@ pub fn bug_attribute_info_system(
 
 fn bug_attribute_sub_panel(
     ui: &mut egui::Ui,
-    bug_info_part1: &BugAttributeInfoPart1,
-    bug_info_part2: &BugAttributeInfoPart2,
+    bug_info_part1: &attributes::BugAttributesPart1,
+    bug_info_part2: &attributes::BugAttributesPart2,
 ) {
     ui.label(format!("Adult Age: {}", **bug_info_part1.0));
     ui.label(format!("Death Age: {}", **bug_info_part1.1));
