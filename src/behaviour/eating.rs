@@ -107,7 +107,7 @@ pub fn eating_system(
                     if rebased_angle < 0.5 {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
-                        energy_consumed.0 += initial_plant_energy - leftover.amount();
+                        energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
                         burnt_energy.add_energy(leftover);
                         if plant_energy.energy().amount() == 0 {
                             commands.entity(plant_entity).despawn_recursive();
