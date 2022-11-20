@@ -42,6 +42,9 @@ pub const FOOD_DIST_SCORE_INDEX: usize = 11;
 pub const HEARTBEAT_INDEX: usize = 12;
 pub const INTERNAL_TIMER_INDEX: usize = 13;
 
+// Other
+pub const GENERATION_SWITCH: usize = 5;
+
 type MinMaxLen = (f32, f32, usize);
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -94,6 +97,7 @@ impl Default for AttributeConfig {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WorldConfig {
     pub start_num: usize,
+    pub minimum_number: usize,
     pub initial_synapse_count: usize,
     pub mutations: usize,
     pub start_energy: usize,
@@ -126,6 +130,7 @@ impl Default for WorldConfig {
     fn default() -> Self {
         Self {
             start_num: 10,
+            minimum_number: 5,
             initial_synapse_count: 3,
             mutations: 3,
             start_energy: 800,

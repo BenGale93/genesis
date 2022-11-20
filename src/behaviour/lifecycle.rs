@@ -12,7 +12,7 @@ use genesis_util::Probability;
 use rand::Rng;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind};
+use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui::GlobalStatistics};
 
 #[derive(Component, Debug)]
 pub struct Hatching;
@@ -286,21 +286,25 @@ pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    query: Query<&mind::MindOutput>,
+    global_stats: Res<GlobalStatistics>,
 ) {
-    let range = config::WorldConfig::global().world_size_range();
-    let mut rng = rand::thread_rng();
-    let bug_num = query.iter().len();
+    let config_instance = config::WorldConfig::global();
+    let bug_num = global_stats.count_stats().current_organisms();
+    let max_generation = global_stats.performance_stats().current_max_generation();
 
-    if bug_num < config::WorldConfig::global().start_num {
-        let energy = match ecosystem.request_energy(config::WorldConfig::global().start_energy) {
+    if (bug_num < config_instance.minimum_number)
+        || (bug_num < config_instance.start_num && max_generation < config::GENERATION_SWITCH)
+    {
+        let energy = match ecosystem.request_energy(config_instance.start_energy) {
             None => return,
             Some(e) => e,
         };
+        let range = config_instance.world_size_range();
+        let mut rng = rand::thread_rng();
         let location = Vec3::new(rng.gen_range(range.clone()), rng.gen_range(range), 0.0);
         let bug_body = body::BugBody::random(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
-        for _ in 0..config::WorldConfig::global().mutations {
+        for _ in 0..config_instance.mutations {
             mind = mind.mutate(&mut rng, Probability::new(1.0).unwrap()).into();
         }
         spawn_egg(
@@ -352,8 +356,11 @@ pub fn spawn_plant_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
 ) {
-    if ecosystem.available_energy().amount() > 10000 {
-        let energy = match ecosystem.request_energy(config::WorldConfig::global().plant_energy) {
+    let config_instance = config::WorldConfig::global();
+    let available_energy = ecosystem.available_energy().amount();
+
+    if available_energy > (config_instance.start_num * config_instance.start_energy) {
+        let energy = match ecosystem.request_energy(config_instance.plant_energy) {
             None => return,
             Some(e) => e,
         };

@@ -44,6 +44,10 @@ impl CountStatistics {
     pub fn current_eggs(&self) -> usize {
         last_element(&self.eggs)
     }
+
+    pub fn current_organisms(&self) -> usize {
+        self.current_adults() + self.current_juveniles() + self.current_eggs()
+    }
 }
 
 #[derive(Debug, Getters, Serialize)]

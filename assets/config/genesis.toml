@@ -1,4 +1,5 @@
 start_num = 10
+minimum_number = 5
 initial_synapse_count = 3
 mutations = 3
 start_energy = 800
