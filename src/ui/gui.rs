@@ -5,6 +5,7 @@ use bevy::{
         Res, ResMut, Resource, With,
     },
     sprite::Sprite,
+    time::Time,
     window::Windows,
 };
 use bevy_egui::{egui, EguiContext};
@@ -36,7 +37,10 @@ fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel)
 }
 
 pub fn global_ui_update_system(
-    global_stats: Res<statistics::GlobalStatistics>,
+    time: Res<Time>,
+    count_stats: Res<statistics::CountStatistics>,
+    energy_stats: Res<statistics::EnergyStatistics>,
+    performance_stats: Res<statistics::BugPerformanceStatistics>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<GlobalPanelState>,
 ) {
@@ -45,35 +49,37 @@ pub fn global_ui_update_system(
         .show(egui_ctx.ctx_mut(), |ui| {
             global_panel_buttons(ui, &mut panel_state.0);
             match panel_state.0 {
-                GlobalPanel::Environment => environment_sub_panel(ui, &global_stats),
-                GlobalPanel::Performance => {
-                    population_sub_panel(ui, global_stats.performance_stats())
+                GlobalPanel::Environment => {
+                    environment_sub_panel(ui, &time, &energy_stats, &count_stats)
                 }
+                GlobalPanel::Performance => population_sub_panel(ui, &performance_stats),
             };
         });
 }
 
-fn environment_sub_panel(ui: &mut egui::Ui, global_stats: &Res<statistics::GlobalStatistics>) {
+fn environment_sub_panel(
+    ui: &mut egui::Ui,
+    time: &Res<Time>,
+    energy_stats: &Res<statistics::EnergyStatistics>,
+    count_stats: &Res<statistics::CountStatistics>,
+) {
     ui.label(format!(
         "Global energy: {}",
-        global_stats.energy_stats().current_available_energy()
+        energy_stats.current_available_energy()
     ));
-    ui.label(format!("Time elapsed: {:.2}", global_stats.time_elapsed()));
+    ui.label(format!("Time elapsed: {:.2}", time.elapsed_seconds()));
     ui.label(format!(
         "Number of adults: {}",
-        global_stats.count_stats().current_adults()
+        count_stats.current_adults()
     ));
     ui.label(format!(
         "Number of juveniles: {}",
-        global_stats.count_stats().current_juveniles()
+        count_stats.current_juveniles()
     ));
-    ui.label(format!(
-        "Number of eggs: {}",
-        global_stats.count_stats().current_eggs()
-    ));
+    ui.label(format!("Number of eggs: {}", count_stats.current_eggs()));
     ui.label(format!(
         "Total food energy: {}",
-        global_stats.energy_stats().current_food_energy()
+        energy_stats.current_food_energy()
     ));
 }
 

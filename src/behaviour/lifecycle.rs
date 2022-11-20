@@ -12,7 +12,7 @@ use genesis_util::Probability;
 use rand::Rng;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui::GlobalStatistics};
+use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui};
 
 #[derive(Component, Debug)]
 pub struct Hatching;
@@ -293,11 +293,12 @@ pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    global_stats: Res<GlobalStatistics>,
+    count_stats: Res<ui::CountStatistics>,
+    performance_stats: Res<ui::BugPerformanceStatistics>,
 ) {
     let config_instance = config::WorldConfig::global();
-    let bug_num = global_stats.count_stats().current_organisms();
-    let max_generation = global_stats.performance_stats().current_max_generation();
+    let bug_num = count_stats.current_organisms();
+    let max_generation = performance_stats.current_max_generation();
 
     if (bug_num < config_instance.minimum_number)
         || (bug_num < config_instance.start_num && max_generation < config::GENERATION_SWITCH)

@@ -8,11 +8,13 @@ use std::fs;
 use bevy::{
     app::AppExit,
     prelude::{EventReader, Res, SystemSet},
-    time::FixedTimestep,
+    time::{FixedTimestep, Time},
 };
 pub use gui::{EntityPanelState, GlobalPanelState};
 use serde_derive::Serialize;
-pub use statistics::GlobalStatistics;
+pub use statistics::{
+    AverageAttributeStatistics, BugPerformanceStatistics, CountStatistics, EnergyStatistics,
+};
 
 use crate::config::WorldConfig;
 
@@ -41,29 +43,58 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(statistics::count_system)
         .with_system(statistics::energy_stats_system)
-        .with_system(statistics::time_elapsed_system)
         .with_system(statistics::performance_stats_system)
         .with_system(statistics::attribute_stats_system)
 }
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
+    time_elapsed: &'a f64,
     run_config: &'a WorldConfig,
-    global_stats: &'a GlobalStatistics,
+    count_stats: &'a statistics::CountStatistics,
+    energy_stats: &'a statistics::EnergyStatistics,
+    performance_stats: &'a statistics::BugPerformanceStatistics,
+    attribute_stats: &'a statistics::AverageAttributeStatistics,
 }
 
 impl<'a> RunInfo<'a> {
-    fn new(run_config: &'a WorldConfig, global_stats: &'a GlobalStatistics) -> Self {
+    fn new(
+        time_elapsed: &'a f64,
+        run_config: &'a WorldConfig,
+        count_stats: &'a statistics::CountStatistics,
+        energy_stats: &'a statistics::EnergyStatistics,
+        performance_stats: &'a statistics::BugPerformanceStatistics,
+        attribute_stats: &'a statistics::AverageAttributeStatistics,
+    ) -> Self {
         Self {
+            time_elapsed,
             run_config,
-            global_stats,
+            count_stats,
+            energy_stats,
+            performance_stats,
+            attribute_stats,
         }
     }
 }
 
-pub fn save_on_close(events: EventReader<AppExit>, global_stats: Res<GlobalStatistics>) {
+pub fn save_on_close(
+    events: EventReader<AppExit>,
+    time: Res<Time>,
+    count_stats: Res<statistics::CountStatistics>,
+    energy_stats: Res<statistics::EnergyStatistics>,
+    performance_stats: Res<statistics::BugPerformanceStatistics>,
+    attribute_stats: Res<statistics::AverageAttributeStatistics>,
+) {
     if !events.is_empty() {
-        let run_info = RunInfo::new(WorldConfig::global(), &global_stats);
+        let time = time.elapsed_seconds_f64();
+        let run_info = RunInfo::new(
+            &time,
+            WorldConfig::global(),
+            &count_stats,
+            &energy_stats,
+            &performance_stats,
+            &attribute_stats,
+        );
         let j = serde_json::to_string_pretty(&run_info).unwrap();
         fs::write("./run_data.json", j).expect("Unable to write file.");
     }
