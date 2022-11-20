@@ -106,13 +106,6 @@ struct Health(EnergyReserve);
 #[derive(Debug, PartialEq, Eq, Deref, DerefMut)]
 pub struct CoreReserve(ecosystem::Energy);
 
-impl CoreReserve {
-    #[must_use]
-    pub fn return_energy(&mut self) -> ecosystem::Energy {
-        self.0.take_energy(self.0.amount())
-    }
-}
-
 #[derive(Component, Debug)]
 pub struct Vitality {
     size: Size,
@@ -162,10 +155,6 @@ impl Vitality {
 
     pub fn health(&self) -> &EnergyReserve {
         &self.health
-    }
-
-    pub fn core_reserve_mut(&mut self) -> &mut CoreReserve {
-        &mut self.core_reserve
     }
 
     #[must_use]
@@ -220,6 +209,14 @@ impl Vitality {
 
         self.energy_store.energy_limit = energy_limit(self.size.as_uint());
         Ok(())
+    }
+
+    #[must_use]
+    pub fn take_all_energy(&mut self) -> ecosystem::Energy {
+        let mut returning_energy = self.energy_store.0.energy.take_all_energy();
+        returning_energy = returning_energy + self.health.0.energy.take_all_energy();
+        returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
+        returning_energy
     }
 }
 

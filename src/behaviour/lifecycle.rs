@@ -231,7 +231,7 @@ pub fn kill_bug_system(
 ) {
     for (entity, mut vitality, death_age, age) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
-            ecosystem.return_energy(vitality.core_reserve_mut().return_energy());
+            ecosystem.return_energy(vitality.take_all_energy());
             commands.entity(entity).despawn_recursive();
         }
     }

@@ -28,6 +28,11 @@ impl Energy {
     pub fn new_empty() -> Self {
         Self(0)
     }
+
+    #[must_use]
+    pub fn take_all_energy(&mut self) -> Self {
+        self.take_energy(self.amount())
+    }
 }
 
 #[derive(Component, Debug, Constructor)]
