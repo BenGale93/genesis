@@ -88,7 +88,7 @@ fn paint_neuron_labels(
                 None => "",
             };
             ui.painter().text(
-                egui::pos2(180.0, 42.0),
+                egui::pos2(380.0, 42.0),
                 egui::Align2::LEFT_TOP,
                 label,
                 egui::FontId::proportional(16.0),
