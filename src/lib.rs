@@ -18,7 +18,10 @@ impl Plugin for GenesisPlugin {
 
         app.add_stage_after(CoreStage::Update, CLEAN_UP, SystemStage::parallel())
             .insert_resource(config::BACKGROUND)
-            .insert_resource(ui::GlobalStatistics::new())
+            .insert_resource(ui::AverageAttributeStatistics::default())
+            .insert_resource(ui::CountStatistics::default())
+            .insert_resource(ui::BugPerformanceStatistics::default())
+            .insert_resource(ui::EnergyStatistics::default())
             .insert_resource(ui::EntityPanelState::default())
             .insert_resource(ui::GlobalPanelState::default())
             .add_startup_system_set(setup::setup_system_set())
