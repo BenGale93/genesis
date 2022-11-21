@@ -47,6 +47,12 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::attribute_stats_system)
 }
 
+pub fn regular_saver_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_run_criteria(FixedTimestep::step(60.0))
+        .with_system(regular_saver)
+}
+
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
     time_elapsed: &'a f64,
@@ -77,6 +83,26 @@ impl<'a> RunInfo<'a> {
     }
 }
 
+fn save_stats(
+    time: &Res<Time>,
+    count_stats: &Res<statistics::CountStatistics>,
+    energy_stats: &Res<statistics::EnergyStatistics>,
+    performance_stats: &Res<statistics::BugPerformanceStatistics>,
+    attribute_stats: &Res<statistics::AverageAttributeStatistics>,
+) {
+    let time = time.elapsed_seconds_f64();
+    let run_info = RunInfo::new(
+        &time,
+        WorldConfig::global(),
+        count_stats,
+        energy_stats,
+        performance_stats,
+        attribute_stats,
+    );
+    let j = serde_json::to_string_pretty(&run_info).unwrap();
+    fs::write("./run_data.json", j).expect("Unable to write file.");
+}
+
 pub fn save_on_close(
     events: EventReader<AppExit>,
     time: Res<Time>,
@@ -86,16 +112,28 @@ pub fn save_on_close(
     attribute_stats: Res<statistics::AverageAttributeStatistics>,
 ) {
     if !events.is_empty() {
-        let time = time.elapsed_seconds_f64();
-        let run_info = RunInfo::new(
+        save_stats(
             &time,
-            WorldConfig::global(),
             &count_stats,
             &energy_stats,
             &performance_stats,
             &attribute_stats,
         );
-        let j = serde_json::to_string_pretty(&run_info).unwrap();
-        fs::write("./run_data.json", j).expect("Unable to write file.");
     }
+}
+
+pub fn regular_saver(
+    time: Res<Time>,
+    count_stats: Res<statistics::CountStatistics>,
+    energy_stats: Res<statistics::EnergyStatistics>,
+    performance_stats: Res<statistics::BugPerformanceStatistics>,
+    attribute_stats: Res<statistics::AverageAttributeStatistics>,
+) {
+    save_stats(
+        &time,
+        &count_stats,
+        &energy_stats,
+        &performance_stats,
+        &attribute_stats,
+    );
 }

@@ -32,6 +32,7 @@ impl Plugin for GenesisPlugin {
             .add_system_set(behaviour::slow_behaviour_system_set())
             .add_system_set(behaviour::metabolism_system_set())
             .add_system_set(ui::global_statistics_system_set())
+            .add_system_set(ui::regular_saver_system_set())
             .add_system_to_stage(CoreStage::Last, ui::save_on_close)
             .add_system_set_to_stage(CLEAN_UP, behaviour::despawn_system_set())
             .insert_resource(ecosystem::Ecosystem::new(
