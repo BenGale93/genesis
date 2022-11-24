@@ -1,8 +1,8 @@
-use std::ops::RangeInclusive;
-
 use bevy::prelude::{ClearColor, Color};
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
+
+use crate::spawning;
 
 pub const BACKGROUND: ClearColor = ClearColor(Color::rgb(0.004, 0.09, 0.15));
 
@@ -104,9 +104,9 @@ pub struct WorldConfig {
     pub rotation_cost: (f32, f32),
     pub translation_cost: (f32, f32),
     pub unit_size_cost: f32,
-    pub world_size: f32,
     pub world_energy: usize,
     pub plant_energy: usize,
+    pub spawners: Vec<spawning::SpawnerConfig>,
     pub attributes: AttributeConfig,
 }
 
@@ -120,14 +120,12 @@ impl WorldConfig {
     pub fn from_config() -> Self {
         confy::load_path("./assets/config/genesis.toml").unwrap()
     }
-
-    pub fn world_size_range(&self) -> RangeInclusive<f32> {
-        -self.world_size..=self.world_size
-    }
 }
 
 impl Default for WorldConfig {
     fn default() -> Self {
+        let dist = spawning::DistributionConfig::new("normal".to_string(), 0.0, 1.0);
+        let spawner = spawning::SpawnerConfig::new((0.0, 0.0), 500.0, dist);
         Self {
             start_num: 10,
             minimum_number: 5,
@@ -137,9 +135,9 @@ impl Default for WorldConfig {
             rotation_cost: (0.02, 0.1),
             translation_cost: (0.02, 0.1),
             unit_size_cost: 0.02,
-            world_size: 1000.0,
             world_energy: 30000,
             plant_energy: 100,
+            spawners: vec![spawner],
             attributes: AttributeConfig::default(),
         }
     }

@@ -9,10 +9,9 @@ use bevy::{
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
-use rand::Rng;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui};
+use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui};
 
 #[derive(Component, Debug)]
 pub struct Hatching;
@@ -293,6 +292,7 @@ pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    spawners: Res<spawning::Spawners>,
     count_stats: Res<ui::CountStatistics>,
     performance_stats: Res<ui::BugPerformanceStatistics>,
 ) {
@@ -307,9 +307,8 @@ pub fn spawn_egg_system(
             None => return,
             Some(e) => e,
         };
-        let range = config_instance.world_size_range();
         let mut rng = rand::thread_rng();
-        let location = Vec3::new(rng.gen_range(range.clone()), rng.gen_range(range), 0.0);
+        let location = spawners.random_position(&mut rng);
         let bug_body = body::BugBody::random(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
@@ -327,10 +326,13 @@ pub fn spawn_egg_system(
     }
 }
 
-fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: ecosystem::Energy) {
+fn spawn_plant(
+    commands: &mut Commands,
+    asset_server: Res<AssetServer>,
+    energy: ecosystem::Energy,
+    location: Vec3,
+) {
     let size = 10.0;
-    let range = config::WorldConfig::global().world_size_range();
-    let mut rng = rand::thread_rng();
     let original_color = body::OriginalColor(Color::GREEN);
 
     commands
@@ -349,11 +351,7 @@ fn spawn_plant(commands: &mut Commands, asset_server: Res<AssetServer>, energy: 
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(TransformBundle::from(Transform::from_xyz(
-            rng.gen_range(range.clone()),
-            rng.gen_range(range),
-            0.0,
-        )))
+        .insert(TransformBundle::from(Transform::from_translation(location)))
         .insert(Collider::ball(size / 2.0))
         .insert(Velocity::zero())
         .insert(ecosystem::Plant::new(energy));
@@ -363,6 +361,7 @@ pub fn spawn_plant_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    spawners: Res<spawning::Spawners>,
 ) {
     let config_instance = config::WorldConfig::global();
     let available_energy = ecosystem.available_energy().amount();
@@ -372,6 +371,8 @@ pub fn spawn_plant_system(
             None => return,
             Some(e) => e,
         };
-        spawn_plant(&mut commands, asset_server, energy)
+        let mut rng = rand::thread_rng();
+        let location = spawners.random_position(&mut rng);
+        spawn_plant(&mut commands, asset_server, energy, location)
     }
 }
