@@ -11,6 +11,7 @@ pub mod lifecycle;
 pub mod metabolism;
 pub mod movement;
 pub mod sight;
+pub mod spawning;
 pub mod thinking;
 pub mod timers;
 
@@ -47,6 +48,7 @@ pub fn slow_behaviour_system_set() -> SystemSet {
         .with_system(eating::eating_system.after(eating::attempted_to_eat_system))
         .with_system(lifecycle::lay_egg_system.after(lifecycle::process_layers_system))
         .with_system(growth::grow_bug_system.after(growth::attempted_to_grow_system))
+        .with_system(spawning::nearest_spawner_system)
 }
 
 pub fn metabolism_system_set() -> SystemSet {

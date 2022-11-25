@@ -7,7 +7,6 @@ mod config;
 mod ecosystem;
 mod mind;
 mod setup;
-mod spawning;
 mod ui;
 
 pub struct GenesisPlugin;
@@ -19,7 +18,8 @@ impl Plugin for GenesisPlugin {
 
         let config_instance = config::WorldConfig::global();
 
-        let spawners = spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
+        let spawners =
+            behaviour::spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
 
         app.add_stage_after(CoreStage::Update, CLEAN_UP, SystemStage::parallel())
             .insert_resource(config::BACKGROUND)

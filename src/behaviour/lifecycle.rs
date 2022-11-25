@@ -10,8 +10,8 @@ use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocit
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 
-use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui};
+use super::{eating, growth, metabolism, movement, sight, spawning, thinking};
+use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui};
 
 #[derive(Component, Debug)]
 pub struct Hatching;
@@ -308,7 +308,7 @@ pub fn spawn_egg_system(
             Some(e) => e,
         };
         let mut rng = rand::thread_rng();
-        let location = spawners.random_position(&mut rng);
+        let location = spawners.random_organism_position(&mut rng);
         let bug_body = body::BugBody::random(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
@@ -372,7 +372,7 @@ pub fn spawn_plant_system(
             Some(e) => e,
         };
         let mut rng = rand::thread_rng();
-        let location = spawners.random_position(&mut rng);
+        let location = spawners.random_food_position(&mut rng);
         spawn_plant(&mut commands, asset_server, energy, location)
     }
 }

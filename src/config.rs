@@ -2,7 +2,7 @@ use bevy::prelude::{ClearColor, Color};
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::spawning;
+use crate::behaviour::spawning;
 
 pub const BACKGROUND: ClearColor = ClearColor(Color::rgb(0.004, 0.09, 0.15));
 
