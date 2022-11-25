@@ -132,6 +132,10 @@ impl Spawners {
     pub fn nearby_food(&self) -> Vec<usize> {
         self.0.iter().map(|s| s.nearby_food()).collect()
     }
+
+    pub fn space_for_organisms(&self, min_number: usize) -> bool {
+        self.iter().any(|s| s.nearby_organisms() < min_number)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -300,7 +300,7 @@ pub fn spawn_egg_system(
     let bug_num = count_stats.current_organisms();
     let max_generation = performance_stats.current_max_generation();
 
-    if (bug_num < config_instance.minimum_number)
+    if (spawners.space_for_organisms(config_instance.minimum_number))
         || (bug_num < config_instance.start_num && max_generation < config::GENERATION_SWITCH)
     {
         let energy = match ecosystem.request_energy(config_instance.start_energy) {
