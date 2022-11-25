@@ -12,13 +12,19 @@ use crate::{behaviour::lifecycle::Generation, ecosystem};
 pub enum DistributionKind {
     Gamma(Gamma<f32>),
     Normal(Normal<f32>),
+    Uniform(Uniform<f32>),
+    LogNormal(LogNormal<f32>),
+    InverseGaussian(InverseGaussian<f32>),
 }
 
 impl DistributionKind {
     pub fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> f32 {
         match self {
-            DistributionKind::Gamma(g) => g.sample(rng),
-            DistributionKind::Normal(g) => g.sample(rng),
+            DistributionKind::Gamma(d) => d.sample(rng),
+            DistributionKind::Normal(d) => d.sample(rng),
+            DistributionKind::Uniform(d) => d.sample(rng),
+            DistributionKind::LogNormal(d) => d.sample(rng),
+            DistributionKind::InverseGaussian(d) => d.sample(rng),
         }
     }
 
@@ -26,6 +32,11 @@ impl DistributionKind {
         let dist = match config.name.as_str() {
             "gamma" => DistributionKind::Gamma(Gamma::new(config.a, config.b)?),
             "normal" => DistributionKind::Normal(Normal::new(config.a, config.b)?),
+            "uniform" => DistributionKind::Uniform(Uniform::new(config.a, config.b)),
+            "lognormal" => DistributionKind::LogNormal(LogNormal::new(config.a, config.b)?),
+            "inversegaussian" => {
+                DistributionKind::InverseGaussian(InverseGaussian::new(config.a, config.b)?)
+            }
             _ => return Err(anyhow!("Unknown distribution.")),
         };
         Ok(dist)
