@@ -1,7 +1,5 @@
 use bevy::{
-    prelude::{
-        Commands, Component, DespawnRecursiveExt, Entity, Query, Res, Transform, With, Without,
-    },
+    prelude::{Commands, Component, Entity, Query, Res, Transform, With, Without},
     time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::RapierContext;
@@ -75,7 +73,6 @@ pub fn attempted_to_eat_system(
 pub struct EnergyConsumed(pub usize);
 
 pub fn eating_system(
-    mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut bug_query: Query<
         (
@@ -109,9 +106,6 @@ pub fn eating_system(
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
                         burnt_energy.add_energy(leftover);
-                        if plant_energy.energy().amount() == 0 {
-                            commands.entity(plant_entity).despawn_recursive();
-                        }
                     }
                 }
             }

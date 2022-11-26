@@ -12,7 +12,6 @@ use genesis::GenesisPlugin;
 
 fn main() {
     App::new()
-        .add_plugin(GenesisPlugin)
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             window: WindowDescriptor {
                 title: "Genesis".to_string(),
@@ -23,5 +22,6 @@ fn main() {
         .add_plugin(RapierDebugRenderPlugin::default())
         .add_plugin(EguiPlugin)
         .add_plugin(RapierPhysicsPlugin::<NoUserData>::pixels_per_meter(1000.0))
+        .add_plugin(GenesisPlugin)
         .run();
 }

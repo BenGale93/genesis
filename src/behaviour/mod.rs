@@ -53,15 +53,8 @@ pub fn metabolism_system_set() -> SystemSet {
         .with_system(metabolism::energy_return_system)
 }
 
-pub fn despawn_system_set() -> SystemSet {
-    SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(0.1))
-        .with_system(lifecycle::kill_bug_system)
-        .with_system(lifecycle::hatch_egg_system)
-}
-
 pub fn eating_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(0.1))
-        .with_system(eating::eating_system.after(eating::attempted_to_eat_system))
+        .with_system(eating::eating_system)
 }

@@ -3,8 +3,8 @@ use std::f32::consts::PI;
 use anyhow::anyhow;
 use bevy::{
     prelude::{
-        default, AssetServer, Color, Commands, Deref, DerefMut, Query, Res, ResMut, Resource,
-        Transform, Vec3, With,
+        default, AssetServer, Color, Commands, Deref, DerefMut, DespawnRecursiveExt, Entity, Query,
+        Res, ResMut, Resource, Transform, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
@@ -300,5 +300,16 @@ pub fn update_plant_size(mut plant_query: Query<(&mut Sprite, &mut Collider, &ec
     for (mut sprite, mut collider, plant) in plant_query.iter_mut() {
         sprite.custom_size = plant.sprite_size();
         *collider = plant.collider();
+    }
+}
+
+pub fn despawn_plants_system(
+    mut commands: Commands,
+    plant_query: Query<(Entity, &ecosystem::Plant)>,
+) {
+    for (entity, plant) in plant_query.iter() {
+        if plant.energy().amount() == 0 {
+            commands.entity(entity).despawn_recursive();
+        }
     }
 }
