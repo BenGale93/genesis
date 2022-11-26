@@ -1,13 +1,21 @@
 use std::f32::consts::PI;
 
 use anyhow::anyhow;
-use bevy::prelude::{Deref, DerefMut, Query, ResMut, Resource, Transform, Vec3, With};
+use bevy::{
+    prelude::{
+        default, AssetServer, Color, Commands, Deref, DerefMut, Query, Res, ResMut, Resource,
+        Transform, Vec2, Vec3, With,
+    },
+    sprite::{Sprite, SpriteBundle},
+    transform::TransformBundle,
+};
+use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
 use genesis_util::maths::polars_to_cart;
 use rand::{self, rngs::ThreadRng, Rng};
 use rand_distr::*;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{behaviour::lifecycle::Generation, ecosystem};
+use crate::{behaviour::lifecycle::Generation, body, config, ecosystem};
 
 pub enum DistributionKind {
     Gamma(Gamma<f32>),
@@ -217,5 +225,71 @@ pub fn nearest_spawner_system(
     }
     for (i, spawner) in spawners.iter_mut().enumerate() {
         spawner.set_nearby_food(food_counts[i])
+    }
+}
+
+fn spawn_plant(
+    commands: &mut Commands,
+    asset_server: Res<AssetServer>,
+    energy: ecosystem::Energy,
+    location: Vec3,
+    size: f32,
+) {
+    let original_color = body::OriginalColor(Color::GREEN);
+
+    commands
+        .spawn(SpriteBundle {
+            texture: asset_server.load("food.png"),
+            sprite: Sprite {
+                custom_size: Some(Vec2::new(size, size)),
+                color: original_color.0,
+                ..default()
+            },
+            ..default()
+        })
+        .insert(original_color)
+        .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
+        .insert(TransformBundle::from(Transform::from_translation(location)))
+        .insert(Collider::ball(size / 2.0))
+        .insert(Velocity::zero())
+        .insert(ecosystem::Plant::new(energy));
+}
+
+#[derive(Resource)]
+pub struct PlantSizeRandomiser(Uniform<f32>);
+
+impl PlantSizeRandomiser {
+    pub fn new(bounds: (f32, f32)) -> Self {
+        Self(Uniform::new(bounds.0, bounds.1))
+    }
+    pub fn random_size(&self, rng: &mut rand::rngs::ThreadRng) -> f32 {
+        self.0.sample(rng)
+    }
+}
+
+pub fn spawn_plant_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    spawners: Res<Spawners>,
+    plant_size_randomiser: Res<PlantSizeRandomiser>,
+) {
+    let config_instance = config::WorldConfig::global();
+    let available_energy = ecosystem.available_energy().amount();
+
+    if available_energy > (config_instance.start_num * config_instance.start_energy) {
+        let mut rng = rand::thread_rng();
+        let size = plant_size_randomiser.random_size(&mut rng);
+        let energy =
+            match ecosystem.request_energy(size as usize * config_instance.plant_energy_per_unit) {
+                None => return,
+                Some(e) => e,
+            };
+        let location = spawners.random_food_position(&mut rng);
+        spawn_plant(&mut commands, asset_server, energy, location, size)
     }
 }
