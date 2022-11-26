@@ -2,7 +2,7 @@ use bevy::prelude::{ClearColor, Color};
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::behaviour::spawning;
+use crate::spawning;
 
 pub const BACKGROUND: ClearColor = ClearColor(Color::rgb(0.004, 0.09, 0.15));
 
@@ -17,6 +17,7 @@ pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 6;
 pub const CHROMOSOME_COUNT: usize = 20;
 pub const CHROMOSOME_LEN: usize = 100;
+pub const EATING_RATIO: usize = 2;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
@@ -105,7 +106,8 @@ pub struct WorldConfig {
     pub translation_cost: (f32, f32),
     pub unit_size_cost: f32,
     pub world_energy: usize,
-    pub plant_energy: usize,
+    pub plant_energy_per_unit: usize,
+    pub plant_size_range: (f32, f32),
     pub spawners: Vec<spawning::SpawnerConfig>,
     pub attributes: AttributeConfig,
 }
@@ -136,7 +138,8 @@ impl Default for WorldConfig {
             translation_cost: (0.02, 0.1),
             unit_size_cost: 0.02,
             world_energy: 30000,
-            plant_energy: 100,
+            plant_energy_per_unit: 2,
+            plant_size_range: (10.0, 30.0),
             spawners: vec![spawner],
             attributes: AttributeConfig::default(),
         }

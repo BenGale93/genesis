@@ -10,8 +10,8 @@ use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocit
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 
-use super::{eating, growth, metabolism, movement, sight, spawning, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui};
+use super::{eating, growth, metabolism, movement, sight, thinking};
+use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui};
 
 #[derive(Component, Debug)]
 pub struct Hatching;
@@ -323,56 +323,5 @@ pub fn spawn_egg_system(
             mind,
             Generation(0),
         );
-    }
-}
-
-fn spawn_plant(
-    commands: &mut Commands,
-    asset_server: Res<AssetServer>,
-    energy: ecosystem::Energy,
-    location: Vec3,
-) {
-    let size = 10.0;
-    let original_color = body::OriginalColor(Color::GREEN);
-
-    commands
-        .spawn(SpriteBundle {
-            texture: asset_server.load("food.png"),
-            sprite: Sprite {
-                custom_size: Some(Vec2::new(size, size)),
-                color: original_color.0,
-                ..default()
-            },
-            ..default()
-        })
-        .insert(original_color)
-        .insert(RigidBody::Dynamic)
-        .insert(Damping {
-            linear_damping: 1.0,
-            angular_damping: 1.0,
-        })
-        .insert(TransformBundle::from(Transform::from_translation(location)))
-        .insert(Collider::ball(size / 2.0))
-        .insert(Velocity::zero())
-        .insert(ecosystem::Plant::new(energy));
-}
-
-pub fn spawn_plant_system(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    spawners: Res<spawning::Spawners>,
-) {
-    let config_instance = config::WorldConfig::global();
-    let available_energy = ecosystem.available_energy().amount();
-
-    if available_energy > (config_instance.start_num * config_instance.start_energy) {
-        let energy = match ecosystem.request_energy(config_instance.plant_energy) {
-            None => return,
-            Some(e) => e,
-        };
-        let mut rng = rand::thread_rng();
-        let location = spawners.random_food_position(&mut rng);
-        spawn_plant(&mut commands, asset_server, energy, location)
     }
 }
