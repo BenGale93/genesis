@@ -1,7 +1,7 @@
 use bevy::{
     prelude::{
         default, AssetServer, Color, Commands, Component, DespawnRecursiveExt, Entity, Query, Res,
-        ResMut, Transform, Vec2, Vec3, With, Without,
+        ResMut, Resource, Transform, Vec2, Vec3, With, Without,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
@@ -9,6 +9,7 @@ use bevy::{
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
+use rand_distr::{Distribution, Uniform};
 
 use super::{eating, growth, metabolism, movement, sight, spawning, thinking};
 use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, ui};
@@ -331,8 +332,8 @@ fn spawn_plant(
     asset_server: Res<AssetServer>,
     energy: ecosystem::Energy,
     location: Vec3,
+    size: f32,
 ) {
-    let size = 10.0;
     let original_color = body::OriginalColor(Color::GREEN);
 
     commands
@@ -357,22 +358,37 @@ fn spawn_plant(
         .insert(ecosystem::Plant::new(energy));
 }
 
+#[derive(Resource)]
+pub struct PlantSizeRandomiser(Uniform<f32>);
+
+impl PlantSizeRandomiser {
+    pub fn new(bounds: (f32, f32)) -> Self {
+        Self(Uniform::new(bounds.0, bounds.1))
+    }
+    pub fn random_size(&self, rng: &mut rand::rngs::ThreadRng) -> f32 {
+        self.0.sample(rng)
+    }
+}
+
 pub fn spawn_plant_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     spawners: Res<spawning::Spawners>,
+    plant_size_randomiser: Res<PlantSizeRandomiser>,
 ) {
     let config_instance = config::WorldConfig::global();
     let available_energy = ecosystem.available_energy().amount();
 
     if available_energy > (config_instance.start_num * config_instance.start_energy) {
-        let energy = match ecosystem.request_energy(config_instance.plant_energy) {
-            None => return,
-            Some(e) => e,
-        };
         let mut rng = rand::thread_rng();
+        let size = plant_size_randomiser.random_size(&mut rng);
+        let energy =
+            match ecosystem.request_energy(size as usize * config_instance.plant_energy_per_unit) {
+                None => return,
+                Some(e) => e,
+            };
         let location = spawners.random_food_position(&mut rng);
-        spawn_plant(&mut commands, asset_server, energy, location)
+        spawn_plant(&mut commands, asset_server, energy, location, size)
     }
 }

@@ -13,7 +13,11 @@ translation_cost = [
 ]
 unit_size_cost = 0.02
 world_energy = 30000
-plant_energy = 100
+plant_energy_per_unit = 2
+plant_size_range = [
+    10.0,
+    30.0,
+]
 
 [[spawners]]
 centre = [
@@ -26,18 +30,6 @@ radius = 500.0
 name = 'normal'
 a = 0.0
 b = 1.0
-
-[[spawners]]
-centre = [
-    10000.0,
-    0.0,
-]
-radius = 400.0
-
-[spawners.dist]
-name = 'gamma'
-a = 9.0
-b = 0.25
 
 [attributes]
 hatch_age = [

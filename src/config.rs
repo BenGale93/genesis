@@ -105,7 +105,8 @@ pub struct WorldConfig {
     pub translation_cost: (f32, f32),
     pub unit_size_cost: f32,
     pub world_energy: usize,
-    pub plant_energy: usize,
+    pub plant_energy_per_unit: usize,
+    pub plant_size_range: (f32, f32),
     pub spawners: Vec<spawning::SpawnerConfig>,
     pub attributes: AttributeConfig,
 }
@@ -136,7 +137,8 @@ impl Default for WorldConfig {
             translation_cost: (0.02, 0.1),
             unit_size_cost: 0.02,
             world_energy: 30000,
-            plant_energy: 100,
+            plant_energy_per_unit: 2,
+            plant_size_range: (10.0, 30.0),
             spawners: vec![spawner],
             attributes: AttributeConfig::default(),
         }

@@ -41,6 +41,9 @@ impl Plugin for GenesisPlugin {
             .add_system_to_stage(CoreStage::Last, ui::save_on_close)
             .add_system_set_to_stage(CLEAN_UP, behaviour::despawn_system_set())
             .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
-            .insert_resource(spawners);
+            .insert_resource(spawners)
+            .insert_resource(behaviour::lifecycle::PlantSizeRandomiser::new(
+                config_instance.plant_size_range,
+            ));
     }
 }
