@@ -1697,6 +1697,7 @@ dependencies = [
  "genesis-util",
  "once_cell",
  "rand",
+ "rand_distr",
  "serde",
  "serde_derive",
  "serde_json",

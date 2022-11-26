@@ -15,6 +15,11 @@ where
     sum / len as f32
 }
 
+pub fn polars_to_cart(r: f32, theta: f32) -> (f32, f32) {
+    let (y_ang, x_ang) = theta.sin_cos();
+    (r * x_ang, r * y_ang)
+}
+
 pub fn angle_to_point(diff: Vec3) -> f32 {
     diff.y.atan2(diff.x)
 }

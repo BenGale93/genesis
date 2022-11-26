@@ -16,6 +16,11 @@ impl Plugin for GenesisPlugin {
         static CLEAN_UP: &str = "clean_up";
         config::initialize_config();
 
+        let config_instance = config::WorldConfig::global();
+
+        let spawners =
+            behaviour::spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
+
         app.add_stage_after(CoreStage::Update, CLEAN_UP, SystemStage::parallel())
             .insert_resource(config::BACKGROUND)
             .insert_resource(ui::AverageAttributeStatistics::default())
@@ -35,8 +40,7 @@ impl Plugin for GenesisPlugin {
             .add_system_set(ui::regular_saver_system_set())
             .add_system_to_stage(CoreStage::Last, ui::save_on_close)
             .add_system_set_to_stage(CLEAN_UP, behaviour::despawn_system_set())
-            .insert_resource(ecosystem::Ecosystem::new(
-                config::WorldConfig::global().world_energy,
-            ));
+            .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
+            .insert_resource(spawners);
     }
 }
