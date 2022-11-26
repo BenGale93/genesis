@@ -180,7 +180,7 @@ impl Vitality {
 
     #[must_use]
     pub fn eat(&mut self, plant: &mut ecosystem::Plant) -> ecosystem::Energy {
-        let requested_energy = self.available_space();
+        let requested_energy = self.available_space().min(self.size.as_uint());
         let extracted_energy = plant.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
