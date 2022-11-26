@@ -43,7 +43,6 @@ pub fn egg_spawning_system_set() -> SystemSet {
 pub fn slow_behaviour_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(0.1))
-        .with_system(eating::eating_system.after(eating::attempted_to_eat_system))
         .with_system(lifecycle::lay_egg_system.after(lifecycle::process_layers_system))
         .with_system(growth::grow_bug_system.after(growth::attempted_to_grow_system))
 }
@@ -59,4 +58,10 @@ pub fn despawn_system_set() -> SystemSet {
         .with_run_criteria(FixedTimestep::step(0.1))
         .with_system(lifecycle::kill_bug_system)
         .with_system(lifecycle::hatch_egg_system)
+}
+
+pub fn eating_system_set() -> SystemSet {
+    SystemSet::new()
+        .with_run_criteria(FixedTimestep::step(0.1))
+        .with_system(eating::eating_system.after(eating::attempted_to_eat_system))
 }

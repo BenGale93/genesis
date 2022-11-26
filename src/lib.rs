@@ -30,6 +30,7 @@ pub struct GenesisPlugin;
 
 impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
+        static COLLISIONS: &str = "collisions";
         static CLEAN_UP: &str = "clean_up";
         config::initialize_config();
 
@@ -37,7 +38,8 @@ impl Plugin for GenesisPlugin {
 
         let spawners = spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
 
-        app.add_stage_after(CoreStage::Update, CLEAN_UP, SystemStage::parallel())
+        app.add_stage_after(CoreStage::Update, COLLISIONS, SystemStage::parallel())
+            .add_stage_after(COLLISIONS, CLEAN_UP, SystemStage::parallel())
             .insert_resource(config::BACKGROUND)
             .insert_resource(ui::AverageAttributeStatistics::default())
             .insert_resource(ui::CountStatistics::default())
@@ -57,6 +59,7 @@ impl Plugin for GenesisPlugin {
             .add_system_set(slow_system_set())
             .add_system_set(time_step_system_set())
             .add_system_to_stage(CoreStage::Last, ui::save_on_close)
+            .add_system_set_to_stage(COLLISIONS, behaviour::eating_system_set())
             .add_system_set_to_stage(CLEAN_UP, behaviour::despawn_system_set())
             .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
             .insert_resource(spawners)
