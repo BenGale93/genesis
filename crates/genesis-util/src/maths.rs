@@ -28,14 +28,6 @@ pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
     (angle_from_x - (PI / 2.0) - angle_from_y).abs()
 }
 
-pub fn closest_object(distances: &[f32]) -> Option<usize> {
-    distances
-        .iter()
-        .enumerate()
-        .min_by(|(_, a), (_, b)| a.partial_cmp(b).expect("There should be no NaNs."))
-        .map(|(index, _)| index)
-}
-
 pub fn linear_interpolate(x: f32, x_min: f32, x_max: f32, y_min: f32, y_max: f32) -> f32 {
     (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min)
 }
@@ -108,7 +100,7 @@ mod tests {
 
     use glam::{Quat, Vec3};
 
-    use super::{angle_to_point, closest_object, Cone};
+    use super::{angle_to_point, Cone};
 
     #[test]
     fn angle_between_from_origin() {
@@ -215,18 +207,5 @@ mod tests {
         let target = Vec3::new(3.0, 3.0, 0.0);
 
         assert!(cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn closest_distance_no_draws() {
-        let objects = vec![1.0, 10.0];
-
-        assert_eq!(closest_object(&objects).unwrap(), 0);
-    }
-    #[test]
-    fn closest_distance_draw_returns_first() {
-        let objects = vec![15.0, 10.0, 10.0];
-
-        assert_eq!(closest_object(&objects).unwrap(), 1);
     }
 }
