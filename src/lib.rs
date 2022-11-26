@@ -23,6 +23,7 @@ pub fn time_step_system_set() -> SystemSet {
     SystemSet::new()
         .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(spawning::spawn_plant_system)
+        .with_system(spawning::update_plant_size)
 }
 
 pub struct GenesisPlugin;

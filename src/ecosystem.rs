@@ -1,6 +1,9 @@
 extern crate derive_more;
-use bevy::prelude::{Component, Resource};
+use bevy::prelude::{Component, Resource, Vec2};
+use bevy_rapier2d::prelude::Collider;
 use derive_more::{Add, Constructor, Display, Sub};
+
+use crate::config;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
 pub struct Energy(usize);
@@ -47,6 +50,19 @@ impl Plant {
 
     pub fn energy(&self) -> &Energy {
         &self.energy
+    }
+
+    pub fn size(&self) -> f32 {
+        let config_instance = config::WorldConfig::global();
+        (self.energy.amount() / config_instance.plant_energy_per_unit) as f32
+    }
+
+    pub fn sprite_size(&self) -> Option<Vec2> {
+        Some(Vec2::splat(self.size()))
+    }
+
+    pub fn collider(&self) -> Collider {
+        Collider::ball(self.size() / 2.0)
     }
 }
 

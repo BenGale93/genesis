@@ -4,7 +4,7 @@ use anyhow::anyhow;
 use bevy::{
     prelude::{
         default, AssetServer, Color, Commands, Deref, DerefMut, Query, Res, ResMut, Resource,
-        Transform, Vec2, Vec3, With,
+        Transform, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
@@ -233,15 +233,15 @@ fn spawn_plant(
     asset_server: Res<AssetServer>,
     energy: ecosystem::Energy,
     location: Vec3,
-    size: f32,
 ) {
     let original_color = body::OriginalColor(Color::GREEN);
+    let plant = ecosystem::Plant::new(energy);
 
     commands
         .spawn(SpriteBundle {
             texture: asset_server.load("food.png"),
             sprite: Sprite {
-                custom_size: Some(Vec2::new(size, size)),
+                custom_size: plant.sprite_size(),
                 color: original_color.0,
                 ..default()
             },
@@ -254,9 +254,9 @@ fn spawn_plant(
             angular_damping: 1.0,
         })
         .insert(TransformBundle::from(Transform::from_translation(location)))
-        .insert(Collider::ball(size / 2.0))
+        .insert(plant.collider())
         .insert(Velocity::zero())
-        .insert(ecosystem::Plant::new(energy));
+        .insert(plant);
 }
 
 #[derive(Resource)]
@@ -290,6 +290,15 @@ pub fn spawn_plant_system(
                 Some(e) => e,
             };
         let location = spawners.random_food_position(&mut rng);
-        spawn_plant(&mut commands, asset_server, energy, location, size)
+        spawn_plant(&mut commands, asset_server, energy, location)
+    }
+}
+
+pub fn update_plant_size(mut plant_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Plant)>) {
+    // Might be able to improve this using bevy events.
+    // Basically listen for changes to plants and only then update.
+    for (mut sprite, mut collider, plant) in plant_query.iter_mut() {
+        sprite.custom_size = plant.sprite_size();
+        *collider = plant.collider();
     }
 }
