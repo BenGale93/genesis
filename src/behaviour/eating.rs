@@ -72,7 +72,11 @@ pub fn attempted_to_eat_system(
 #[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
 pub struct EnergyConsumed(pub usize);
 
+#[derive(Component, Debug)]
+pub struct Eaten;
+
 pub fn eating_system(
+    mut commands: Commands,
     rapier_context: Res<RapierContext>,
     mut bug_query: Query<
         (
@@ -105,6 +109,9 @@ pub fn eating_system(
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
+                        if plant_energy.energy().amount() == 0 {
+                            commands.entity(plant_entity).insert(Eaten);
+                        }
                         burnt_energy.add_energy(leftover);
                     }
                 }

@@ -15,7 +15,10 @@ use rand::{self, rngs::ThreadRng, Rng};
 use rand_distr::*;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::{behaviour::lifecycle::Generation, body, config, ecosystem};
+use crate::{
+    behaviour::{eating::Eaten, lifecycle::Generation},
+    body, config, ecosystem,
+};
 
 pub enum DistributionKind {
     Gamma(Gamma<f32>),
@@ -303,13 +306,8 @@ pub fn update_plant_size(mut plant_query: Query<(&mut Sprite, &mut Collider, &ec
     }
 }
 
-pub fn despawn_plants_system(
-    mut commands: Commands,
-    plant_query: Query<(Entity, &ecosystem::Plant)>,
-) {
-    for (entity, plant) in plant_query.iter() {
-        if plant.energy().amount() == 0 {
-            commands.entity(entity).despawn_recursive();
-        }
+pub fn despawn_plants_system(mut commands: Commands, plant_query: Query<Entity, With<Eaten>>) {
+    for entity in plant_query.iter() {
+        commands.entity(entity).despawn_recursive();
     }
 }
