@@ -1,6 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use genesis_util::Weight;
+use rayon::prelude::*;
 
 use crate::BrainError;
 
@@ -106,27 +107,27 @@ pub trait SynapsesExt {
 
 impl SynapsesExt for Synapses {
     fn get_active_indices(&self) -> Vec<usize> {
-        self.iter()
+        self.par_iter()
             .enumerate()
             .filter_map(|(i, synapse)| (synapse.active()).then_some(i))
             .collect()
     }
 
     fn get_active_from_to(&self) -> Vec<(usize, usize)> {
-        self.iter()
+        self.par_iter()
             .filter(|syn| syn.active())
             .map(|syn| (syn.from(), syn.to()))
             .collect()
     }
 
     fn num_outgoing_synapses(&self, from_index: usize) -> usize {
-        self.iter()
+        self.par_iter()
             .filter(|syn| syn.from() == from_index && syn.active())
             .count()
     }
 
     fn num_incoming_synapses(&self, to_index: usize) -> usize {
-        self.iter()
+        self.par_iter()
             .filter(|syn| syn.to() == to_index && syn.active())
             .count()
     }
@@ -134,7 +135,7 @@ impl SynapsesExt for Synapses {
 
 pub fn create_synapses(links: &[(usize, usize)]) -> Result<Vec<Synapse>, BrainError> {
     links
-        .iter()
+        .par_iter()
         .map(|(from, to)| Synapse::new(*from, *to))
         .collect()
 }
