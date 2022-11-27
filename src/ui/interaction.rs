@@ -2,12 +2,13 @@ use bevy::{
     input::mouse::MouseWheel,
     prelude::{
         Camera, EventReader, GlobalTransform, Input, KeyCode, OrthographicProjection, Query, Res,
-        Transform, Vec2, Vec3, With,
+        ResMut, Resource, Transform, Vec2, Vec3, With,
     },
     render::camera::RenderTarget,
     time::Time,
     window::Windows,
 };
+use bevy_rapier2d::prelude::RapierConfiguration;
 
 use crate::config;
 
@@ -88,4 +89,33 @@ pub fn get_cursor_position(
     } else {
         None
     }
+}
+
+#[derive(Resource, Debug, PartialEq, Eq)]
+pub enum SimulationSpeed {
+    Default,
+    Paused,
+}
+
+pub fn pause_system(
+    kb_input: Res<Input<KeyCode>>,
+    mut speed: ResMut<SimulationSpeed>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+) {
+    if kb_input.pressed(KeyCode::P) {
+        *speed = match *speed {
+            SimulationSpeed::Default => {
+                rapier_config.physics_pipeline_active = false;
+                SimulationSpeed::Paused
+            }
+            SimulationSpeed::Paused => {
+                rapier_config.physics_pipeline_active = true;
+                SimulationSpeed::Default
+            }
+        };
+    }
+}
+
+pub fn is_paused(speed: Res<SimulationSpeed>) -> bool {
+    SimulationSpeed::Paused == *speed
 }

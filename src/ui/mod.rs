@@ -11,6 +11,7 @@ use bevy::{
     time::Time,
 };
 pub use gui::{EntityPanelState, GlobalPanelState};
+pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
 pub use statistics::{
@@ -108,6 +109,7 @@ pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
         .with_system(interaction::move_camera_system)
         .with_system(interaction::camera_zooming_system)
+        .with_system(interaction::pause_system)
         .with_system(gui::bug_live_info_system)
         .with_system(gui::bug_attribute_info_system)
         .with_system(gui::egg_live_info_panel_system)
@@ -126,11 +128,13 @@ pub fn selection_system_set() -> SystemSet {
 }
 
 pub fn global_statistics_system_set() -> SystemSet {
-    SystemSet::new()
+    ConditionSet::new()
+        .run_if_not(interaction::is_paused)
         .with_system(statistics::count_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::performance_stats_system)
         .with_system(statistics::attribute_stats_system)
+        .into()
 }
 
 pub struct GenesisUiPlugin;
@@ -149,6 +153,7 @@ impl Plugin for GenesisUiPlugin {
             .insert_resource(EnergyStatistics::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
+            .insert_resource(interaction::SimulationSpeed::Default)
             .add_system_to_stage(CoreStage::Last, save_on_close);
     }
 }
