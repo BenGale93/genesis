@@ -48,34 +48,24 @@ impl Plugin for GenesisPlugin {
 
         let spawners = spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
 
-        app.add_stage_after(
-            CoreStage::Update,
-            GenesisStage::CleanUp,
-            SystemStage::parallel().with_system_set(despawn_system_set()),
-        )
-        .insert_resource(config::BACKGROUND)
-        .insert_resource(ui::AverageAttributeStatistics::default())
-        .insert_resource(ui::CountStatistics::default())
-        .insert_resource(ui::BugPerformanceStatistics::default())
-        .insert_resource(ui::EnergyStatistics::default())
-        .insert_resource(ui::EntityPanelState::default())
-        .insert_resource(ui::GlobalPanelState::default())
-        .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
-        .insert_resource(spawners)
-        .insert_resource(spawning::PlantSizeRandomiser::new(
-            config_instance.plant_size_range,
-        ))
-        .add_startup_system_set(setup::setup_system_set())
-        .add_system_set(ui::interaction_system_set())
-        .add_system_set(ui::selection_system_set())
-        .add_system_set(ui::global_statistics_system_set())
-        .add_system_set(ui::regular_saver_system_set())
-        .add_system_set(behaviour::behaviour_system_set())
-        .add_system_set(plant_system_set())
-        .add_system_set(slow_system_set())
-        .add_system_set(behaviour::slow_behaviour_system_set())
-        .add_system_set(behaviour::egg_spawning_system_set())
-        .add_system_set(behaviour::metabolism_system_set())
-        .add_system_to_stage(CoreStage::Last, ui::save_on_close);
+        app.add_plugin(ui::GenesisUiPlugin)
+            .add_stage_after(
+                CoreStage::Update,
+                GenesisStage::CleanUp,
+                SystemStage::parallel().with_system_set(despawn_system_set()),
+            )
+            .insert_resource(config::BACKGROUND)
+            .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
+            .insert_resource(spawners)
+            .insert_resource(spawning::PlantSizeRandomiser::new(
+                config_instance.plant_size_range,
+            ))
+            .add_startup_system_set(setup::setup_system_set())
+            .add_system_set(behaviour::behaviour_system_set())
+            .add_system_set(plant_system_set())
+            .add_system_set(slow_system_set())
+            .add_system_set(behaviour::slow_behaviour_system_set())
+            .add_system_set(behaviour::egg_spawning_system_set())
+            .add_system_set(behaviour::metabolism_system_set());
     }
 }
