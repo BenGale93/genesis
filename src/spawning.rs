@@ -13,7 +13,6 @@ use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
 use genesis_util::maths::polars_to_cart;
 use rand::{self, rngs::ThreadRng, Rng};
 use rand_distr::*;
-use rayon::prelude::*;
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
@@ -117,7 +116,7 @@ impl Spawners {
     pub fn random_organism_position(&self, rng: &mut ThreadRng) -> Vec3 {
         let index = self
             .nearby_organisms()
-            .par_iter()
+            .iter()
             .enumerate()
             .min_by(|(_, a), (_, b)| a.cmp(b))
             .map(|(index, _)| index)
@@ -130,7 +129,7 @@ impl Spawners {
     pub fn random_food_position(&self, rng: &mut ThreadRng) -> Vec3 {
         let index = self
             .nearby_food()
-            .par_iter()
+            .iter()
             .enumerate()
             .min_by(|(_, a), (_, b)| a.cmp(b))
             .map(|(index, _)| index)
@@ -149,15 +148,15 @@ impl Spawners {
     }
 
     pub fn nearby_organisms(&self) -> Vec<usize> {
-        self.0.par_iter().map(|s| s.nearby_organisms()).collect()
+        self.0.iter().map(|s| s.nearby_organisms()).collect()
     }
 
     pub fn nearby_food(&self) -> Vec<usize> {
-        self.0.par_iter().map(|s| s.nearby_food()).collect()
+        self.0.iter().map(|s| s.nearby_food()).collect()
     }
 
     pub fn space_for_organisms(&self, min_number: usize) -> bool {
-        self.par_iter().any(|s| s.nearby_organisms() < min_number)
+        self.iter().any(|s| s.nearby_organisms() < min_number)
     }
 }
 
@@ -199,11 +198,11 @@ pub fn nearest_spawner_system(
     let mut organism_counts = vec![0; spawners.len()];
     for position in organisms.iter() {
         let distances: Vec<f32> = spawners
-            .par_iter()
+            .iter()
             .map(|s| s.distance(&position.translation))
             .collect();
         let index = distances
-            .par_iter()
+            .iter()
             .enumerate()
             .min_by(|(_, a), (_, b)| a.total_cmp(b))
             .map(|(index, _)| index)
@@ -216,11 +215,11 @@ pub fn nearest_spawner_system(
     let mut food_counts = vec![0; spawners.0.len()];
     for (transform, plant) in plants.iter() {
         let distances: Vec<f32> = spawners
-            .par_iter()
+            .iter()
             .map(|s| s.distance(&transform.translation))
             .collect();
         let index = distances
-            .par_iter()
+            .iter()
             .enumerate()
             .min_by(|(_, a), (_, b)| a.total_cmp(b))
             .map(|(index, _)| index)
