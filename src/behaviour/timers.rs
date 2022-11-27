@@ -1,12 +1,27 @@
 use std::fmt;
 
 use bevy::{
-    prelude::{Component, Query, Res},
+    prelude::{Component, Query, Res, ResMut, Resource},
     time::{Stopwatch, Time},
 };
 use derive_more::{Deref, DerefMut};
 
 use crate::{attributes, config, mind::MindOutput};
+
+#[derive(Resource, Debug, Deref, DerefMut)]
+pub struct SimulationTime(pub Stopwatch);
+
+impl Default for SimulationTime {
+    fn default() -> Self {
+        Self(Stopwatch::new())
+    }
+}
+
+impl fmt::Display for SimulationTime {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.elapsed().as_secs())
+    }
+}
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct Age(pub Stopwatch);
@@ -68,6 +83,10 @@ pub fn progress_timers_system(time: Res<Time>, mut query: Query<(&mut Heart, &mu
         heart.tick(time.delta());
         internal_timer.tick(time.delta());
     }
+}
+
+pub fn progress_simulation_timer(time: Res<Time>, mut simulation_timer: ResMut<SimulationTime>) {
+    simulation_timer.tick(time.delta());
 }
 
 pub fn reset_internal_timer_system(

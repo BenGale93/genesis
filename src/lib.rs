@@ -15,16 +15,20 @@ mod spawning;
 mod ui;
 
 pub fn plant_system_set() -> SystemSet {
-    SystemSet::new()
+    ConditionSet::new()
+        .run_if_not(ui::is_paused)
         .with_system(spawning::spawn_plant_system)
         .with_system(spawning::update_plant_size)
+        .into()
 }
 
 pub fn despawn_system_set() -> SystemSet {
-    SystemSet::new()
+    ConditionSet::new()
+        .run_if_not(ui::is_paused)
         .with_system(lifecycle::kill_bug_system)
         .with_system(lifecycle::hatch_egg_system)
         .with_system(spawning::despawn_plants_system)
+        .into()
 }
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
@@ -58,6 +62,10 @@ impl Plugin for GenesisPlugin {
             .add_startup_system_set(setup::setup_system_set())
             .add_system_set(plant_system_set())
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
-            .add_fixed_timestep_system("spawner_stats", 0, spawning::nearest_spawner_system);
+            .add_fixed_timestep_system(
+                "spawner_stats",
+                0,
+                spawning::nearest_spawner_system.run_if_not(ui::is_paused),
+            );
     }
 }

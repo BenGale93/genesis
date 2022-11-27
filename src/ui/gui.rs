@@ -4,7 +4,6 @@ use bevy::{
         Res, ResMut, Resource, With,
     },
     sprite::Sprite,
-    time::Time,
     window::Windows,
 };
 use bevy_egui::{egui, EguiContext};
@@ -13,7 +12,10 @@ use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use super::{brain_panel, interaction, statistics};
 use crate::{
     attributes,
-    behaviour::{eating, lifecycle, sight, timers},
+    behaviour::{
+        eating, lifecycle, sight,
+        timers::{self, SimulationTime},
+    },
     body, ecosystem,
 };
 
@@ -36,7 +38,7 @@ fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel)
 }
 
 pub fn global_ui_update_system(
-    time: Res<Time>,
+    time: Res<SimulationTime>,
     count_stats: Res<statistics::CountStatistics>,
     energy_stats: Res<statistics::EnergyStatistics>,
     performance_stats: Res<statistics::BugPerformanceStatistics>,
@@ -58,7 +60,7 @@ pub fn global_ui_update_system(
 
 fn environment_sub_panel(
     ui: &mut egui::Ui,
-    time: &Res<Time>,
+    time: &Res<SimulationTime>,
     energy_stats: &Res<statistics::EnergyStatistics>,
     count_stats: &Res<statistics::CountStatistics>,
 ) {
@@ -66,7 +68,7 @@ fn environment_sub_panel(
         "Global energy: {}",
         energy_stats.current_available_energy()
     ));
-    ui.label(format!("Time elapsed: {:.2}", time.elapsed_seconds()));
+    ui.label(format!("Time elapsed: {:.2}", **time));
     ui.label(format!(
         "Number of adults: {}",
         count_stats.current_adults()
