@@ -1,5 +1,4 @@
 use bevy::{
-    ecs::schedule::ShouldRun,
     prelude::{
         Camera, Color, Commands, Component, Entity, GlobalTransform, Input, MouseButton, Query,
         Res, ResMut, Resource, With,
@@ -101,13 +100,9 @@ fn population_sub_panel(
     ));
 }
 
-pub fn run_if_not_using_egui(mut egui_context: ResMut<EguiContext>) -> ShouldRun {
+pub fn using_gui(mut egui_context: ResMut<EguiContext>) -> bool {
     let ctx = egui_context.ctx_mut();
-    if ctx.is_using_pointer() || ctx.is_pointer_over_area() {
-        ShouldRun::No
-    } else {
-        ShouldRun::Yes
-    }
+    ctx.is_using_pointer() || ctx.is_pointer_over_area()
 }
 
 #[derive(Component)]

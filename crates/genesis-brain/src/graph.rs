@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use rayon::prelude::*;
-
 use crate::{NeuronKind, Neurons, NeuronsExt, Synapse, Synapses};
 
 pub fn creates_cycle(synapses: &Synapses, from: usize, to: usize) -> bool {
@@ -36,24 +34,23 @@ pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSe
         synapses.iter().filter(|synapse| synapse.active()).collect();
 
     loop {
-        let candidates: HashSet<usize> = active_synapses
-            .par_iter()
-            .filter_map(|synapse| {
-                (visited.contains(&synapse.from()) && !visited.contains(&synapse.to()))
-                    .then(|| synapse.to())
-            })
-            .collect();
-        let t: HashSet<usize> = candidates
-            .par_iter()
-            .copied()
-            .filter(|n| {
-                required.contains(n)
-                    && active_synapses
-                        .par_iter()
-                        .filter_map(|synapse| (synapse.to() == *n).then(|| synapse.from()))
-                        .all(|from| visited.contains(&from))
-            })
-            .collect();
+        let candidates = active_synapses.iter().filter_map(|synapse| {
+            (visited.contains(&synapse.from()) && !visited.contains(&synapse.to()))
+                .then(|| synapse.to())
+        });
+        let c: HashSet<usize> = HashSet::from_iter(candidates);
+        let mut t = HashSet::new();
+
+        for n in c {
+            if required.contains(&n)
+                && active_synapses
+                    .iter()
+                    .filter_map(|synapse| (synapse.to() == n).then(|| synapse.from()))
+                    .all(|from| visited.contains(&from))
+            {
+                t.insert(n);
+            }
+        }
 
         if t.is_empty() {
             break;

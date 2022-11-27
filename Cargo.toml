@@ -21,11 +21,11 @@ path = "src/lib.rs"
 genesis-brain = { path = "crates/genesis-brain" }
 genesis-genome = { path = "crates/genesis-genome" }
 genesis-util = { path = "crates/genesis-util/"}
-bevy = { version = "0.9.0", features = ["dynamic"] }
+bevy = { version = "0.9.0", features = [] }
 rand = "0.8.5"
 thiserror = "1.0.37"
 derive_more = "0.99.17"
-bevy_rapier2d = {version = "0.19.0", features = ["debug-render", "parallel"]}
+bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
 anyhow = "1.0.66"
 once_cell = "1.16.0"
 confy = "0.5.1"
@@ -35,7 +35,7 @@ bevy_egui = "0.17.1"
 derive-getters = "0.2.0"
 serde_json = "1.0.87"
 rand_distr = "0.4.3"
-rayon = "1.6.0"
+iyes_loopless = "0.9.1"
 
 [dev-dependencies]
 

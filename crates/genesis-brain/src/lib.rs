@@ -12,7 +12,6 @@ use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
-use rayon::prelude::*;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
@@ -78,7 +77,7 @@ impl Brain {
                 let neuron = &self.neurons[neuron_index];
                 let incoming_values: Vec<f64> = self
                     .synapses
-                    .par_iter()
+                    .iter()
                     .filter(|syn| syn.to() == neuron_index)
                     .map(|syn| {
                         let incoming_value = stored_values[syn.from()];
@@ -86,7 +85,7 @@ impl Brain {
                     })
                     .collect();
                 let final_value: f64 =
-                    incoming_values.par_iter().sum::<f64>() + neuron.bias().as_float();
+                    incoming_values.iter().sum::<f64>() + neuron.bias().as_float();
                 stored_values[neuron_index] = neuron.activate(final_value);
             }
         }
@@ -148,7 +147,7 @@ impl Brain {
     pub fn deactivate_random_synapse(&mut self) {
         let eligible_indexes: Vec<usize> = self
             .synapses()
-            .par_iter()
+            .iter()
             .enumerate()
             .filter(|(_, syn)| {
                 if !syn.active() {
@@ -182,7 +181,7 @@ impl Brain {
     pub fn deactivate_random_neuron(&mut self) {
         let hidden_neurons: Vec<usize> = self
             .neurons
-            .par_iter()
+            .iter()
             .enumerate()
             .filter(|(i, neuron)| {
                 if !matches!(neuron.kind(), NeuronKind::Hidden) {
@@ -215,7 +214,7 @@ impl Brain {
     pub fn mutate_neuron_bias(&mut self) {
         let mut non_input_neurons: Vec<&mut Neuron> = self
             .neurons
-            .par_iter_mut()
+            .iter_mut()
             .filter(|n| !matches!(n.kind(), NeuronKind::Input))
             .collect();
 
@@ -233,7 +232,7 @@ impl Brain {
     pub fn mutate_neuron_activation(&mut self) {
         let mut hidden_neurons: Vec<&mut Neuron> = self
             .neurons
-            .par_iter_mut()
+            .iter_mut()
             .filter(|n| matches!(n.kind(), NeuronKind::Hidden))
             .collect();
 
@@ -323,8 +322,8 @@ impl Brain {
 
         let maybe_connection = self
             .synapses
-            .par_iter_mut()
-            .find_any(|syn| syn.innovation() == new_synapse.innovation());
+            .iter_mut()
+            .find(|syn| syn.innovation() == new_synapse.innovation());
 
         if let Some(conn) = maybe_connection {
             conn.activate();
@@ -424,19 +423,19 @@ impl Brain {
         }
         let incoming_synapses: Vec<(usize, Weight)> = self
             .synapses
-            .par_iter()
+            .iter()
             .filter(|syn| syn.to() == neuron_index && syn.active())
             .map(|syn| (syn.from(), syn.weight()))
             .collect();
         let outgoing_synapses: Vec<usize> = self
             .synapses
-            .par_iter()
+            .iter()
             .filter(|syn| syn.from() == neuron_index && syn.active())
             .map(|syn| syn.to())
             .collect();
 
         let new_from_to_pairs: Vec<(usize, usize, Weight)> = incoming_synapses
-            .par_iter()
+            .iter()
             .flat_map(|(from, w)| {
                 outgoing_synapses
                     .iter()
@@ -456,7 +455,7 @@ impl Brain {
 
         let synapse_indices_to_deactivate: Vec<usize> = self
             .synapses
-            .par_iter()
+            .iter()
             .enumerate()
             .filter_map(|(i, syn)| {
                 ((syn.to() == neuron_index || syn.from() == neuron_index) && syn.active())

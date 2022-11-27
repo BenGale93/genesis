@@ -1,9 +1,8 @@
+use std::time::Duration;
+
 use behaviour::lifecycle;
-use bevy::{
-    prelude::{App, CoreStage, Plugin, SystemSet, SystemStage},
-    time::FixedTimestep,
-};
-use bevy_rapier2d::prelude::PhysicsStages;
+use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
+use iyes_loopless::prelude::*;
 
 mod attributes;
 mod behaviour;
@@ -15,15 +14,8 @@ mod setup;
 mod spawning;
 mod ui;
 
-pub fn slow_system_set() -> SystemSet {
+pub fn plant_system_set() -> SystemSet {
     SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(0.1))
-        .with_system(spawning::nearest_spawner_system)
-}
-
-pub fn time_step_system_set() -> SystemSet {
-    SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(spawning::spawn_plant_system)
         .with_system(spawning::update_plant_size)
 }
@@ -34,49 +26,38 @@ pub fn despawn_system_set() -> SystemSet {
         .with_system(lifecycle::hatch_egg_system)
         .with_system(spawning::despawn_plants_system)
 }
+
+#[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
+enum GenesisStage {
+    CleanUp,
+}
+
 pub struct GenesisPlugin;
 
 impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
-        static COLLISIONS: &str = "collisions";
-        static CLEAN_UP: &str = "clean_up";
         config::initialize_config();
 
         let config_instance = config::WorldConfig::global();
 
         let spawners = spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
+        let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
+        let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 
-        app.add_stage_after(
-            PhysicsStages::Writeback,
-            COLLISIONS,
-            SystemStage::parallel(),
-        )
-        .add_stage_after(COLLISIONS, CLEAN_UP, SystemStage::parallel())
-        .insert_resource(config::BACKGROUND)
-        .insert_resource(ui::AverageAttributeStatistics::default())
-        .insert_resource(ui::CountStatistics::default())
-        .insert_resource(ui::BugPerformanceStatistics::default())
-        .insert_resource(ui::EnergyStatistics::default())
-        .insert_resource(ui::EntityPanelState::default())
-        .insert_resource(ui::GlobalPanelState::default())
-        .insert_resource(ecosystem::Ecosystem::new(config_instance.world_energy))
-        .insert_resource(spawners)
-        .insert_resource(spawning::PlantSizeRandomiser::new(
-            config_instance.plant_size_range,
-        ))
-        .add_startup_system_set(setup::setup_system_set())
-        .add_system_set(ui::interaction_system_set())
-        .add_system_set(ui::selection_system_set())
-        .add_system_set(behaviour::time_step_system_set())
-        .add_system_set(behaviour::egg_spawning_system_set())
-        .add_system_set(behaviour::slow_behaviour_system_set())
-        .add_system_set(behaviour::metabolism_system_set())
-        .add_system_set(ui::global_statistics_system_set())
-        .add_system_set(ui::regular_saver_system_set())
-        .add_system_set(slow_system_set())
-        .add_system_set(time_step_system_set())
-        .add_system_to_stage(CoreStage::Last, ui::save_on_close)
-        .add_system_set_to_stage(COLLISIONS, behaviour::eating_system_set())
-        .add_system_set_to_stage(CLEAN_UP, despawn_system_set());
+        app.add_plugin(ui::GenesisUiPlugin)
+            .add_plugin(behaviour::GenesisBehaviourPlugin)
+            .add_stage_after(
+                CoreStage::Update,
+                GenesisStage::CleanUp,
+                SystemStage::parallel().with_system_set(despawn_system_set()),
+            )
+            .insert_resource(config::BACKGROUND)
+            .insert_resource(spawners)
+            .insert_resource(plant_spawn_size)
+            .insert_resource(ecosystem)
+            .add_startup_system_set(setup::setup_system_set())
+            .add_system_set(plant_system_set())
+            .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
+            .add_fixed_timestep_system("spawner_stats", 0, spawning::nearest_spawner_system);
     }
 }
