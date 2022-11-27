@@ -20,9 +20,8 @@ pub fn slow_system_set() -> SystemSet {
         .with_system(spawning::nearest_spawner_system)
 }
 
-pub fn time_step_system_set() -> SystemSet {
+pub fn plant_system_set() -> SystemSet {
     SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(spawning::spawn_plant_system)
         .with_system(spawning::update_plant_size)
 }
@@ -60,14 +59,14 @@ impl Plugin for GenesisPlugin {
             .add_startup_system_set(setup::setup_system_set())
             .add_system_set(ui::interaction_system_set())
             .add_system_set(ui::selection_system_set())
-            .add_system_set(behaviour::time_step_system_set())
+            .add_system_set(behaviour::behaviour_system_set())
             .add_system_set(behaviour::egg_spawning_system_set())
             .add_system_set(behaviour::slow_behaviour_system_set())
             .add_system_set(behaviour::metabolism_system_set())
             .add_system_set(ui::global_statistics_system_set())
             .add_system_set(ui::regular_saver_system_set())
             .add_system_set(slow_system_set())
-            .add_system_set(time_step_system_set())
+            .add_system_set(plant_system_set())
             .add_system_to_stage(CoreStage::Last, ui::save_on_close)
             .add_system_set_to_stage(CLEAN_UP, despawn_system_set());
     }

@@ -3,8 +3,6 @@ use bevy::{
     time::FixedTimestep,
 };
 
-use crate::config;
-
 pub mod eating;
 pub mod growth;
 pub mod lifecycle;
@@ -14,9 +12,8 @@ pub mod sight;
 pub mod thinking;
 pub mod timers;
 
-pub fn time_step_system_set() -> SystemSet {
+pub fn behaviour_system_set() -> SystemSet {
     SystemSet::new()
-        .with_run_criteria(FixedTimestep::step(config::TIME_STEP as f64))
         .with_system(timers::progress_age_system.before(thinking::thinking_system))
         .with_system(timers::progress_timers_system.before(thinking::thinking_system))
         .with_system(thinking::sensory_system.before(thinking::thinking_system))
