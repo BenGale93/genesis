@@ -61,11 +61,7 @@ impl Plugin for GenesisPlugin {
                 config_instance.plant_size_range,
             ))
             .add_startup_system_set(setup::setup_system_set())
-            .add_system_set(behaviour::behaviour_system_set())
             .add_system_set(plant_system_set())
-            .add_system_set(slow_system_set())
-            .add_system_set(behaviour::slow_behaviour_system_set())
-            .add_system_set(behaviour::egg_spawning_system_set())
-            .add_system_set(behaviour::metabolism_system_set());
+            .add_system_set(slow_system_set());
     }
 }
