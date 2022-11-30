@@ -1,8 +1,6 @@
 use bevy::prelude::{Bundle, Color, Component};
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::Brain;
-use rand::{rngs::StdRng, SeedableRng};
-use rand_distr::{Distribution, Uniform};
 
 use crate::config;
 
@@ -22,32 +20,7 @@ impl Mind {
 
     pub fn color(&self) -> Color {
         let innovations = self.0.innovations();
-        let mut first_innovation = match innovations.first() {
-            Some(i) => *i,
-            None => return Color::WHITE,
-        };
-        let mut rng = StdRng::seed_from_u64(first_innovation as u64);
-        let uniform = Uniform::new(0.0, 1.0);
-
-        let mut r = uniform.sample(&mut rng);
-        let mut g = uniform.sample(&mut rng);
-        let mut b = uniform.sample(&mut rng);
-
-        for (i, innovation) in self.innovations().iter().skip(1).enumerate() {
-            let diff = *innovation as f32 - first_innovation as f32;
-            let perturbation = 1.0 / diff;
-            let index_mod = i % 3;
-            if index_mod == 0 {
-                r = (r + perturbation).clamp(0.0, 1.0);
-            } else if index_mod == 1 {
-                g = (g + perturbation).clamp(0.0, 1.0);
-            } else {
-                b = (b + perturbation).clamp(0.0, 1.0);
-            }
-            first_innovation = *innovation;
-        }
-
-        Color::rgb(r, g, b)
+        mind_color(innovations)
     }
 }
 
@@ -75,4 +48,22 @@ impl MindBundle {
             output: output_vec,
         }
     }
+}
+
+fn mind_color(mut innovations: Vec<usize>) -> Color {
+    innovations.sort_unstable();
+
+    let mut rgb: Vec<f32> = vec![0.5, 0.5, 0.5];
+
+    for innovation in innovations.iter() {
+        let perturbation = (1.0 / (*innovation as f32).log(10.0)) - 0.12;
+        let index_mod = innovation % 3;
+        let sign_mod = innovation % 2;
+        if sign_mod == 0 {
+            rgb[index_mod] = (rgb[index_mod] + perturbation).clamp(0.0, 1.0);
+        } else {
+            rgb[index_mod] = (rgb[index_mod] - perturbation).clamp(0.0, 1.0);
+        }
+    }
+    Color::rgb(rgb[0], rgb[1], rgb[2])
 }
