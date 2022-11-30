@@ -15,7 +15,8 @@ pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 6;
 pub const CHROMOSOME_COUNT: usize = 20;
 pub const CHROMOSOME_LEN: usize = 100;
-pub const EATING_RATIO: usize = 2;
+pub const EATING_RATIO: usize = 5;
+pub const EATING_ANGLE: f32 = 0.4;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;

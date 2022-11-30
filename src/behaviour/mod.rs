@@ -65,6 +65,7 @@ pub fn other_behaviour_system_set() -> SystemSet {
         .with_system(lifecycle::transition_to_hatching_system)
         .with_system(growth::existence_system)
         .with_system(timers::progress_simulation_timer)
+        .with_system(eating::eating_system)
         .into()
 }
 
@@ -73,7 +74,6 @@ pub fn slow_behaviour_system_set() -> SystemSet {
         .run_if_not(ui::is_paused)
         .with_system(lifecycle::lay_egg_system)
         .with_system(growth::grow_bug_system)
-        .with_system(eating::eating_system)
         .into()
 }
 
