@@ -110,6 +110,14 @@ impl Brain {
         new_brain
     }
 
+    pub fn innovations(&self) -> Vec<usize> {
+        self.synapses
+            .iter()
+            .filter(|s| s.active())
+            .map(|s| s.innovation())
+            .collect()
+    }
+
     pub fn add_random_synapse(&mut self) {
         let existing_from_to = self.synapses.get_active_from_to();
 

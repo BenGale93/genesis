@@ -71,7 +71,7 @@ pub struct AttributeConfig {
 impl Default for AttributeConfig {
     fn default() -> Self {
         Self {
-            hatch_age: (30.0, 60.0, 15),
+            hatch_age: (10.0, 30.0, 15),
             adult_age: (50.0, 70.0, 20),
             death_age: (600.0, 700.0, 50),
             mutation_probability: (0.01, 0.35, 100),

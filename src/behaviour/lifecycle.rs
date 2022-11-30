@@ -174,7 +174,7 @@ fn spawn_bug(
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
 
-    let original_color = body::OriginalColor(Color::WHITE);
+    let original_color = body::OriginalColor(mind_bundle.mind.color());
 
     let size = body::Size::new(*attribute_bundle.hatch_size, *attribute_bundle.max_size);
 
