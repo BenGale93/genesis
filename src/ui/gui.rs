@@ -100,6 +100,10 @@ fn population_sub_panel(
         "Max generation: {}",
         performance_stats.current_max_generation()
     ));
+    ui.label(format!(
+        "Oldest bug age: {:.2}",
+        performance_stats.current_oldest_bug()
+    ));
 }
 
 pub fn using_gui(mut egui_context: ResMut<EguiContext>) -> bool {
