@@ -104,8 +104,9 @@ pub fn eating_system(
                     let angle = maths::angle_to_point(
                         plant_transform.translation - bug_transform.translation,
                     );
-                    let rebased_angle = maths::rebased_angle(angle, bug_transform.rotation.z);
-                    if rebased_angle < 0.5 {
+                    let rebased_angle =
+                        maths::rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
+                    if rebased_angle < config::EATING_ANGLE {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();

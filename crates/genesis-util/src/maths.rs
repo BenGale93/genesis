@@ -97,10 +97,9 @@ impl Cone {
 
 #[cfg(test)]
 mod tests {
-
     use glam::{Quat, Vec3};
 
-    use super::{angle_to_point, Cone};
+    use super::{angle_to_point, rebased_angle, Cone};
 
     #[test]
     fn angle_between_from_origin() {
@@ -207,5 +206,41 @@ mod tests {
         let target = Vec3::new(3.0, 3.0, 0.0);
 
         assert!(cone.is_within_cone(target));
+    }
+
+    #[test]
+    fn angle_to_point_and_rebase_right_angle() {
+        let pos_1 = Vec3::new(0.0, 0.0, 0.0);
+        let pos_2 = Vec3::new(0.0, 10.0, 0.0);
+
+        let angle = angle_to_point(pos_2 - pos_1);
+
+        let rebased_angle = rebased_angle(angle, f32::to_radians(90.0));
+
+        assert_eq!(rebased_angle, f32::to_radians(90.0));
+    }
+
+    #[test]
+    fn angle_to_point_and_rebase_forty_five() {
+        let pos_1 = Vec3::new(0.0, 0.0, 0.0);
+        let pos_2 = Vec3::new(10.0, 10.0, 0.0);
+
+        let angle = angle_to_point(pos_2 - pos_1);
+
+        let rebased_angle = rebased_angle(angle, f32::to_radians(-90.0));
+
+        assert_eq!(rebased_angle, f32::to_radians(45.0));
+    }
+
+    #[test]
+    fn angle_to_point_and_rebase_facing_away() {
+        let pos_1 = Vec3::new(0.0, 0.0, 0.0);
+        let pos_2 = Vec3::new(0.0, 10.0, 0.0);
+
+        let angle = angle_to_point(pos_2 - pos_1);
+
+        let rebased_angle = rebased_angle(angle, 1.0_f32.asin() * 2.0);
+
+        assert_eq!(rebased_angle, f32::to_radians(180.0));
     }
 }
