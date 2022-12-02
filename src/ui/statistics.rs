@@ -162,6 +162,7 @@ pub fn attribute_stats_system(
     mut stats: ResMut<AverageAttributeStatistics>,
     attribute_query_1: Query<attributes::BugAttributesPart1>,
     attribute_query_2: Query<attributes::BugAttributesPart2>,
+    egg_attribute_query: Query<&attributes::HatchAge>,
 ) {
     let mut adult_ages = vec![];
     let mut death_ages = vec![];
@@ -177,6 +178,7 @@ pub fn attribute_stats_system(
     let mut eatings = vec![];
     let mut costs_of_thought = vec![];
     let mut costs_of_eating = vec![];
+    let mut hatch_ages = vec![];
     let mut max_sizes = vec![];
     let mut growth_rates = vec![];
 
@@ -199,7 +201,10 @@ pub fn attribute_stats_system(
         max_sizes.push(**msz);
     }
     for (gr,) in attribute_query_2.iter() {
-        growth_rates.push(**gr)
+        growth_rates.push(**gr);
+    }
+    for ha in egg_attribute_query.iter() {
+        hatch_ages.push(**ha);
     }
 
     stats.adult_age.push(mean(adult_ages));
@@ -218,6 +223,7 @@ pub fn attribute_stats_system(
     stats.eating_boundary.push(mean(eatings));
     stats.cost_of_thought.push(mean(costs_of_thought));
     stats.cost_of_eating.push(mean(costs_of_eating));
+    stats.hatch_size.push(mean(hatch_ages));
     stats.max_size.push(mean(max_sizes));
     stats.growth_rate.push(mean(growth_rates));
 }
