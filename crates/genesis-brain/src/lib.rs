@@ -259,19 +259,19 @@ impl Brain {
         let mut positions = Vec::new();
         let total_hidden_layers = layers.len();
 
-        let mut layer_index = 0;
+        let mut layer_index;
         let mut offsets: Vec<usize> = vec![0; impossible_layer + 1];
         for (k, neuron) in self.neurons().iter().enumerate() {
             match neuron.kind() {
                 NeuronKind::Input => layer_index = 0,
                 NeuronKind::Output => layer_index = max_layer,
                 NeuronKind::Hidden => {
+                    layer_index = impossible_layer;
                     for (i, layer) in layers.iter().enumerate() {
                         if layer.contains(&k) {
                             layer_index = (max_layer / total_hidden_layers) * (i + 1);
                             break;
                         }
-                        layer_index = impossible_layer
                     }
                 }
             }
@@ -894,5 +894,23 @@ mod tests {
         test_brain.deactivate_random_neuron();
         let layers = feed_forward_layers(test_brain.neurons(), test_brain.synapses());
         assert_eq!(layers.len(), 1);
+    }
+
+    #[test]
+    fn brain_layout_with_unconnected_neuron() {
+        let mut test_brain = super::Brain::new(3, 1);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(0, 3, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_synapse(1, 3, w).unwrap();
+        test_brain.add_synapse(2, 3, w).unwrap();
+        test_brain.deactivate_synapse(2).unwrap();
+
+        let layout = test_brain.layout_neurons(&(0.0, 0.0), 10.0, 10.0);
+
+        let gui_neuron_with_pos: Vec<&super::GuiNeuron> =
+            layout.iter().filter(|x| x.pos.is_some()).collect();
+        assert_eq!(gui_neuron_with_pos.len(), 4);
     }
 }

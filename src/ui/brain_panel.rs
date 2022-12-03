@@ -1,6 +1,7 @@
 use bevy_egui::egui;
 use genesis_brain::{GuiNeuron, Synapses};
 use genesis_util::color;
+use itertools::Itertools;
 
 use crate::mind;
 
@@ -34,7 +35,10 @@ const NEURON_NAMES: [&str; 20] = [
 ];
 
 fn paint_synapses(ui: &mut egui::Ui, synapses: &Synapses, neuron_layout: &[GuiNeuron]) {
-    for syn in synapses {
+    let sorted_synapses = synapses
+        .iter()
+        .sorted_by(|a, b| a.active().cmp(&b.active()));
+    for syn in sorted_synapses {
         let start_pos = &neuron_layout[syn.from()];
         let end_pos = &neuron_layout[syn.to()];
 
