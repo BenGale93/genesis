@@ -1,7 +1,7 @@
-start_num = 10
+start_num = 20
 minimum_number = 5
-initial_synapse_count = 3
-mutations = 3
+initial_synapse_count = 5
+mutations = 30
 start_energy = 800
 rotation_cost = [
     0.02,
