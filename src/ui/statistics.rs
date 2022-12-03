@@ -5,7 +5,7 @@ use serde_derive::Serialize;
 
 use crate::{
     attributes,
-    behaviour::{eating, lifecycle},
+    behaviour::{eating, lifecycle, timers},
     ecosystem,
 };
 
@@ -62,6 +62,7 @@ pub struct BugPerformanceStatistics {
     highest_energy_consumed: Vec<usize>,
     most_eggs_laid: Vec<usize>,
     max_generation: Vec<usize>,
+    oldest_bug: Vec<f32>,
 }
 
 impl BugPerformanceStatistics {
@@ -75,6 +76,10 @@ impl BugPerformanceStatistics {
 
     pub fn current_max_generation(&self) -> usize {
         last_element(&self.max_generation)
+    }
+
+    pub fn current_oldest_bug(&self) -> f32 {
+        last_element(&self.oldest_bug)
     }
 }
 
@@ -132,27 +137,32 @@ pub fn performance_stats_system(
         &eating::EnergyConsumed,
         &lifecycle::EggsLaid,
         &lifecycle::Generation,
+        &timers::Age,
     )>,
 ) {
     let mut max_consumption = eating::EnergyConsumed(0);
     let mut max_eggs = lifecycle::EggsLaid(0);
     let mut max_generation = lifecycle::Generation(0);
+    let mut oldest_bug: f32 = 0.0;
 
-    for (energy_consumed, eggs_laid, generation) in performance_query.into_iter() {
+    for (energy_consumed, eggs_laid, generation, age) in performance_query.into_iter() {
         max_consumption = max_consumption.max(*energy_consumed);
         max_eggs = max_eggs.max(*eggs_laid);
         max_generation = max_generation.max(*generation);
+        oldest_bug = oldest_bug.max(age.elapsed_secs());
     }
 
     stats.highest_energy_consumed.push(*max_consumption);
     stats.most_eggs_laid.push(*max_eggs);
     stats.max_generation.push(*max_generation);
+    stats.oldest_bug.push(oldest_bug);
 }
 
 pub fn attribute_stats_system(
     mut stats: ResMut<AverageAttributeStatistics>,
     attribute_query_1: Query<attributes::BugAttributesPart1>,
     attribute_query_2: Query<attributes::BugAttributesPart2>,
+    egg_attribute_query: Query<&attributes::HatchAge>,
 ) {
     let mut adult_ages = vec![];
     let mut death_ages = vec![];
@@ -168,6 +178,7 @@ pub fn attribute_stats_system(
     let mut eatings = vec![];
     let mut costs_of_thought = vec![];
     let mut costs_of_eating = vec![];
+    let mut hatch_ages = vec![];
     let mut max_sizes = vec![];
     let mut growth_rates = vec![];
 
@@ -190,7 +201,10 @@ pub fn attribute_stats_system(
         max_sizes.push(**msz);
     }
     for (gr,) in attribute_query_2.iter() {
-        growth_rates.push(**gr)
+        growth_rates.push(**gr);
+    }
+    for ha in egg_attribute_query.iter() {
+        hatch_ages.push(**ha);
     }
 
     stats.adult_age.push(mean(adult_ages));
@@ -209,6 +223,7 @@ pub fn attribute_stats_system(
     stats.eating_boundary.push(mean(eatings));
     stats.cost_of_thought.push(mean(costs_of_thought));
     stats.cost_of_eating.push(mean(costs_of_eating));
+    stats.hatch_size.push(mean(hatch_ages));
     stats.max_size.push(mean(max_sizes));
     stats.growth_rate.push(mean(growth_rates));
 }

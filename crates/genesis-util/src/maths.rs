@@ -11,7 +11,9 @@ where
 {
     let len = numbers.len();
     let sum: T = numbers.into_iter().sum();
-
+    if len == 0 {
+        return f32::NAN;
+    }
     sum / len as f32
 }
 
