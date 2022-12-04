@@ -17,6 +17,8 @@ pub const CHROMOSOME_COUNT: usize = 20;
 pub const CHROMOSOME_LEN: usize = 100;
 pub const EATING_RATIO: usize = 5;
 pub const EATING_ANGLE: f32 = 0.4;
+pub const CORE_MULTIPLIER: usize = 2;
+pub const HEALTH_MULTIPLIER: usize = 3;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
@@ -101,6 +103,7 @@ pub struct WorldConfig {
     pub initial_synapse_count: usize,
     pub mutations: usize,
     pub start_energy: usize,
+    pub lowest_energy_limit: usize,
     pub rotation_cost: (f32, f32),
     pub translation_cost: (f32, f32),
     pub unit_size_cost: f32,
@@ -133,6 +136,7 @@ impl Default for WorldConfig {
             initial_synapse_count: 3,
             mutations: 3,
             start_energy: 800,
+            lowest_energy_limit: 600,
             rotation_cost: (0.02, 0.1),
             translation_cost: (0.02, 0.1),
             unit_size_cost: 0.02,
@@ -147,7 +151,48 @@ impl Default for WorldConfig {
 
 pub static WORLD_CONFIG_INSTANCE: OnceCell<WorldConfig> = OnceCell::new();
 
-pub fn initialize_config() {
+pub struct EnergyLimitConfig {
+    a: f32,
+    b: f32,
+}
+
+impl EnergyLimitConfig {
+    pub fn new(config: &WorldConfig) -> Self {
+        let e = config.lowest_energy_limit as f32;
+        let h = config
+            .attributes
+            .hatch_size
+            .0
+            .min(config.attributes.hatch_size.1);
+        let m = config
+            .attributes
+            .max_size
+            .0
+            .max(config.attributes.max_size.1);
+
+        let a = (e / h) * (10.0 * (m - h) / m);
+        let b = (5.0 * m - 10.0 * h) / (h * m);
+
+        Self { a, b }
+    }
+    pub fn energy_limit(&self, size: usize) -> usize {
+        let size_f = size as f32;
+
+        ((self.a * size_f) / (self.b * size_f + 5.0)) as usize
+    }
+
+    pub fn global() -> &'static Self {
+        ENERGY_LIMIT_INSTANCE
+            .get()
+            .expect("Energy limit config is not initialized")
+    }
+}
+
+pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
+
+pub fn initialize_configs() {
     let config = WorldConfig::from_config();
+    let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);
+    _ = ENERGY_LIMIT_INSTANCE.set(energy_limit_config);
 }

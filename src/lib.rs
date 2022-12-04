@@ -40,7 +40,7 @@ pub struct GenesisPlugin;
 
 impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
-        config::initialize_config();
+        config::initialize_configs();
 
         let config_instance = config::WorldConfig::global();
 

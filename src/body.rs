@@ -114,39 +114,31 @@ pub struct Vitality {
     core_reserve: CoreReserve,
 }
 
-const CORE_MULTIPLIER: usize = 2;
-const HEALTH_MULTIPLIER: usize = 3;
-
-fn energy_limit(size: usize) -> usize {
-    let size_f = size as f32;
-
-    ((320.0 * size_f) / (0.15 * size_f + 5.0)) as usize
-}
-
 impl Vitality {
-    pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> Self {
+    pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> (Self, ecosystem::Energy) {
         let size_uint = size.as_uint();
-        let core_energy = total_energy.take_energy(CORE_MULTIPLIER * size_uint);
+        let core_energy = total_energy.take_energy(config::CORE_MULTIPLIER * size_uint);
         let core_reserve = CoreReserve(core_energy);
 
-        let health_energy = total_energy.take_energy(HEALTH_MULTIPLIER * size_uint);
-        let health =
-            Health(EnergyReserve::new(health_energy, HEALTH_MULTIPLIER * size_uint).unwrap());
+        let health_energy = total_energy.take_energy(config::HEALTH_MULTIPLIER * size_uint);
+        let health = Health(
+            EnergyReserve::new(health_energy, config::HEALTH_MULTIPLIER * size_uint).unwrap(),
+        );
 
-        let standard_energy_limit = energy_limit(size.as_uint());
-        let energy_limit = if total_energy.amount() < standard_energy_limit {
-            standard_energy_limit
-        } else {
-            total_energy.amount()
-        };
-        let energy_store = EnergyStore(EnergyReserve::new(total_energy, energy_limit).unwrap());
+        let energy_limit = config::EnergyLimitConfig::global().energy_limit(size.as_uint());
+        let energy_store = EnergyStore(
+            EnergyReserve::new(total_energy.take_energy(energy_limit), energy_limit).unwrap(),
+        );
 
-        Self {
-            size,
-            energy_store,
-            health,
-            core_reserve,
-        }
+        (
+            Self {
+                size,
+                energy_store,
+                health,
+                core_reserve,
+            },
+            total_energy,
+        )
     }
 
     pub fn energy_store(&self) -> &EnergyReserve {
@@ -193,15 +185,20 @@ impl Vitality {
 
     pub fn grow(&mut self, amount: usize) -> Result<()> {
         if self.size.at_max_size()
-            || (self.energy_store().amount() < amount * (CORE_MULTIPLIER + HEALTH_MULTIPLIER))
+            || (self.energy_store().amount()
+                < amount * (config::CORE_MULTIPLIER + config::HEALTH_MULTIPLIER))
         {
             return Err(anyhow!("Can't grow."));
         }
-        let core_growing_energy = self.energy_store.take_energy(amount * CORE_MULTIPLIER);
+        let core_growing_energy = self
+            .energy_store
+            .take_energy(amount * config::CORE_MULTIPLIER);
         self.core_reserve.add_energy(core_growing_energy);
 
-        let health_growing_energy = self.energy_store.take_energy(amount * HEALTH_MULTIPLIER);
-        self.health.energy_limit += amount * HEALTH_MULTIPLIER;
+        let health_growing_energy = self
+            .energy_store
+            .take_energy(amount * config::HEALTH_MULTIPLIER);
+        self.health.energy_limit += amount * config::HEALTH_MULTIPLIER;
 
         if self.health.add_energy(health_growing_energy) != ecosystem::Energy::new_empty() {
             panic!("Tried to grow and couldn't add all the energy to health.")
@@ -209,7 +206,8 @@ impl Vitality {
 
         self.size.grow(amount as f32);
 
-        self.energy_store.energy_limit = energy_limit(self.size.as_uint());
+        self.energy_store.energy_limit =
+            config::EnergyLimitConfig::global().energy_limit(self.size.as_uint());
         Ok(())
     }
 

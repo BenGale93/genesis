@@ -83,7 +83,7 @@ mod tests {
 
     #[test]
     fn mind_thinks() {
-        config::initialize_config();
+        config::initialize_configs();
         let mut app = App::new();
 
         app.add_system(thinking_system);
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn mind_bundle_works() {
-        config::initialize_config();
+        config::initialize_configs();
 
         let mut app = App::new();
 

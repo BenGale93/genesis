@@ -61,16 +61,18 @@ type Egg<'a> = (
 pub fn hatch_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
     mut hatch_query: Query<Egg, With<Hatching>>,
 ) {
     for (entity, mut egg_energy, transform, mind, body, generation) in hatch_query.iter_mut() {
         commands.entity(entity).despawn_recursive();
-        spawn_bug(
+        let leftover_energy = spawn_bug(
             &mut commands,
             &asset_server,
             egg_energy.move_all_energy(),
             (body.clone(), mind.clone(), transform, *generation),
-        )
+        );
+        ecosystem.return_energy(leftover_energy);
     }
 }
 
@@ -167,7 +169,7 @@ fn spawn_bug(
     asset_server: &Res<AssetServer>,
     energy: ecosystem::Energy,
     bug_parts: BugParts,
-) {
+) -> ecosystem::Energy {
     let (bug_body, mind, transform, generation) = bug_parts;
     let mind_bundle = mind::MindBundle::new(mind);
     let transform_bundle = TransformBundle::from(*transform);
@@ -177,12 +179,13 @@ fn spawn_bug(
     let original_color = body::OriginalColor(mind_bundle.mind.color());
 
     let size = body::Size::new(*attribute_bundle.hatch_size, *attribute_bundle.max_size);
+    let (vitality, leftover_energy) = body::Vitality::new(size, energy);
 
     commands
         .spawn(SpriteBundle {
             texture: asset_server.load("sprite.png"),
             sprite: Sprite {
-                custom_size: Some(size.sprite()),
+                custom_size: Some(vitality.size().sprite()),
                 color: original_color.0,
                 ..default()
             },
@@ -195,7 +198,7 @@ fn spawn_bug(
             angular_damping: 1.0,
         })
         .insert(transform_bundle)
-        .insert(size.collider())
+        .insert(vitality.size().collider())
         .insert(Velocity::zero())
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(movement::MovementSum::new())
@@ -203,7 +206,7 @@ fn spawn_bug(
         .insert(timers::Age::default())
         .insert(Juvenile)
         .insert(sight::Vision::new())
-        .insert(body::Vitality::new(size, energy))
+        .insert(vitality)
         .insert(metabolism::BurntEnergy::new())
         .insert(timers::Heart::new())
         .insert(timers::InternalTimer::new())
@@ -216,6 +219,8 @@ fn spawn_bug(
         .insert(EggsLaid(0))
         .insert(attribute_bundle)
         .insert(mind_bundle);
+
+    leftover_energy
 }
 
 pub fn kill_bug_system(
