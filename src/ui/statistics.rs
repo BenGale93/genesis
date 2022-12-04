@@ -191,7 +191,7 @@ pub fn attribute_stats_system(
         max_rotation_rates.push(mrr.value());
         max_speeds.push(ms.value());
         mutation_probabilities.push(mp.as_float() as f32);
-        offspring_energies.push(**oe as f32);
+        offspring_energies.push(**oe);
         lay_eggs.push(**le as f32);
         internal_timers.push(**it as f32);
         want_to_grows.push(**wtg as f32);

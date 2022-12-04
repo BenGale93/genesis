@@ -142,10 +142,12 @@ pub fn lay_egg_system(
         mut eggs_laid,
     ) in parent_query.iter_mut()
     {
-        if vitality.energy_store().amount() < **offspring_energy {
+        let egg_energy =
+            (vitality.energy_store().energy_limit() as f32 * **offspring_energy) as usize;
+        if vitality.energy_store().amount() < egg_energy {
             continue;
         }
-        let energy = vitality.take_energy(**offspring_energy);
+        let energy = vitality.take_energy(egg_energy);
         let location = egg_position(transform);
         let offspring_body = bug_body.mutate(&mut rng, **prob);
         let offspring_mind = mind.mutate(&mut rng, **prob).into();
