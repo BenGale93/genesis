@@ -90,6 +90,10 @@ impl EnergyReserve {
     fn take_energy(&mut self, amount: usize) -> ecosystem::Energy {
         self.energy.take_energy(amount)
     }
+
+    pub fn energy_limit(&self) -> usize {
+        self.energy_limit
+    }
 }
 impl fmt::Display for EnergyReserve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

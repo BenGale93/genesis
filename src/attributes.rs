@@ -289,20 +289,16 @@ impl CostOfEating {
 impl_from_genome!(CostOfEating);
 
 #[derive(Component, Debug, Deref)]
-pub struct OffspringEnergy(usize);
+pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
-    pub fn from_genome(genome: &Genome) -> Self {
-        let attribute_config = Self::default_config();
-        let value = attribute_config.read_genome(genome) as usize;
-        Self(value)
-    }
-
     fn default_config() -> AttributeConfig {
         let (min, max, length) = config::WorldConfig::global().attributes.offspring_energy;
         AttributeConfig::new(min, max, 10, 0, length)
     }
 }
+
+impl_from_genome!(OffspringEnergy);
 
 #[derive(Component, Debug, Deref)]
 pub struct HatchSize(f32);

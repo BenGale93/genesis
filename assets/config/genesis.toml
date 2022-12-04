@@ -104,9 +104,9 @@ cost_of_eating = [
     10,
 ]
 offspring_energy = [
-    400.0,
-    600.0,
-    50,
+    0.5,
+    1.0,
+    100,
 ]
 hatch_size = [
     20.0,
