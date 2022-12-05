@@ -94,10 +94,11 @@ impl Plugin for GenesisBehaviourPlugin {
             .add_fixed_timestep(Duration::from_secs(1), "very_slow")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())
             .add_fixed_timestep_system_set("slow", 0, slow_behaviour_system_set())
-            .add_system_set(before_thinking_system_set())
-            .add_system_set(thinking_system_set())
-            .add_system_set(after_thinking_system_set())
-            .add_system_set(attempting_behaviour_system_set())
-            .add_system_set(other_behaviour_system_set());
+            .add_fixed_timestep(Duration::from_secs_f32(1.0 / 60.0), "standard")
+            .add_fixed_timestep_system_set("standard", 0, before_thinking_system_set())
+            .add_fixed_timestep_system_set("standard", 0, thinking_system_set())
+            .add_fixed_timestep_system_set("standard", 0, after_thinking_system_set())
+            .add_fixed_timestep_system_set("standard", 0, attempting_behaviour_system_set())
+            .add_fixed_timestep_system_set("standard", 0, other_behaviour_system_set());
     }
 }

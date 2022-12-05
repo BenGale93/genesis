@@ -46,6 +46,7 @@ pub const INTERNAL_TIMER_INDEX: usize = 13;
 
 // Other
 pub const GENERATION_SWITCH: usize = 5;
+pub const SPEED: f32 = 1.0;
 
 type MinMaxLen = (f32, f32, usize);
 
