@@ -109,7 +109,10 @@ pub fn interaction_system_set() -> SystemSet {
     SystemSet::new()
         .with_system(interaction::move_camera_system)
         .with_system(interaction::camera_zooming_system)
+        .with_system(interaction::pause_key_system)
         .with_system(interaction::pause_system)
+        .with_system(interaction::game_time_system)
+        .with_system(gui::game_speed_widget)
         .with_system(gui::bug_live_info_system)
         .with_system(gui::bug_attribute_info_system)
         .with_system(gui::egg_live_info_panel_system)
@@ -153,7 +156,7 @@ impl Plugin for GenesisUiPlugin {
             .insert_resource(EnergyStatistics::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
-            .insert_resource(interaction::SimulationSpeed::Default)
+            .insert_resource(interaction::SimulationSpeed::default())
             .add_system_to_stage(CoreStage::Last, save_on_close);
     }
 }

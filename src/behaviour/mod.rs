@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::prelude::{App, Plugin, SystemSet};
 use iyes_loopless::prelude::*;
 
-use crate::{config, ui};
+use crate::ui;
 
 pub mod eating;
 pub mod growth;
@@ -96,11 +96,11 @@ pub struct GenesisBehaviourPlugin;
 impl Plugin for GenesisBehaviourPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(timers::SimulationTime::default())
-            .add_fixed_timestep(Duration::from_secs_f32(0.1 / config::SPEED), "slow")
-            .add_fixed_timestep(Duration::from_secs_f32(1.0 / config::SPEED), "very_slow")
+            .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
+            .add_fixed_timestep(Duration::from_secs_f32(1.0), "very_slow")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())
             .add_fixed_timestep_system_set("slow", 0, slow_behaviour_system_set())
-            .add_fixed_timestep(Duration::from_secs_f32(0.05 / config::SPEED), "standard")
+            .add_fixed_timestep(Duration::from_secs_f32(0.05), "standard")
             .add_fixed_timestep_system_set("standard", 0, before_thinking_system_set())
             .add_fixed_timestep_system_set("standard", 0, thinking_system_set())
             .add_fixed_timestep_system_set("standard", 0, after_thinking_system_set())

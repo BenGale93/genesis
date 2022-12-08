@@ -363,3 +363,20 @@ pub fn plant_info_panel_system(
         });
     }
 }
+
+pub fn game_speed_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut speed: ResMut<interaction::SimulationSpeed>,
+) {
+    let symbol = if speed.paused { "⏵" } else { "⏸" };
+    egui::Window::new("Controls")
+        .anchor(egui::Align2::RIGHT_TOP, [-5.0, 5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button(symbol).clicked() {
+                    speed.paused = !speed.paused;
+                }
+                ui.add(egui::Slider::new(&mut speed.speed, 0.1..=3.0).text("Game Speed"))
+            })
+        });
+}
