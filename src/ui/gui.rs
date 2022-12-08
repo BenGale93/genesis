@@ -254,6 +254,7 @@ fn bug_attribute_sub_panel(
     ui.label(format!("Cost of eating: {:.3}", **bug_info_part1.13));
     ui.label(format!("Maximum size: {:.3}", **bug_info_part1.14));
     ui.label(format!("Growth rate: {:.3}", **bug_info_part2.0));
+    ui.label(format!("Mouth width: {:.3}", **bug_info_part2.1));
 }
 
 pub fn bug_brain_info_system(

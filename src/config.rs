@@ -16,7 +16,6 @@ pub const OUTPUT_NEURONS: usize = 6;
 pub const CHROMOSOME_COUNT: usize = 20;
 pub const CHROMOSOME_LEN: usize = 100;
 pub const EATING_RATIO: usize = 5;
-pub const EATING_ANGLE: f32 = 0.4;
 pub const CORE_MULTIPLIER: usize = 2;
 pub const HEALTH_MULTIPLIER: usize = 3;
 
@@ -66,6 +65,7 @@ pub struct AttributeConfig {
     pub cost_of_thought: MinMaxLen,
     pub cost_of_eating: MinMaxLen,
     pub offspring_energy: MinMaxLen,
+    pub mouth_width: MinMaxLen,
     pub hatch_size: MinMaxLen,
     pub max_size: MinMaxLen,
     pub growth_rate: MinMaxLen,
@@ -88,7 +88,8 @@ impl Default for AttributeConfig {
             eating_boundary: (-0.5, 0.5, 20),
             cost_of_thought: (0.001, 0.003, 10),
             cost_of_eating: (0.3, 0.2, 10),
-            offspring_energy: (400.0, 600.0, 50),
+            mouth_width: (0.3, 0.6, 20),
+            offspring_energy: (0.5, 1.0, 100),
             hatch_size: (20.0, 35.0, 15),
             max_size: (80.0, 100.0, 20),
             growth_rate: (0.05, 0.1, 20),

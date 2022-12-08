@@ -75,23 +75,29 @@ pub struct EnergyConsumed(pub usize);
 #[derive(Component, Debug)]
 pub struct Eaten;
 
+pub type EatingBug<'a> = (
+    Entity,
+    &'a mut Vitality,
+    &'a Transform,
+    &'a mut BurntEnergy,
+    &'a mut EnergyConsumed,
+    &'a attributes::MouthWidth,
+);
+
 pub fn eating_system(
     mut commands: Commands,
     rapier_context: Res<RapierContext>,
-    mut bug_query: Query<
-        (
-            Entity,
-            &mut Vitality,
-            &Transform,
-            &mut BurntEnergy,
-            &mut EnergyConsumed,
-        ),
-        With<TryingToEat>,
-    >,
+    mut bug_query: Query<EatingBug, With<TryingToEat>>,
     mut plant_query: Query<(Entity, &mut Plant, &Transform)>,
 ) {
-    for (bug_entity, mut vitality, bug_transform, mut burnt_energy, mut energy_consumed) in
-        bug_query.iter_mut()
+    for (
+        bug_entity,
+        mut vitality,
+        bug_transform,
+        mut burnt_energy,
+        mut energy_consumed,
+        mouth_width,
+    ) in bug_query.iter_mut()
     {
         for contact_pair in rapier_context.contacts_with(bug_entity) {
             let other_collider = if contact_pair.collider1() == bug_entity {
@@ -106,7 +112,7 @@ pub fn eating_system(
                     );
                     let rebased_angle =
                         maths::rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
-                    if rebased_angle < config::EATING_ANGLE {
+                    if rebased_angle < **mouth_width {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();

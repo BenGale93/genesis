@@ -102,6 +102,7 @@ pub struct AverageAttributeStatistics {
     pub hatch_size: Vec<f32>,
     pub max_size: Vec<f32>,
     pub growth_rate: Vec<f32>,
+    pub mouth_widths: Vec<f32>,
 }
 
 pub fn count_system(
@@ -181,6 +182,7 @@ pub fn attribute_stats_system(
     let mut hatch_ages = vec![];
     let mut max_sizes = vec![];
     let mut growth_rates = vec![];
+    let mut mouth_width = vec![];
 
     for (aa, da, ea, er, mrr, ms, mp, oe, le, it, wtg, e, cot, coe, msz) in attribute_query_1.iter()
     {
@@ -200,8 +202,9 @@ pub fn attribute_stats_system(
         costs_of_eating.push(**coe);
         max_sizes.push(**msz);
     }
-    for (gr,) in attribute_query_2.iter() {
+    for (gr, mw) in attribute_query_2.iter() {
         growth_rates.push(**gr);
+        mouth_width.push(**mw);
     }
     for ha in egg_attribute_query.iter() {
         hatch_ages.push(**ha);
@@ -226,4 +229,5 @@ pub fn attribute_stats_system(
     stats.hatch_size.push(mean(hatch_ages));
     stats.max_size.push(mean(max_sizes));
     stats.growth_rate.push(mean(growth_rates));
+    stats.mouth_widths.push(mean(mouth_width));
 }
