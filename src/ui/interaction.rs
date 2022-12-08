@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bevy::{
     input::mouse::MouseWheel,
     prelude::{
@@ -8,7 +10,8 @@ use bevy::{
     time::Time,
     window::Windows,
 };
-use bevy_rapier2d::prelude::RapierConfiguration;
+use bevy_rapier2d::prelude::{RapierConfiguration, TimestepMode};
+use iyes_loopless::prelude::*;
 
 use crate::config;
 
@@ -91,31 +94,61 @@ pub fn get_cursor_position(
     }
 }
 
-#[derive(Resource, Debug, PartialEq, Eq)]
-pub enum SimulationSpeed {
-    Default,
-    Paused,
+#[derive(Resource, Debug)]
+pub struct SimulationSpeed {
+    pub speed: f32,
+    pub paused: bool,
 }
 
-pub fn pause_system(
-    kb_input: Res<Input<KeyCode>>,
-    mut speed: ResMut<SimulationSpeed>,
-    mut rapier_config: ResMut<RapierConfiguration>,
-) {
+impl Default for SimulationSpeed {
+    fn default() -> Self {
+        Self {
+            speed: 1.0,
+            paused: false,
+        }
+    }
+}
+
+pub fn pause_key_system(kb_input: Res<Input<KeyCode>>, mut speed: ResMut<SimulationSpeed>) {
     if kb_input.pressed(KeyCode::P) {
-        *speed = match *speed {
-            SimulationSpeed::Default => {
-                rapier_config.physics_pipeline_active = false;
-                SimulationSpeed::Paused
-            }
-            SimulationSpeed::Paused => {
-                rapier_config.physics_pipeline_active = true;
-                SimulationSpeed::Default
-            }
+        if speed.paused {
+            speed.paused = false;
+        } else {
+            speed.paused = true;
         };
     }
 }
 
 pub fn is_paused(speed: Res<SimulationSpeed>) -> bool {
-    SimulationSpeed::Paused == *speed
+    speed.paused
+}
+
+pub fn pause_system(speed: Res<SimulationSpeed>, mut rapier_config: ResMut<RapierConfiguration>) {
+    if speed.paused {
+        rapier_config.physics_pipeline_active = false;
+    } else {
+        rapier_config.physics_pipeline_active = true;
+    }
+}
+
+// TODO: This should only run if SimulationSpeed changes.
+pub fn game_time_system(
+    speed: Res<SimulationSpeed>,
+    mut rapier_config: ResMut<RapierConfiguration>,
+    mut timesteps: ResMut<FixedTimesteps>,
+    mut time: ResMut<Time>,
+) {
+    let very_slow = timesteps.get_mut("very_slow").unwrap();
+    very_slow.step = Duration::from_secs_f32(1.0 / speed.speed);
+    let slow = timesteps.get_mut("slow").unwrap();
+    slow.step = Duration::from_secs_f32(0.1 / speed.speed);
+    let standard = timesteps.get_mut("standard").unwrap();
+    standard.step = Duration::from_secs_f32(0.05 / speed.speed);
+
+    rapier_config.timestep_mode = TimestepMode::Fixed {
+        dt: speed.speed / 60.0,
+        substeps: 1,
+    };
+
+    time.set_relative_speed(speed.speed);
 }
