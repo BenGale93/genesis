@@ -8,7 +8,7 @@
 //! Eye range and angle are on chromosome 3 and can either be exactly correlated
 //! inversely correlated.
 //! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
-//! Cost of thought, growth rate, and cost of eating can be found on chromosome 5.
+//! Cost of thought, growth rate, cost of eating, and mouth width can be found on chromosome 5.
 //! Size related attributes are on chromosome 10.
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
@@ -289,6 +289,18 @@ impl CostOfEating {
 impl_from_genome!(CostOfEating);
 
 #[derive(Component, Debug, Deref)]
+pub struct MouthWidth(f32);
+
+impl MouthWidth {
+    fn default_config() -> AttributeConfig {
+        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_eating;
+        AttributeConfig::new(min, max, 5, 5, length)
+    }
+}
+
+impl_from_genome!(MouthWidth);
+
+#[derive(Component, Debug, Deref)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
@@ -351,6 +363,7 @@ pub struct AttributeBundle {
     pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
+    pub mouth_width: MouthWidth,
     pub hatch_size: HatchSize,
     pub max_size: MaxSize,
     pub growth_rate: GrowthRate,
@@ -371,6 +384,7 @@ impl AttributeBundle {
         let eating_boundary = EatingBoundary::from_genome(genome);
         let cost_of_thought = CostOfThought::from_genome(genome);
         let cost_of_eating = CostOfEating::from_genome(genome);
+        let mouth_width = MouthWidth::from_genome(genome);
         let offspring_energy = OffspringEnergy::from_genome(genome);
         let hatch_size = HatchSize::from_genome(genome);
         let max_size = MaxSize::from_genome(genome);
@@ -390,6 +404,7 @@ impl AttributeBundle {
             eating_boundary,
             cost_of_thought,
             cost_of_eating,
+            mouth_width,
             offspring_energy,
             hatch_size,
             max_size,
@@ -441,4 +456,4 @@ pub type BugAttributesPart1<'a> = (
     &'a MaxSize,
 );
 
-pub type BugAttributesPart2<'a> = (&'a GrowthRate,);
+pub type BugAttributesPart2<'a> = (&'a GrowthRate, &'a MouthWidth);

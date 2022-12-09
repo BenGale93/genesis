@@ -1,8 +1,8 @@
-start_num = 20
+start_num = 10
 minimum_number = 5
-initial_synapse_count = 5
-mutations = 30
-start_energy = 300
+initial_synapse_count = 3
+mutations = 3
+start_energy = 800
 lowest_energy_limit = 600
 rotation_cost = [
     0.02,
@@ -107,6 +107,11 @@ offspring_energy = [
     0.5,
     1.0,
     100,
+]
+mouth_width = [
+    0.3,
+    0.6,
+    20,
 ]
 hatch_size = [
     20.0,
