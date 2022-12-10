@@ -1,3 +1,6 @@
+mod attr_config;
+mod validators;
+
 use bevy::prelude::{ClearColor, Color};
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
@@ -46,57 +49,6 @@ pub const INTERNAL_TIMER_INDEX: usize = 13;
 // Other
 pub const GENERATION_SWITCH: usize = 5;
 
-type MinMaxLen = (f32, f32, usize);
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct AttributeConfig {
-    pub hatch_age: MinMaxLen,
-    pub adult_age: MinMaxLen,
-    pub death_age: MinMaxLen,
-    pub mutation_probability: MinMaxLen,
-    pub max_speed: MinMaxLen,
-    pub max_rotation: MinMaxLen,
-    pub eye_range: MinMaxLen,
-    pub eye_angle: MinMaxLen,
-    pub internal_timer_boundary: MinMaxLen,
-    pub lay_egg_boundary: MinMaxLen,
-    pub want_to_grow_boundary: MinMaxLen,
-    pub eating_boundary: MinMaxLen,
-    pub cost_of_thought: MinMaxLen,
-    pub cost_of_eating: MinMaxLen,
-    pub offspring_energy: MinMaxLen,
-    pub mouth_width: MinMaxLen,
-    pub hatch_size: MinMaxLen,
-    pub max_size: MinMaxLen,
-    pub growth_rate: MinMaxLen,
-}
-
-impl Default for AttributeConfig {
-    fn default() -> Self {
-        Self {
-            hatch_age: (10.0, 30.0, 15),
-            adult_age: (50.0, 70.0, 20),
-            death_age: (600.0, 700.0, 50),
-            mutation_probability: (0.01, 0.35, 100),
-            max_speed: (100.0, 500.0, 100),
-            max_rotation: (10.0, 30.0, 20),
-            eye_range: (200.0, 700.0, 100),
-            eye_angle: (360.0, 30.0, 100),
-            internal_timer_boundary: (-0.5, 0.5, 20),
-            lay_egg_boundary: (0.0, 0.8, 30),
-            want_to_grow_boundary: (-0.5, 0.5, 20),
-            eating_boundary: (-0.5, 0.5, 20),
-            cost_of_thought: (0.001, 0.003, 10),
-            cost_of_eating: (0.3, 0.2, 10),
-            mouth_width: (0.3, 0.6, 20),
-            offspring_energy: (0.5, 1.0, 100),
-            hatch_size: (20.0, 35.0, 15),
-            max_size: (80.0, 100.0, 20),
-            growth_rate: (0.05, 0.1, 20),
-        }
-    }
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WorldConfig {
     pub start_num: usize,
@@ -112,7 +64,7 @@ pub struct WorldConfig {
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
     pub spawners: Vec<spawning::SpawnerConfig>,
-    pub attributes: AttributeConfig,
+    pub attributes: attr_config::AttributeConfig,
 }
 
 impl WorldConfig {
@@ -122,8 +74,38 @@ impl WorldConfig {
             .expect("World config is not initialized")
     }
 
-    pub fn from_config() -> Self {
-        confy::load_path("./assets/config/genesis.toml").unwrap()
+    pub fn from_config() -> Result<Self, Vec<String>> {
+        let world_config: Self = confy::load_path("./assets/config/genesis.toml").unwrap();
+        world_config.validate()?;
+        Ok(world_config)
+    }
+
+    fn validate(&self) -> Result<(), Vec<String>> {
+        let mut messages = vec![
+            validators::min_value(0.0, self.unit_size_cost, "unit_size_cost"),
+            validators::min_value(1, self.plant_energy_per_unit, "plant_energy_per_unit"),
+            validators::low_high(
+                self.minimum_number,
+                self.start_num,
+                "minimum_number",
+                "start_num",
+            ),
+        ];
+        let low_high_tuples = vec![
+            (self.rotation_cost, "rotation_cost"),
+            (self.translation_cost, "translation_cost"),
+            (self.plant_size_range, "plant_size_range"),
+        ];
+        for (tuple, name) in low_high_tuples {
+            messages.push(validators::low_high_tuple(tuple, name))
+        }
+        messages.extend(self.attributes.validate());
+
+        let failures: Vec<String> = messages.into_iter().flatten().collect();
+        if !failures.is_empty() {
+            return Err(failures);
+        }
+        Ok(())
     }
 }
 
@@ -145,7 +127,7 @@ impl Default for WorldConfig {
             plant_energy_per_unit: 2,
             plant_size_range: (10.0, 30.0),
             spawners: vec![spawner],
-            attributes: AttributeConfig::default(),
+            attributes: attr_config::AttributeConfig::default(),
         }
     }
 }
@@ -192,7 +174,10 @@ impl EnergyLimitConfig {
 pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
 
 pub fn initialize_configs() {
-    let config = WorldConfig::from_config();
+    let config = match WorldConfig::from_config() {
+        Ok(c) => c,
+        Err(e) => panic!("Config validation failed. Issues are: {:?}", e),
+    };
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);
     _ = ENERGY_LIMIT_INSTANCE.set(energy_limit_config);
