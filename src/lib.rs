@@ -1,5 +1,6 @@
 #![warn(clippy::all, clippy::nursery)]
 #![feature(is_some_and)]
+#![allow(clippy::needless_pass_by_value)]
 use std::time::Duration;
 
 use behaviour::lifecycle;
