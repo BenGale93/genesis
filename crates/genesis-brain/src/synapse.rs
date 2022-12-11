@@ -18,10 +18,10 @@ impl Synapse {
         if from == to {
             return Err(BrainError::InvalidFromTo);
         }
-        let innovation = Synapse::compute_innovation(from, to);
+        let innovation = Self::compute_innovation(from, to);
         let weight = Weight::random();
 
-        Ok(Synapse {
+        Ok(Self {
             from,
             to,
             weight,
@@ -31,34 +31,39 @@ impl Synapse {
     }
 
     pub fn with_weight(from: usize, to: usize, weight: Weight) -> Result<Self, BrainError> {
-        let mut synapse = Synapse::new(from, to)?;
+        let mut synapse = Self::new(from, to)?;
         synapse.set_weight(weight);
         Ok(synapse)
     }
 
     // Cantor Pairing Function
-    fn compute_innovation(from: usize, to: usize) -> usize {
+    const fn compute_innovation(from: usize, to: usize) -> usize {
         let x = (from + to) * (from + to + 1);
         (x / 2) + to
     }
 
-    pub fn from(&self) -> usize {
+    #[must_use]
+    pub const fn from(&self) -> usize {
         self.from
     }
 
-    pub fn to(&self) -> usize {
+    #[must_use]
+    pub const fn to(&self) -> usize {
         self.to
     }
 
-    pub fn weight(&self) -> Weight {
+    #[must_use]
+    pub const fn weight(&self) -> Weight {
         self.weight
     }
 
-    pub fn active(&self) -> bool {
+    #[must_use]
+    pub const fn active(&self) -> bool {
         self.active
     }
 
-    pub fn innovation(&self) -> usize {
+    #[must_use]
+    pub const fn innovation(&self) -> usize {
         self.innovation
     }
 
@@ -71,11 +76,11 @@ impl Synapse {
     }
 
     pub fn activate(&mut self) {
-        self.set_active(true)
+        self.set_active(true);
     }
 
     pub fn deactivate(&mut self) {
-        self.set_active(false)
+        self.set_active(false);
     }
 }
 
@@ -83,7 +88,7 @@ impl PartialEq for Synapse {
     fn eq(&self, other: &Self) -> bool {
         self.innovation == other.innovation
             && self.active == other.active
-            && (self.weight - other.weight).abs() < Weight::new(f64::EPSILON).unwrap()
+            && (self.weight - other.weight).abs() < Weight::new(f32::EPSILON).unwrap()
     }
 }
 
@@ -147,7 +152,7 @@ mod tests {
 
     #[test]
     fn not_equal_by_innovation() {
-        let weight = Weight::new(0_f64).unwrap();
+        let weight = Weight::new(0_f32).unwrap();
         let a = Synapse::with_weight(0, 1, weight).unwrap();
         let b = Synapse::with_weight(0, 2, weight).unwrap();
 
@@ -156,7 +161,7 @@ mod tests {
 
     #[test]
     fn not_equal_by_weight() {
-        let weight = Weight::new(0_f64).unwrap();
+        let weight = Weight::new(0_f32).unwrap();
         let second_weight = Weight::new(0.5).unwrap();
         let a = Synapse::with_weight(0, 1, weight).unwrap();
         let b = Synapse::with_weight(0, 1, second_weight).unwrap();

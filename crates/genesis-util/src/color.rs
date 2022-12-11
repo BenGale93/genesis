@@ -2,6 +2,7 @@ use ndarray::Array;
 
 use crate::Weight;
 
+#[must_use]
 pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8) {
     let t = (weight.as_float() + 1.0) / 2.0;
 
@@ -18,7 +19,7 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
             break;
         }
     }
-    if t == 1.0 {
+    if (t - 1.0).abs() < f32::EPSILON {
         sub_t = t;
         end_color_index = colors.len() - 1;
     }
@@ -26,9 +27,12 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
     let start_color = colors[end_color_index - 1];
     let end_color = colors[end_color_index];
 
-    let r = (start_color.0 as f64 + (end_color.0 as f64 - start_color.0 as f64) * sub_t) as u8;
-    let g = (start_color.1 as f64 + (end_color.1 as f64 - start_color.1 as f64) * sub_t) as u8;
-    let b = (start_color.2 as f64 + (end_color.2 as f64 - start_color.2 as f64) * sub_t) as u8;
+    let r = (f32::from(end_color.0) - f32::from(start_color.0))
+        .mul_add(sub_t, f32::from(start_color.0)) as u8;
+    let g = (f32::from(end_color.1) - f32::from(start_color.1))
+        .mul_add(sub_t, f32::from(start_color.1)) as u8;
+    let b = (f32::from(end_color.2) - f32::from(start_color.2))
+        .mul_add(sub_t, f32::from(start_color.2)) as u8;
 
     (r, g, b)
 }

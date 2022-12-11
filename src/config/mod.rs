@@ -68,7 +68,7 @@ pub struct WorldConfig {
 }
 
 impl WorldConfig {
-    pub fn global() -> &'static WorldConfig {
+    pub fn global() -> &'static Self {
         WORLD_CONFIG_INSTANCE
             .get()
             .expect("World config is not initialized")
@@ -97,7 +97,7 @@ impl WorldConfig {
             (self.plant_size_range, "plant_size_range"),
         ];
         for (tuple, name) in low_high_tuples {
-            messages.push(validators::low_high_tuple(tuple, name))
+            messages.push(validators::low_high_tuple(tuple, name));
         }
         messages.extend(self.attributes.validate());
 
@@ -154,14 +154,14 @@ impl EnergyLimitConfig {
             .max(config.attributes.max_size.1);
 
         let a = (e / h) * (10.0 * (m - h) / m);
-        let b = (5.0 * m - 10.0 * h) / (h * m);
+        let b = 5.0f32.mul_add(m, -10.0 * h) / (h * m);
 
         Self { a, b }
     }
     pub fn energy_limit(&self, size: usize) -> usize {
         let size_f = size as f32;
 
-        ((self.a * size_f) / (self.b * size_f + 5.0)) as usize
+        ((self.a * size_f) / self.b.mul_add(size_f, 5.0)) as usize
     }
 
     pub fn global() -> &'static Self {
@@ -176,7 +176,7 @@ pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
 pub fn initialize_configs() {
     let config = match WorldConfig::from_config() {
         Ok(c) => c,
-        Err(e) => panic!("Config validation failed. Issues are: {:?}", e),
+        Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
     };
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);

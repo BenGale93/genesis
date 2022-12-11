@@ -10,7 +10,7 @@ pub struct MovementSum {
 }
 
 impl MovementSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             translation_sum: 0.0,
             rotation_sum: 0.0,
@@ -28,10 +28,10 @@ impl MovementSum {
     }
 
     fn add_translation(&mut self, translation: f32, translation_cost: f32) {
-        self.translation_sum += translation.abs() * translation_cost
+        self.translation_sum += translation.abs() * translation_cost;
     }
     fn add_rotation(&mut self, rotation: f32, rotation_cost: f32) {
-        self.rotation_sum += rotation.abs() * rotation_cost
+        self.rotation_sum += rotation.abs() * rotation_cost;
     }
 }
 
@@ -48,11 +48,11 @@ pub fn movement_system(
     for (transform, mut velocity, outputs, mut movement_sum, max_rotation, max_speed) in
         query.iter_mut()
     {
-        let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
+        let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0);
         movement_sum.add_rotation(rotation_factor, max_rotation.cost());
         velocity.angvel = rotation_factor * max_rotation.value();
 
-        let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
+        let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
         movement_sum.add_translation(movement_factor, max_speed.cost());
         let speed = movement_factor * max_speed.value();
         velocity.linvel = (speed * transform.local_y()).truncate();

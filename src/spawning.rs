@@ -12,7 +12,7 @@ use bevy::{
 use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
 use genesis_util::maths::polars_to_cart;
 use rand::{self, rngs::ThreadRng, Rng};
-use rand_distr::*;
+use rand_distr::{Distribution, Gamma, InverseGaussian, LogNormal, Normal, Uniform};
 use serde_derive::{Deserialize, Serialize};
 
 use crate::{
@@ -31,23 +31,21 @@ pub enum DistributionKind {
 impl DistributionKind {
     pub fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> f32 {
         match self {
-            DistributionKind::Gamma(d) => d.sample(rng),
-            DistributionKind::Normal(d) => d.sample(rng),
-            DistributionKind::Uniform(d) => d.sample(rng),
-            DistributionKind::LogNormal(d) => d.sample(rng),
-            DistributionKind::InverseGaussian(d) => d.sample(rng),
+            Self::Gamma(d) => d.sample(rng),
+            Self::Normal(d) => d.sample(rng),
+            Self::Uniform(d) => d.sample(rng),
+            Self::LogNormal(d) => d.sample(rng),
+            Self::InverseGaussian(d) => d.sample(rng),
         }
     }
 
     pub fn from_config(config: &DistributionConfig) -> anyhow::Result<Self> {
         let dist = match config.name.as_str() {
-            "gamma" => DistributionKind::Gamma(Gamma::new(config.a, config.b)?),
-            "normal" => DistributionKind::Normal(Normal::new(config.a, config.b)?),
-            "uniform" => DistributionKind::Uniform(Uniform::new(config.a, config.b)),
-            "lognormal" => DistributionKind::LogNormal(LogNormal::new(config.a, config.b)?),
-            "inversegaussian" => {
-                DistributionKind::InverseGaussian(InverseGaussian::new(config.a, config.b)?)
-            }
+            "gamma" => Self::Gamma(Gamma::new(config.a, config.b)?),
+            "normal" => Self::Normal(Normal::new(config.a, config.b)?),
+            "uniform" => Self::Uniform(Uniform::new(config.a, config.b)),
+            "lognormal" => Self::LogNormal(LogNormal::new(config.a, config.b)?),
+            "inversegaussian" => Self::InverseGaussian(InverseGaussian::new(config.a, config.b)?),
             _ => return Err(anyhow!("Unknown distribution.")),
         };
         Ok(dist)
@@ -63,7 +61,7 @@ pub struct Spawner {
 }
 
 impl Spawner {
-    pub fn new(centre: Vec3, radius: f32, dist: DistributionKind) -> Self {
+    pub const fn new(centre: Vec3, radius: f32, dist: DistributionKind) -> Self {
         Self {
             centre,
             radius,
@@ -88,7 +86,7 @@ impl Spawner {
         Ok(Self::new(centre, config.radius, dist))
     }
 
-    pub fn nearby_organisms(&self) -> usize {
+    pub const fn nearby_organisms(&self) -> usize {
         self.nearby_organisms
     }
 
@@ -96,7 +94,7 @@ impl Spawner {
         self.nearby_organisms = nearby_bugs;
     }
 
-    pub fn nearby_food(&self) -> usize {
+    pub const fn nearby_food(&self) -> usize {
         self.nearby_food
     }
 
@@ -148,11 +146,11 @@ impl Spawners {
     }
 
     pub fn nearby_organisms(&self) -> Vec<usize> {
-        self.0.iter().map(|s| s.nearby_organisms()).collect()
+        self.0.iter().map(Spawner::nearby_organisms).collect()
     }
 
     pub fn nearby_food(&self) -> Vec<usize> {
-        self.0.iter().map(|s| s.nearby_food()).collect()
+        self.0.iter().map(Spawner::nearby_food).collect()
     }
 
     pub fn space_for_organisms(&self, min_number: usize) -> bool {
@@ -168,7 +166,7 @@ pub struct DistributionConfig {
 }
 
 impl DistributionConfig {
-    pub fn new(name: String, a: f32, b: f32) -> Self {
+    pub const fn new(name: String, a: f32, b: f32) -> Self {
         Self { name, a, b }
     }
 }
@@ -181,7 +179,7 @@ pub struct SpawnerConfig {
 }
 
 impl SpawnerConfig {
-    pub fn new(centre: (f32, f32), radius: f32, dist: DistributionConfig) -> Self {
+    pub const fn new(centre: (f32, f32), radius: f32, dist: DistributionConfig) -> Self {
         Self {
             centre,
             radius,
@@ -210,7 +208,7 @@ pub fn nearest_spawner_system(
         organism_counts[index] += 1;
     }
     for (i, spawner) in spawners.iter_mut().enumerate() {
-        spawner.set_nearby_organisms(organism_counts[i])
+        spawner.set_nearby_organisms(organism_counts[i]);
     }
     let mut food_counts = vec![0; spawners.0.len()];
     for (transform, plant) in plants.iter() {
@@ -227,7 +225,7 @@ pub fn nearest_spawner_system(
         food_counts[index] += plant.energy().amount();
     }
     for (i, spawner) in spawners.iter_mut().enumerate() {
-        spawner.set_nearby_food(food_counts[i])
+        spawner.set_nearby_food(food_counts[i]);
     }
 }
 
@@ -287,13 +285,10 @@ pub fn spawn_plant_system(
     if available_energy > (config_instance.start_num * config_instance.start_energy) {
         let mut rng = rand::thread_rng();
         let size = plant_size_randomiser.random_size(&mut rng);
-        let energy =
-            match ecosystem.request_energy(size as usize * config_instance.plant_energy_per_unit) {
-                None => return,
-                Some(e) => e,
-            };
+        let Some(energy) =
+            ecosystem.request_energy(size as usize * config_instance.plant_energy_per_unit) else {return};
         let location = spawners.random_food_position(&mut rng);
-        spawn_plant(&mut commands, asset_server, energy, location)
+        spawn_plant(&mut commands, asset_server, energy, location);
     }
 }
 

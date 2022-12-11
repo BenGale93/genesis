@@ -20,7 +20,7 @@ pub struct Vision {
 }
 
 impl Vision {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             visible_bugs: 0,
             bug_angle_score: 0.0,
@@ -40,27 +40,27 @@ impl Vision {
         self.food_dist_score = 0.0;
     }
 
-    pub fn visible_bugs(&self) -> u32 {
+    pub const fn visible_bugs(&self) -> u32 {
         self.visible_bugs
     }
 
-    pub fn bug_angle_score(&self) -> f32 {
+    pub const fn bug_angle_score(&self) -> f32 {
         self.bug_angle_score
     }
 
-    pub fn bug_dist_score(&self) -> f32 {
+    pub const fn bug_dist_score(&self) -> f32 {
         self.bug_dist_score
     }
 
-    pub fn visible_food(&self) -> u32 {
+    pub const fn visible_food(&self) -> u32 {
         self.visible_food
     }
 
-    pub fn food_angle_score(&self) -> f32 {
+    pub const fn food_angle_score(&self) -> f32 {
         self.food_angle_score
     }
 
-    pub fn food_dist_score(&self) -> f32 {
+    pub const fn food_dist_score(&self) -> f32 {
         self.food_dist_score
     }
 }

@@ -32,19 +32,19 @@ impl Distribution<ActivationFunctionKind> for Standard {
     }
 }
 
-fn identity(x: f64) -> f64 {
+const fn identity(x: f32) -> f32 {
     x
 }
 
-fn sigmoid(x: f64) -> f64 {
+fn sigmoid(x: f32) -> f32 {
     1. / (1. + (-x).exp())
 }
 
-fn tanh(x: f64) -> f64 {
+fn tanh(x: f32) -> f32 {
     x.tanh()
 }
 
-fn relu(x: f64) -> f64 {
+fn relu(x: f32) -> f32 {
     if x > 0. {
         x
     } else {
@@ -52,7 +52,7 @@ fn relu(x: f64) -> f64 {
     }
 }
 
-fn step(x: f64) -> f64 {
+fn step(x: f32) -> f32 {
     if x > 0. {
         1.
     } else {
@@ -60,32 +60,32 @@ fn step(x: f64) -> f64 {
     }
 }
 
-fn softsign(x: f64) -> f64 {
+fn softsign(x: f32) -> f32 {
     x / (1. + x.abs())
 }
 
-fn sin(x: f64) -> f64 {
+fn sin(x: f32) -> f32 {
     x.sin()
 }
 
-fn gaussian(x: f64) -> f64 {
+fn gaussian(x: f32) -> f32 {
     (-x.powi(2)).exp()
 }
 
-fn bent_iden(x: f64) -> f64 {
-    (((x.powi(2) + 1.).sqrt() - 1.) / 2.) + x
+fn bent_iden(x: f32) -> f32 {
+    ((x.mul_add(x, 1.).sqrt() - 1.) / 2.) + x
 }
 
-fn selu(x: f64) -> f64 {
-    let alpha = 1.6732632423543772;
-    let scale = 1.05070098735548;
+fn selu(x: f32) -> f32 {
+    let alpha = 1.673_263_2;
+    let scale = 1.050_701;
 
-    let fx = if x > 0. { x } else { alpha * (x.exp() - 1.0) };
+    let fx = if x > 0. { x } else { alpha * x.exp_m1() };
 
     fx * scale
 }
 
-pub fn activate(x: f64, kind: &ActivationFunctionKind) -> f64 {
+pub fn activate(x: f32, kind: &ActivationFunctionKind) -> f32 {
     match kind {
         ActivationFunctionKind::Identity => identity(x),
         ActivationFunctionKind::Sigmoid => sigmoid(x),
@@ -182,7 +182,7 @@ mod tests {
     fn bent_iden_test() {
         assert_eq!(
             activation::activate(1.0, &activation::ActivationFunctionKind::BentIdentity),
-            1.2071067811865475
+            1.207_106_8
         );
     }
 
@@ -190,11 +190,11 @@ mod tests {
     fn selu_test() {
         assert_eq!(
             activation::activate(1.0, &activation::ActivationFunctionKind::Selu),
-            1.05070098735548
+            1.050_701
         );
         assert_eq!(
             activation::activate(-1.0, &activation::ActivationFunctionKind::Selu),
-            -1.111330737812562
+            -1.111_330_7
         );
     }
 

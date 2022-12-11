@@ -5,71 +5,74 @@ use rand::Rng;
 use crate::GenesisUtilError;
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub struct Weight(f64);
+pub struct Weight(f32);
 
 pub type Bias = Weight;
 
 impl Weight {
-    pub fn new(w: f64) -> Result<Self, GenesisUtilError> {
-        if !(-1_f64..=1_f64).contains(&w) {
+    pub fn new(w: f32) -> Result<Self, GenesisUtilError> {
+        if !(-1_f32..=1_f32).contains(&w) {
             return Err(GenesisUtilError::InvalidWeight);
         }
-        Ok(Weight(w))
+        Ok(Self(w))
     }
 
+    #[must_use]
     pub fn random() -> Self {
         let mut rng = rand::thread_rng();
-        let x: f64 = rng.gen();
-        let w = 2_f64 * x - 1_f64;
+        let x: f32 = rng.gen();
+        let w = 2_f32.mul_add(x, -1_f32);
 
-        Weight(w)
+        Self(w)
     }
 
+    #[must_use]
     pub fn abs(&self) -> Self {
-        Weight::new(self.0.abs()).unwrap()
+        Self::new(self.0.abs()).unwrap()
     }
 
-    pub fn as_float(&self) -> f64 {
+    #[must_use]
+    pub const fn as_float(&self) -> f32 {
         self.0
     }
 }
 
 impl ops::Add for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn add(self, rhs: Weight) -> Self {
+    fn add(self, rhs: Self) -> Self {
         let result = self.0.add(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Sub for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn sub(self, rhs: Weight) -> Self {
+    fn sub(self, rhs: Self) -> Self {
         let result = self.0.sub(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Mul for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn mul(self, rhs: Weight) -> Self {
+    fn mul(self, rhs: Self) -> Self {
         let result = self.0.mul(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Div for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn div(self, rhs: Weight) -> Self {
+    fn div(self, rhs: Self) -> Self {
         let result = self.0.div(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }

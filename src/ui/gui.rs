@@ -22,7 +22,7 @@ use crate::{
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum GlobalPanel {
     #[default]
     Environment,
@@ -39,9 +39,9 @@ fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel)
 
 pub fn global_ui_update_system(
     time: Res<SimulationTime>,
-    count_stats: Res<statistics::CountStatistics>,
-    energy_stats: Res<statistics::EnergyStatistics>,
-    performance_stats: Res<statistics::BugPerformanceStatistics>,
+    count_stats: Res<statistics::CountStats>,
+    energy_stats: Res<statistics::EnergyStats>,
+    performance_stats: Res<statistics::BugPerformance>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<GlobalPanelState>,
 ) {
@@ -51,7 +51,7 @@ pub fn global_ui_update_system(
             global_panel_buttons(ui, &mut panel_state.0);
             match panel_state.0 {
                 GlobalPanel::Environment => {
-                    environment_sub_panel(ui, &time, &energy_stats, &count_stats)
+                    environment_sub_panel(ui, &time, &energy_stats, &count_stats);
                 }
                 GlobalPanel::Performance => population_sub_panel(ui, &performance_stats),
             };
@@ -61,8 +61,8 @@ pub fn global_ui_update_system(
 fn environment_sub_panel(
     ui: &mut egui::Ui,
     time: &Res<SimulationTime>,
-    energy_stats: &Res<statistics::EnergyStatistics>,
-    count_stats: &Res<statistics::CountStatistics>,
+    energy_stats: &Res<statistics::EnergyStats>,
+    count_stats: &Res<statistics::CountStats>,
 ) {
     ui.label(format!(
         "Global energy: {}",
@@ -84,10 +84,7 @@ fn environment_sub_panel(
     ));
 }
 
-fn population_sub_panel(
-    ui: &mut egui::Ui,
-    performance_stats: &statistics::BugPerformanceStatistics,
-) {
+fn population_sub_panel(ui: &mut egui::Ui, performance_stats: &statistics::BugPerformance) {
     ui.label(format!(
         "Highest energy consumed: {}",
         performance_stats.current_highest_energy_consumed()
@@ -106,7 +103,7 @@ fn population_sub_panel(
     ));
 }
 
-pub fn using_gui(mut egui_context: ResMut<EguiContext>) -> bool {
+pub fn using_ui(mut egui_context: ResMut<EguiContext>) -> bool {
     let ctx = egui_context.ctx_mut();
     ctx.is_using_pointer() || ctx.is_pointer_over_area()
 }
@@ -154,7 +151,7 @@ fn top_left_info_window(title: impl Into<egui::WidgetText>) -> egui::Window<'sta
     egui::Window::new(title).anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum BugInfoPanel {
     #[default]
     Live,
@@ -295,7 +292,7 @@ fn bug_stat_sub_panel(ui: &mut egui::Ui, bug_stats: &BugStatsInfo) {
     ui.label(format!("Eggs laid: {}", **bug_stats.1));
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum EggInfoPanel {
     #[default]
     Live,
@@ -343,14 +340,14 @@ pub fn egg_attribute_info_panel_system(
         if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
             top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
                 egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
-                egg_attribute_sub_panel(ui, &egg_info);
+                egg_attribute_sub_panel(ui, egg_info);
             });
         }
     }
 }
 
-fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: &EggAttributeInfo) {
-    ui.label(format!("Hatch age: {}", ***egg_info));
+fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: EggAttributeInfo) {
+    ui.label(format!("Hatch age: {}", **egg_info));
 }
 
 type PlantInfo<'a> = &'a ecosystem::Plant;

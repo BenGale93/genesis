@@ -1,3 +1,10 @@
+#![warn(clippy::all, clippy::nursery)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::similar_names)]
+#![allow(clippy::many_single_char_names)]
 mod chromosome;
 mod genome_error;
 
@@ -14,6 +21,7 @@ pub struct Genome {
 }
 
 impl Genome {
+    #[must_use]
     pub fn new(number: usize, length: usize) -> Self {
         let mut chromosomes = Vec::with_capacity(number);
 
@@ -32,10 +40,11 @@ impl Genome {
         Self { chromosomes }
     }
 
+    #[must_use]
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut new_chromosomes = Vec::with_capacity(self.chromosomes.len());
 
-        for c in self.chromosomes.iter() {
+        for c in &self.chromosomes {
             new_chromosomes.push(c.mutate(rng, chance));
         }
         Self {

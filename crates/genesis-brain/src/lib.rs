@@ -1,4 +1,11 @@
+#![warn(clippy::all, clippy::nursery)]
 #![feature(exclusive_range_pattern)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::similar_names)]
+#![allow(clippy::many_single_char_names)]
 mod activation;
 pub mod brain_error;
 mod graph;
@@ -31,6 +38,7 @@ pub struct Brain {
 }
 
 impl Brain {
+    #[must_use]
     pub fn new(inputs: usize, outputs: usize) -> Self {
         let mut neurons = vec![];
 
@@ -45,23 +53,27 @@ impl Brain {
         }
     }
 
-    pub fn inputs(&self) -> usize {
+    #[must_use]
+    pub const fn inputs(&self) -> usize {
         self.inputs
     }
 
-    pub fn outputs(&self) -> usize {
+    #[must_use]
+    pub const fn outputs(&self) -> usize {
         self.outputs
     }
 
+    #[must_use]
     pub fn neurons(&self) -> &[Neuron] {
         self.neurons.as_ref()
     }
 
+    #[must_use]
     pub fn synapses(&self) -> &[Synapse] {
         self.synapses.as_ref()
     }
 
-    pub fn activate(&self, input_values: &[f64]) -> Result<Vec<f64>, BrainError> {
+    pub fn activate(&self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
         if input_values.len() != self.inputs {
             return Err(BrainError::InputArrayError);
         }
@@ -75,7 +87,7 @@ impl Brain {
         for layer in layers {
             for neuron_index in layer {
                 let neuron = &self.neurons[neuron_index];
-                let incoming_values: Vec<f64> = self
+                let incoming_values: Vec<f32> = self
                     .synapses
                     .iter()
                     .filter(|syn| syn.to() == neuron_index)
@@ -84,8 +96,8 @@ impl Brain {
                         incoming_value * syn.weight().as_float()
                     })
                     .collect();
-                let final_value: f64 =
-                    incoming_values.iter().sum::<f64>() + neuron.bias().as_float();
+                let final_value: f32 =
+                    incoming_values.iter().sum::<f32>() + neuron.bias().as_float();
                 stored_values[neuron_index] = neuron.activate(final_value);
             }
         }
@@ -93,9 +105,10 @@ impl Brain {
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
     }
 
+    #[must_use]
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut new_brain = self.clone();
-        if rng.gen_bool(chance.as_float()) {
+        if rng.gen_bool(f64::from(chance.as_float())) {
             match rng.gen_range(0..=16) {
                 0 => new_brain.deactivate_random_synapse(),
                 1 => new_brain.deactivate_random_neuron(),
@@ -110,11 +123,12 @@ impl Brain {
         new_brain
     }
 
+    #[must_use]
     pub fn innovations(&self) -> Vec<usize> {
         self.synapses
             .iter()
             .filter(|s| s.active())
-            .map(|s| s.innovation())
+            .map(synapse::Synapse::innovation)
             .collect()
     }
 
@@ -212,7 +226,7 @@ impl Brain {
     pub fn mutate_synapse_weight(&mut self) {
         let random_synapse = self.synapses.choose_mut(&mut rand::thread_rng());
         if let Some(syn) = random_synapse {
-            let offset: f64 = thread_rng().sample(StandardNormal);
+            let offset: f32 = thread_rng().sample(StandardNormal);
             let new_weight =
                 Weight::new((syn.weight().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
             syn.set_weight(new_weight);
@@ -230,7 +244,7 @@ impl Brain {
             .choose_mut(&mut rand::thread_rng())
             .unwrap();
 
-        let offset: f64 = thread_rng().sample(StandardNormal);
+        let offset: f32 = thread_rng().sample(StandardNormal);
         let new_bias =
             Bias::new((random_neuron.bias().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
 
@@ -251,6 +265,7 @@ impl Brain {
         random_neuron.set_activation(random::<ActivationFunctionKind>());
     }
 
+    #[must_use]
     pub fn layout_neurons(&self, start: &(f32, f32), radius: f32, spacing: f32) -> Vec<GuiNeuron> {
         let max_layer = 10;
         let impossible_layer = max_layer + 1;
@@ -282,8 +297,8 @@ impl Brain {
                 None
             } else {
                 Some((
-                    start.0 + *offset as f32 * (2.0 * radius + spacing),
-                    start.1 + layer_index as f32 * (2.0 * radius + spacing),
+                    (*offset as f32).mul_add(2.0f32.mul_add(radius, spacing), start.0),
+                    (layer_index as f32).mul_add(2.0f32.mul_add(radius, spacing), start.1),
                 ))
             };
             positions.push(GuiNeuron {
@@ -420,10 +435,7 @@ impl Brain {
 
     fn remove_neuron(&mut self, neuron_index: usize) -> Result<(), BrainError> {
         {
-            let neuron_to_remove = match self.neurons.get(neuron_index) {
-                Some(neuron) => neuron,
-                None => return Err(BrainError::OutOfBounds),
-            };
+            let Some(neuron_to_remove) = self.neurons.get(neuron_index) else { return Err(BrainError::OutOfBounds) };
 
             if !matches!(neuron_to_remove.kind(), NeuronKind::Hidden) {
                 return Err(BrainError::NeuronRemovalError);
@@ -439,7 +451,7 @@ impl Brain {
             .synapses
             .iter()
             .filter(|syn| syn.from() == neuron_index && syn.active())
-            .map(|syn| syn.to())
+            .map(synapse::Synapse::to)
             .collect();
 
         let new_from_to_pairs: Vec<(usize, usize, Weight)> = incoming_synapses
@@ -909,8 +921,6 @@ mod tests {
 
         let layout = test_brain.layout_neurons(&(0.0, 0.0), 10.0, 10.0);
 
-        let gui_neuron_with_pos: Vec<&super::GuiNeuron> =
-            layout.iter().filter(|x| x.pos.is_some()).collect();
-        assert_eq!(gui_neuron_with_pos.len(), 4);
+        assert_eq!(layout.iter().filter(|x| x.pos.is_some()).count(), 4);
     }
 }

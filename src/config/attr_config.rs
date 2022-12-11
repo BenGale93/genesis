@@ -1,6 +1,6 @@
 use serde_derive::{Deserialize, Serialize};
 
-use super::validators::*;
+use super::validators::{attribute_limit, attribute_overlap};
 
 type MinMax = (Option<f32>, Option<f32>);
 

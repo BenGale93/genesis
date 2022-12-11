@@ -35,7 +35,7 @@ impl Chromosome {
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut bv = BitVec::with_capacity(self.len());
         for bit in self.dna.iter().by_vals() {
-            if rng.gen_bool(chance.as_float()) {
+            if rng.gen_bool(f64::from(chance.as_float())) {
                 bv.push(!bit);
             } else {
                 bv.push(bit);

@@ -20,6 +20,7 @@ pub struct Neuron {
 }
 
 impl Neuron {
+    #[must_use]
     pub fn new(kind: NeuronKind) -> Self {
         let activation = match kind {
             NeuronKind::Input => activation::ActivationFunctionKind::Identity,
@@ -39,11 +40,13 @@ impl Neuron {
         }
     }
 
-    pub fn kind(&self) -> &NeuronKind {
+    #[must_use]
+    pub const fn kind(&self) -> &NeuronKind {
         &self.kind
     }
 
-    pub fn activation(&self) -> &activation::ActivationFunctionKind {
+    #[must_use]
+    pub const fn activation(&self) -> &activation::ActivationFunctionKind {
         &self.activation
     }
 
@@ -51,7 +54,8 @@ impl Neuron {
         self.activation = activation;
     }
 
-    pub fn bias(&self) -> Bias {
+    #[must_use]
+    pub const fn bias(&self) -> Bias {
         self.bias
     }
 
@@ -59,7 +63,8 @@ impl Neuron {
         self.bias = bias;
     }
 
-    pub fn activate(&self, input: f64) -> f64 {
+    #[must_use]
+    pub fn activate(&self, input: f32) -> f32 {
         activation::activate(input, self.activation()) + self.bias().as_float()
     }
 }
@@ -68,7 +73,7 @@ impl PartialEq for Neuron {
     fn eq(&self, other: &Self) -> bool {
         self.kind == other.kind
             && self.activation == other.activation
-            && (self.bias - other.bias).abs() < Bias::new(f64::EPSILON).unwrap()
+            && (self.bias - other.bias).abs() < Bias::new(f32::EPSILON).unwrap()
     }
 }
 
@@ -82,11 +87,10 @@ pub trait NeuronsExt {
 
 impl NeuronsExt for Neurons {
     fn get_indices(&self, kinds: &HashSet<NeuronKind>) -> HashSet<usize> {
-        HashSet::from_iter(
-            self.iter()
-                .enumerate()
-                .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then_some(i)),
-        )
+        self.iter()
+            .enumerate()
+            .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then_some(i))
+            .collect::<HashSet<_>>()
     }
 }
 

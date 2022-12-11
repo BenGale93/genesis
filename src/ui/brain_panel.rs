@@ -46,17 +46,17 @@ fn paint_synapses(ui: &mut egui::Ui, synapses: &Synapses, neuron_layout: &[GuiNe
             continue;
         };
 
-        let color = if !syn.active() {
-            egui::Color32::BLACK
-        } else {
+        let color = if syn.active() {
             let (r, g, b) = color::interpolate_color(syn.weight(), COLOR_ARRAY);
             egui::Color32::from_rgb(r, g, b)
+        } else {
+            egui::Color32::BLACK
         };
 
         ui.painter().line_segment(
             [egui::pos2(start_x, start_y), egui::pos2(end_x, end_y)],
             egui::Stroke::new(5.0, color),
-        )
+        );
     }
 }
 
@@ -64,14 +64,14 @@ fn paint_neuron_values(
     ui: &mut egui::Ui,
     neuron_index: usize,
     neuron_position: egui::Pos2,
-    mind_values: &[f64],
+    mind_values: &[f32],
 ) {
     let pos_val = mind_values.get(neuron_index);
     if let Some(val) = pos_val {
         ui.painter().text(
             neuron_position,
             egui::Align2::CENTER_CENTER,
-            format!("{:.2}", val),
+            format!("{val:.2}"),
             egui::FontId::default(),
             egui::Color32::WHITE,
         );
@@ -87,10 +87,7 @@ fn paint_neuron_labels(
     if let Some(hover_pos) = response.hover_pos() {
         let dist = (neuron_position - hover_pos).length();
         if dist < RADIUS {
-            let label = match NEURON_NAMES.get(neuron_index) {
-                Some(text) => *text,
-                None => "",
-            };
+            let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
             ui.painter().text(
                 egui::pos2(380.0, 42.0),
                 egui::Align2::LEFT_TOP,
@@ -106,7 +103,7 @@ fn paint_neurons(
     ui: &mut egui::Ui,
     response: &egui::Response,
     neuron_layout: &[GuiNeuron],
-    mind_values: &[f64],
+    mind_values: &[f32],
 ) {
     for gui_neuron in neuron_layout {
         let Some((x, y)) = gui_neuron.pos else {
@@ -120,14 +117,14 @@ fn paint_neurons(
         ui.painter().circle_filled(neuron_position, RADIUS, color);
 
         paint_neuron_values(ui, gui_neuron.index, neuron_position, mind_values);
-        paint_neuron_labels(ui, response, gui_neuron.index, neuron_position)
+        paint_neuron_labels(ui, response, gui_neuron.index, neuron_position);
     }
 }
 
 pub(super) fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
     let (mind_in, mind, mind_out) = brain_info;
 
-    let mut mind_values: Vec<f64> = mind_in.iter().copied().collect();
+    let mut mind_values: Vec<f32> = mind_in.iter().copied().collect();
     mind_values.extend(&mind_out.0);
 
     let neuron_layout = mind.layout_neurons(&START_POS, RADIUS, SPACING);
