@@ -131,7 +131,7 @@ impl MindLayout {
     ) -> Vec<GuiNeuron> {
         let max_layer = 10;
         let impossible_layer = max_layer + 1;
-        let layers = feed_forward_layers(neurons, synapses);
+        let layers = feed_forward_layers(neurons.to_vec(), synapses.to_vec());
 
         let mut positions = Vec::new();
         let total_hidden_layers = layers.len();

@@ -75,7 +75,7 @@ impl Brain {
             stored_values[i] = *val;
         }
 
-        let layers = feed_forward_layers(self.neurons(), self.synapses());
+        let layers = feed_forward_layers(self.neurons().to_vec(), self.synapses().to_vec());
 
         for layer in layers {
             for neuron_index in layer {
@@ -855,7 +855,10 @@ mod tests {
         test_brain.add_synapse(0, 3, w).unwrap();
         test_brain.add_neuron(0).unwrap();
         test_brain.deactivate_random_neuron();
-        let layers = feed_forward_layers(test_brain.neurons(), test_brain.synapses());
+        let layers = feed_forward_layers(
+            test_brain.neurons().to_vec(),
+            test_brain.synapses().to_vec(),
+        );
         assert_eq!(layers.len(), 1);
     }
 }

@@ -1,4 +1,7 @@
-use std::collections::HashSet;
+use std::{
+    collections::HashSet,
+    hash::{Hash, Hasher},
+};
 
 use genesis_util::Bias;
 use rand::random;
@@ -12,7 +15,7 @@ pub enum NeuronKind {
     Hidden,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Neuron {
     kind: NeuronKind,
     activation: activation::ActivationFunctionKind,
@@ -78,6 +81,13 @@ impl PartialEq for Neuron {
 }
 
 impl Eq for Neuron {}
+
+impl Hash for Neuron {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.kind.hash(state);
+        self.activation.hash(state);
+    }
+}
 
 pub type Neurons = [Neuron];
 
