@@ -32,7 +32,7 @@ impl Distribution<ActivationFunctionKind> for Standard {
     }
 }
 
-fn identity(x: f64) -> f64 {
+const fn identity(x: f64) -> f64 {
     x
 }
 
@@ -73,14 +73,14 @@ fn gaussian(x: f64) -> f64 {
 }
 
 fn bent_iden(x: f64) -> f64 {
-    (((x.powi(2) + 1.).sqrt() - 1.) / 2.) + x
+    ((x.mul_add(x, 1.).sqrt() - 1.) / 2.) + x
 }
 
 fn selu(x: f64) -> f64 {
     let alpha = 1.6732632423543772;
     let scale = 1.05070098735548;
 
-    let fx = if x > 0. { x } else { alpha * (x.exp() - 1.0) };
+    let fx = if x > 0. { x } else { alpha * x.exp_m1() };
 
     fx * scale
 }

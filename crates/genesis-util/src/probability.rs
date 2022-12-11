@@ -8,10 +8,10 @@ impl Probability {
         if !(0_f64..=1_f64).contains(&w) {
             return Err(GenesisUtilError::InvalidProbability);
         }
-        Ok(Probability(w))
+        Ok(Self(w))
     }
 
-    pub fn as_float(&self) -> f64 {
+    pub const fn as_float(&self) -> f64 {
         self.0
     }
 }

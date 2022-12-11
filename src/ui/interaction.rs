@@ -40,8 +40,10 @@ pub fn move_camera_system(
         y_direction += 1.0;
     }
 
-    let new_x_position = transform.translation.x + x_direction * time_delta * config::PAN_SPEED;
-    let new_y_position = transform.translation.y + y_direction * time_delta * config::PAN_SPEED;
+    let new_x_position =
+        (x_direction * time_delta).mul_add(config::PAN_SPEED, transform.translation.x);
+    let new_y_position =
+        (y_direction * time_delta).mul_add(config::PAN_SPEED, transform.translation.y);
 
     transform.translation.x = new_x_position;
     transform.translation.y = new_y_position;
@@ -53,7 +55,7 @@ pub fn camera_zooming_system(
 ) {
     let mut zoom_scalar = 1.0;
     for mouse_wheel_event in mouse_wheel_event_reader.iter() {
-        zoom_scalar *= 1.0 - config::ZOOM_SPEED * mouse_wheel_event.y;
+        zoom_scalar *= config::ZOOM_SPEED.mul_add(-mouse_wheel_event.y, 1.0);
     }
 
     for (_, mut transform) in query.iter_mut() {
@@ -78,7 +80,7 @@ pub fn get_cursor_position(
     };
 
     // check if the cursor is inside the window and get its position
-    if let Some(screen_pos) = wnd.cursor_position() {
+    wnd.cursor_position().map(|screen_pos| {
         // get the size of the window
         let window_size = Vec2::new(wnd.width(), wnd.height());
         // convert screen position [0..resolution] to ndc [-1..1] (gpu coordinates)
@@ -88,10 +90,8 @@ pub fn get_cursor_position(
         // use it to convert ndc to world-space coordinates
         let world_pos = ndc_to_world.project_point3(ndc.extend(-1.0));
         // reduce it to a 2D value
-        Some(world_pos.truncate())
-    } else {
-        None
-    }
+        world_pos.truncate()
+    })
 }
 
 #[derive(Resource, Debug)]

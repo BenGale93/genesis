@@ -14,62 +14,62 @@ impl Weight {
         if !(-1_f64..=1_f64).contains(&w) {
             return Err(GenesisUtilError::InvalidWeight);
         }
-        Ok(Weight(w))
+        Ok(Self(w))
     }
 
     pub fn random() -> Self {
         let mut rng = rand::thread_rng();
         let x: f64 = rng.gen();
-        let w = 2_f64 * x - 1_f64;
+        let w = 2_f64.mul_add(x, -1_f64);
 
-        Weight(w)
+        Self(w)
     }
 
     pub fn abs(&self) -> Self {
-        Weight::new(self.0.abs()).unwrap()
+        Self::new(self.0.abs()).unwrap()
     }
 
-    pub fn as_float(&self) -> f64 {
+    pub const fn as_float(&self) -> f64 {
         self.0
     }
 }
 
 impl ops::Add for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn add(self, rhs: Weight) -> Self {
+    fn add(self, rhs: Self) -> Self {
         let result = self.0.add(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Sub for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn sub(self, rhs: Weight) -> Self {
+    fn sub(self, rhs: Self) -> Self {
         let result = self.0.sub(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Mul for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn mul(self, rhs: Weight) -> Self {
+    fn mul(self, rhs: Self) -> Self {
         let result = self.0.mul(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }
 
 impl ops::Div for Weight {
-    type Output = Weight;
+    type Output = Self;
 
-    fn div(self, rhs: Weight) -> Self {
+    fn div(self, rhs: Self) -> Self {
         let result = self.0.div(rhs.0);
 
-        Weight::new(result.clamp(-1.0, 1.0)).unwrap()
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
     }
 }

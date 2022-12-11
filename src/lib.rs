@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 #![feature(is_some_and)]
 use std::time::Duration;
 

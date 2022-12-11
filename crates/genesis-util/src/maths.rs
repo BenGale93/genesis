@@ -31,7 +31,7 @@ pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
 }
 
 pub fn linear_interpolate(x: f32, x_min: f32, x_max: f32, y_min: f32, y_max: f32) -> f32 {
-    (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min)
+    y_min.mul_add(x_max - x, y_max * (x - x_min)) / (x_max - x_min)
 }
 
 #[derive(Debug)]
@@ -65,15 +65,15 @@ impl Cone {
         })
     }
 
-    pub fn point(&self) -> Vec3 {
+    pub const fn point(&self) -> Vec3 {
         self.point
     }
 
-    pub fn angle(&self) -> f32 {
+    pub const fn angle(&self) -> f32 {
         self.fov_angle
     }
 
-    pub fn length(&self) -> f32 {
+    pub const fn length(&self) -> f32 {
         self.fov_length
     }
 

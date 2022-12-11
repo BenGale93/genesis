@@ -18,10 +18,10 @@ impl Synapse {
         if from == to {
             return Err(BrainError::InvalidFromTo);
         }
-        let innovation = Synapse::compute_innovation(from, to);
+        let innovation = Self::compute_innovation(from, to);
         let weight = Weight::random();
 
-        Ok(Synapse {
+        Ok(Self {
             from,
             to,
             weight,
@@ -31,34 +31,34 @@ impl Synapse {
     }
 
     pub fn with_weight(from: usize, to: usize, weight: Weight) -> Result<Self, BrainError> {
-        let mut synapse = Synapse::new(from, to)?;
+        let mut synapse = Self::new(from, to)?;
         synapse.set_weight(weight);
         Ok(synapse)
     }
 
     // Cantor Pairing Function
-    fn compute_innovation(from: usize, to: usize) -> usize {
+    const fn compute_innovation(from: usize, to: usize) -> usize {
         let x = (from + to) * (from + to + 1);
         (x / 2) + to
     }
 
-    pub fn from(&self) -> usize {
+    pub const fn from(&self) -> usize {
         self.from
     }
 
-    pub fn to(&self) -> usize {
+    pub const fn to(&self) -> usize {
         self.to
     }
 
-    pub fn weight(&self) -> Weight {
+    pub const fn weight(&self) -> Weight {
         self.weight
     }
 
-    pub fn active(&self) -> bool {
+    pub const fn active(&self) -> bool {
         self.active
     }
 
-    pub fn innovation(&self) -> usize {
+    pub const fn innovation(&self) -> usize {
         self.innovation
     }
 

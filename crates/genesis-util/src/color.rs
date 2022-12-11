@@ -26,9 +26,9 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
     let start_color = colors[end_color_index - 1];
     let end_color = colors[end_color_index];
 
-    let r = (start_color.0 as f64 + (end_color.0 as f64 - start_color.0 as f64) * sub_t) as u8;
-    let g = (start_color.1 as f64 + (end_color.1 as f64 - start_color.1 as f64) * sub_t) as u8;
-    let b = (start_color.2 as f64 + (end_color.2 as f64 - start_color.2 as f64) * sub_t) as u8;
+    let r = (end_color.0 as f64 - start_color.0 as f64).mul_add(sub_t, start_color.0 as f64) as u8;
+    let g = (end_color.1 as f64 - start_color.1 as f64).mul_add(sub_t, start_color.1 as f64) as u8;
+    let b = (end_color.2 as f64 - start_color.2 as f64).mul_add(sub_t, start_color.2 as f64) as u8;
 
     (r, g, b)
 }

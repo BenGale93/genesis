@@ -9,11 +9,11 @@ use crate::config;
 pub struct Energy(usize);
 
 impl Energy {
-    fn new(e: usize) -> Self {
+    const fn new(e: usize) -> Self {
         Self(e)
     }
 
-    pub fn amount(&self) -> usize {
+    pub const fn amount(&self) -> usize {
         self.0
     }
 
@@ -21,14 +21,14 @@ impl Energy {
     pub fn take_energy(&mut self, amount: usize) -> Self {
         let to_return = amount.min(self.0);
         self.0 -= to_return;
-        Energy::new(to_return)
+        Self::new(to_return)
     }
 
-    pub fn add_energy(&mut self, energy: Energy) {
+    pub fn add_energy(&mut self, energy: Self) {
         self.0 += energy.0;
     }
 
-    pub fn new_empty() -> Self {
+    pub const fn new_empty() -> Self {
         Self(0)
     }
 
@@ -48,7 +48,7 @@ impl Plant {
         self.energy.take_energy(amount)
     }
 
-    pub fn energy(&self) -> &Energy {
+    pub const fn energy(&self) -> &Energy {
         &self.energy
     }
 
@@ -72,13 +72,13 @@ pub struct Ecosystem {
 }
 
 impl Ecosystem {
-    pub fn new(energy: usize) -> Self {
+    pub const fn new(energy: usize) -> Self {
         Self {
             energy: Energy(energy),
         }
     }
 
-    pub fn available_energy(&self) -> &Energy {
+    pub const fn available_energy(&self) -> &Energy {
         &self.energy
     }
 

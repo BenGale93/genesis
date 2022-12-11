@@ -39,11 +39,11 @@ impl Neuron {
         }
     }
 
-    pub fn kind(&self) -> &NeuronKind {
+    pub const fn kind(&self) -> &NeuronKind {
         &self.kind
     }
 
-    pub fn activation(&self) -> &activation::ActivationFunctionKind {
+    pub const fn activation(&self) -> &activation::ActivationFunctionKind {
         &self.activation
     }
 
@@ -51,7 +51,7 @@ impl Neuron {
         self.activation = activation;
     }
 
-    pub fn bias(&self) -> Bias {
+    pub const fn bias(&self) -> Bias {
         self.bias
     }
 

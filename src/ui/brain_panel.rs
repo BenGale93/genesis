@@ -87,10 +87,7 @@ fn paint_neuron_labels(
     if let Some(hover_pos) = response.hover_pos() {
         let dist = (neuron_position - hover_pos).length();
         if dist < RADIUS {
-            let label = match NEURON_NAMES.get(neuron_index) {
-                Some(text) => *text,
-                None => "",
-            };
+            let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
             ui.painter().text(
                 egui::pos2(380.0, 42.0),
                 egui::Align2::LEFT_TOP,

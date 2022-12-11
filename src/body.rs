@@ -37,7 +37,7 @@ impl BugBody {
         }
     }
 
-    pub fn genome(&self) -> &Genome {
+    pub const fn genome(&self) -> &Genome {
         &self.genome
     }
 }
@@ -65,7 +65,7 @@ impl EnergyReserve {
         })
     }
 
-    pub fn amount(&self) -> usize {
+    pub const fn amount(&self) -> usize {
         self.energy.amount()
     }
 
@@ -75,7 +75,7 @@ impl EnergyReserve {
     }
 
     #[must_use]
-    fn available_space(&self) -> usize {
+    const fn available_space(&self) -> usize {
         self.energy_limit - self.energy.amount()
     }
 
@@ -91,7 +91,7 @@ impl EnergyReserve {
         self.energy.take_energy(amount)
     }
 
-    pub fn energy_limit(&self) -> usize {
+    pub const fn energy_limit(&self) -> usize {
         self.energy_limit
     }
 }
@@ -183,7 +183,7 @@ impl Vitality {
         self.add_energy(extracted_energy)
     }
 
-    pub fn size(&self) -> &Size {
+    pub const fn size(&self) -> &Size {
         &self.size
     }
 
@@ -231,14 +231,14 @@ pub struct Size {
 }
 
 impl Size {
-    pub fn new(size: f32, max_size: f32) -> Self {
+    pub const fn new(size: f32, max_size: f32) -> Self {
         Self {
             current_size: size,
             max_size,
         }
     }
 
-    pub fn current_size(&self) -> f32 {
+    pub const fn current_size(&self) -> f32 {
         self.current_size
     }
 
@@ -246,7 +246,7 @@ impl Size {
         self.current_size = (self.current_size + increment).min(self.max_size);
     }
 
-    pub fn sprite(&self) -> Vec2 {
+    pub const fn sprite(&self) -> Vec2 {
         Vec2::splat(self.current_size)
     }
 
@@ -258,7 +258,7 @@ impl Size {
         )
     }
 
-    pub fn as_uint(&self) -> usize {
+    pub const fn as_uint(&self) -> usize {
         self.current_size as usize
     }
 

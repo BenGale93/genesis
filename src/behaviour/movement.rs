@@ -10,7 +10,7 @@ pub struct MovementSum {
 }
 
 impl MovementSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             translation_sum: 0.0,
             rotation_sum: 0.0,

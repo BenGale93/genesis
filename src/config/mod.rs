@@ -68,7 +68,7 @@ pub struct WorldConfig {
 }
 
 impl WorldConfig {
-    pub fn global() -> &'static WorldConfig {
+    pub fn global() -> &'static Self {
         WORLD_CONFIG_INSTANCE
             .get()
             .expect("World config is not initialized")
@@ -154,14 +154,14 @@ impl EnergyLimitConfig {
             .max(config.attributes.max_size.1);
 
         let a = (e / h) * (10.0 * (m - h) / m);
-        let b = (5.0 * m - 10.0 * h) / (h * m);
+        let b = 5.0f32.mul_add(m, -10.0 * h) / (h * m);
 
         Self { a, b }
     }
     pub fn energy_limit(&self, size: usize) -> usize {
         let size_f = size as f32;
 
-        ((self.a * size_f) / (self.b * size_f + 5.0)) as usize
+        ((self.a * size_f) / self.b.mul_add(size_f, 5.0)) as usize
     }
 
     pub fn global() -> &'static Self {

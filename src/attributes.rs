@@ -28,7 +28,7 @@ struct AttributeConfig {
 }
 
 impl AttributeConfig {
-    fn new(lower: f32, upper: f32, chromosome: usize, start: usize, length: usize) -> Self {
+    const fn new(lower: f32, upper: f32, chromosome: usize, start: usize, length: usize) -> Self {
         Self {
             lower,
             upper,
@@ -111,11 +111,11 @@ pub struct MaxSpeed {
 }
 
 impl MaxSpeed {
-    pub fn value(&self) -> f32 {
+    pub const fn value(&self) -> f32 {
         self.value
     }
 
-    pub fn cost(&self) -> f32 {
+    pub const fn cost(&self) -> f32 {
         self.cost
     }
 
@@ -147,11 +147,11 @@ pub struct MaxRotationRate {
 }
 
 impl MaxRotationRate {
-    pub fn value(&self) -> f32 {
+    pub const fn value(&self) -> f32 {
         self.value
     }
 
-    pub fn cost(&self) -> f32 {
+    pub const fn cost(&self) -> f32 {
         self.cost
     }
 

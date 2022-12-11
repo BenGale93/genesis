@@ -31,7 +31,7 @@ struct RunInfo<'a> {
 }
 
 impl<'a> RunInfo<'a> {
-    fn new(
+    const fn new(
         time_elapsed: &'a f64,
         run_config: &'a WorldConfig,
         count_stats: &'a statistics::CountStatistics,

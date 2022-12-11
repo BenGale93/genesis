@@ -40,7 +40,7 @@ pub fn process_growers_system(
 pub struct GrowingSum(f32);
 
 impl GrowingSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(0.0)
     }
 
@@ -95,7 +95,7 @@ pub fn grow_bug_system(
 pub struct SizeSum(f32);
 
 impl SizeSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(0.0)
     }
 

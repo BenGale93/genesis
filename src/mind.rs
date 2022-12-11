@@ -56,7 +56,7 @@ fn mind_color(mut innovations: Vec<usize>) -> Color {
     let mut rgb: Vec<f32> = vec![0.5, 0.5, 0.5];
 
     for innovation in innovations.iter() {
-        let perturbation = (1.0 / (*innovation as f32).log(10.0)) - 0.12;
+        let perturbation = (1.0 / (*innovation as f32).log10()) - 0.12;
         let index_mod = innovation % 3;
         let sign_mod = innovation % 2;
         if sign_mod == 0 {

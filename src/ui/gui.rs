@@ -22,7 +22,7 @@ use crate::{
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum GlobalPanel {
     #[default]
     Environment,
@@ -154,7 +154,7 @@ fn top_left_info_window(title: impl Into<egui::WidgetText>) -> egui::Window<'sta
     egui::Window::new(title).anchor(egui::Align2::LEFT_TOP, [5.0, 5.0])
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum BugInfoPanel {
     #[default]
     Live,
@@ -295,7 +295,7 @@ fn bug_stat_sub_panel(ui: &mut egui::Ui, bug_stats: &BugStatsInfo) {
     ui.label(format!("Eggs laid: {}", **bug_stats.1));
 }
 
-#[derive(Debug, PartialEq, Default)]
+#[derive(Debug, PartialEq, Eq, Default)]
 pub enum EggInfoPanel {
     #[default]
     Live,

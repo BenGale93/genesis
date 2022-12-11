@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 #![feature(exclusive_range_pattern)]
 mod activation;
 pub mod brain_error;
@@ -45,11 +46,11 @@ impl Brain {
         }
     }
 
-    pub fn inputs(&self) -> usize {
+    pub const fn inputs(&self) -> usize {
         self.inputs
     }
 
-    pub fn outputs(&self) -> usize {
+    pub const fn outputs(&self) -> usize {
         self.outputs
     }
 
@@ -282,8 +283,8 @@ impl Brain {
                 None
             } else {
                 Some((
-                    start.0 + *offset as f32 * (2.0 * radius + spacing),
-                    start.1 + layer_index as f32 * (2.0 * radius + spacing),
+                    (*offset as f32).mul_add(2.0f32.mul_add(radius, spacing), start.0),
+                    (layer_index as f32).mul_add(2.0f32.mul_add(radius, spacing), start.1),
                 ))
             };
             positions.push(GuiNeuron {
@@ -909,8 +910,6 @@ mod tests {
 
         let layout = test_brain.layout_neurons(&(0.0, 0.0), 10.0, 10.0);
 
-        let gui_neuron_with_pos: Vec<&super::GuiNeuron> =
-            layout.iter().filter(|x| x.pos.is_some()).collect();
-        assert_eq!(gui_neuron_with_pos.len(), 4);
+        assert_eq!(layout.iter().filter(|x| x.pos.is_some()).count(), 4);
     }
 }

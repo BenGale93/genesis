@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 mod chromosome;
 mod genome_error;
 

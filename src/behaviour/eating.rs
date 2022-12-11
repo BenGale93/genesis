@@ -39,7 +39,7 @@ pub fn process_eaters_system(
 pub struct EatingSum(f32);
 
 impl EatingSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(0.0)
     }
 

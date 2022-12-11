@@ -8,8 +8,8 @@ use crate::{body, ecosystem};
 pub struct BurntEnergy(ecosystem::Energy);
 
 impl BurntEnergy {
-    pub fn new() -> Self {
-        BurntEnergy(ecosystem::Energy::new_empty())
+    pub const fn new() -> Self {
+        Self(ecosystem::Energy::new_empty())
     }
 }
 

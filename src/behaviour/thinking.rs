@@ -38,7 +38,7 @@ pub fn sensory_system(
 pub struct ThinkingSum(f32);
 
 impl ThinkingSum {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self(0.0)
     }
 

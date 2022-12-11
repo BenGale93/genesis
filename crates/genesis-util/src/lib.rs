@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 pub mod color;
 pub mod maths;
 pub mod probability;
