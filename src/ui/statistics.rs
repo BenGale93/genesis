@@ -205,12 +205,12 @@ pub fn attribute_stats_system(
         eye_range.push(**er);
         rotation_speed.push(mrr.value());
         translation_speed.push(ms.value());
-        mutation_probability.push(mp.as_float() as f32);
+        mutation_probability.push(mp.as_float());
         offspring_energy.push(**oe);
-        lay_egg_boundary.push(**le as f32);
-        internal_timer_boundary.push(**it as f32);
-        want_to_grow_boundary.push(**wtg as f32);
-        eating_boundary.push(**e as f32);
+        lay_egg_boundary.push(**le);
+        internal_timer_boundary.push(**it);
+        want_to_grow_boundary.push(**wtg);
+        eating_boundary.push(**e);
         cost_of_thought.push(**cot);
         cost_of_eating.push(**coe);
         hatch_size.push(**hs)

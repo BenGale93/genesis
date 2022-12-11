@@ -27,12 +27,12 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
     let start_color = colors[end_color_index - 1];
     let end_color = colors[end_color_index];
 
-    let r = (f64::from(end_color.0) - f64::from(start_color.0))
-        .mul_add(sub_t, f64::from(start_color.0)) as u8;
-    let g = (f64::from(end_color.1) - f64::from(start_color.1))
-        .mul_add(sub_t, f64::from(start_color.1)) as u8;
-    let b = (f64::from(end_color.2) - f64::from(start_color.2))
-        .mul_add(sub_t, f64::from(start_color.2)) as u8;
+    let r = (f32::from(end_color.0) - f32::from(start_color.0))
+        .mul_add(sub_t, f32::from(start_color.0)) as u8;
+    let g = (f32::from(end_color.1) - f32::from(start_color.1))
+        .mul_add(sub_t, f32::from(start_color.1)) as u8;
+    let b = (f32::from(end_color.2) - f32::from(start_color.2))
+        .mul_add(sub_t, f32::from(start_color.2)) as u8;
 
     (r, g, b)
 }

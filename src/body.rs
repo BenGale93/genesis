@@ -70,8 +70,8 @@ impl EnergyReserve {
     }
 
     #[must_use]
-    pub fn proportion(&self) -> f64 {
-        self.energy.amount() as f64 / self.energy_limit as f64
+    pub fn proportion(&self) -> f32 {
+        self.energy.amount() as f32 / self.energy_limit as f32
     }
 
     #[must_use]

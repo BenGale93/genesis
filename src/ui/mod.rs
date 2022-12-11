@@ -22,7 +22,7 @@ use crate::config::WorldConfig;
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
-    time_elapsed: &'a f64,
+    time_elapsed: &'a f32,
     run_config: &'a WorldConfig,
     count_stats: &'a statistics::CountStatistics,
     energy_stats: &'a statistics::EnergyStatistics,
@@ -32,7 +32,7 @@ struct RunInfo<'a> {
 
 impl<'a> RunInfo<'a> {
     const fn new(
-        time_elapsed: &'a f64,
+        time_elapsed: &'a f32,
         run_config: &'a WorldConfig,
         count_stats: &'a statistics::CountStatistics,
         energy_stats: &'a statistics::EnergyStatistics,
@@ -57,7 +57,7 @@ fn save_stats(
     performance_stats: &Res<statistics::BugPerformanceStatistics>,
     attribute_stats: &Res<statistics::AverageAttributeStatistics>,
 ) {
-    let time = time.elapsed_seconds_f64();
+    let time = time.elapsed_seconds();
     let run_info = RunInfo::new(
         &time,
         WorldConfig::global(),

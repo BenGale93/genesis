@@ -25,10 +25,10 @@ impl Mind {
 }
 
 #[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
-pub struct MindInput(pub Vec<f64>);
+pub struct MindInput(pub Vec<f32>);
 
 #[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
-pub struct MindOutput(pub Vec<f64>);
+pub struct MindOutput(pub Vec<f32>);
 
 #[derive(Bundle, Debug)]
 pub struct MindBundle {

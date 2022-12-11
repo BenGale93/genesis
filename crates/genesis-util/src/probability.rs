@@ -1,18 +1,18 @@
 use crate::GenesisUtilError;
 
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
-pub struct Probability(f64);
+pub struct Probability(f32);
 
 impl Probability {
-    pub fn new(w: f64) -> Result<Self, GenesisUtilError> {
-        if !(0_f64..=1_f64).contains(&w) {
+    pub fn new(w: f32) -> Result<Self, GenesisUtilError> {
+        if !(0_f32..=1_f32).contains(&w) {
             return Err(GenesisUtilError::InvalidProbability);
         }
         Ok(Self(w))
     }
 
     #[must_use]
-    pub const fn as_float(&self) -> f64 {
+    pub const fn as_float(&self) -> f32 {
         self.0
     }
 }

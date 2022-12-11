@@ -67,7 +67,7 @@ impl Brain {
         self.synapses.as_ref()
     }
 
-    pub fn activate(&self, input_values: &[f64]) -> Result<Vec<f64>, BrainError> {
+    pub fn activate(&self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
         if input_values.len() != self.inputs {
             return Err(BrainError::InputArrayError);
         }
@@ -81,7 +81,7 @@ impl Brain {
         for layer in layers {
             for neuron_index in layer {
                 let neuron = &self.neurons[neuron_index];
-                let incoming_values: Vec<f64> = self
+                let incoming_values: Vec<f32> = self
                     .synapses
                     .iter()
                     .filter(|syn| syn.to() == neuron_index)
@@ -90,8 +90,8 @@ impl Brain {
                         incoming_value * syn.weight().as_float()
                     })
                     .collect();
-                let final_value: f64 =
-                    incoming_values.iter().sum::<f64>() + neuron.bias().as_float();
+                let final_value: f32 =
+                    incoming_values.iter().sum::<f32>() + neuron.bias().as_float();
                 stored_values[neuron_index] = neuron.activate(final_value);
             }
         }
@@ -101,7 +101,7 @@ impl Brain {
 
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut new_brain = self.clone();
-        if rng.gen_bool(chance.as_float()) {
+        if rng.gen_bool(chance.as_float() as f64) {
             match rng.gen_range(0..=16) {
                 0 => new_brain.deactivate_random_synapse(),
                 1 => new_brain.deactivate_random_neuron(),
@@ -219,7 +219,7 @@ impl Brain {
     pub fn mutate_synapse_weight(&mut self) {
         let random_synapse = self.synapses.choose_mut(&mut rand::thread_rng());
         if let Some(syn) = random_synapse {
-            let offset: f64 = thread_rng().sample(StandardNormal);
+            let offset: f32 = thread_rng().sample(StandardNormal);
             let new_weight =
                 Weight::new((syn.weight().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
             syn.set_weight(new_weight);
@@ -237,7 +237,7 @@ impl Brain {
             .choose_mut(&mut rand::thread_rng())
             .unwrap();
 
-        let offset: f64 = thread_rng().sample(StandardNormal);
+        let offset: f32 = thread_rng().sample(StandardNormal);
         let new_bias =
             Bias::new((random_neuron.bias().as_float() + offset).clamp(-1.0, 1.0)).unwrap();
 

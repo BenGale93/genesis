@@ -64,7 +64,7 @@ fn paint_neuron_values(
     ui: &mut egui::Ui,
     neuron_index: usize,
     neuron_position: egui::Pos2,
-    mind_values: &[f64],
+    mind_values: &[f32],
 ) {
     let pos_val = mind_values.get(neuron_index);
     if let Some(val) = pos_val {
@@ -103,7 +103,7 @@ fn paint_neurons(
     ui: &mut egui::Ui,
     response: &egui::Response,
     neuron_layout: &[GuiNeuron],
-    mind_values: &[f64],
+    mind_values: &[f32],
 ) {
     for gui_neuron in neuron_layout {
         let Some((x, y)) = gui_neuron.pos else {
@@ -124,7 +124,7 @@ fn paint_neurons(
 pub(super) fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
     let (mind_in, mind, mind_out) = brain_info;
 
-    let mut mind_values: Vec<f64> = mind_in.iter().copied().collect();
+    let mut mind_values: Vec<f32> = mind_in.iter().copied().collect();
     mind_values.extend(&mind_out.0);
 
     let neuron_layout = mind.layout_neurons(&START_POS, RADIUS, SPACING);

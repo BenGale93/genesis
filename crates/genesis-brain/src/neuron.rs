@@ -64,7 +64,7 @@ impl Neuron {
     }
 
     #[must_use]
-    pub fn activate(&self, input: f64) -> f64 {
+    pub fn activate(&self, input: f32) -> f32 {
         activation::activate(input, self.activation()) + self.bias().as_float()
     }
 }
@@ -73,7 +73,7 @@ impl PartialEq for Neuron {
     fn eq(&self, other: &Self) -> bool {
         self.kind == other.kind
             && self.activation == other.activation
-            && (self.bias - other.bias).abs() < Bias::new(f64::EPSILON).unwrap()
+            && (self.bias - other.bias).abs() < Bias::new(f32::EPSILON).unwrap()
     }
 }
 

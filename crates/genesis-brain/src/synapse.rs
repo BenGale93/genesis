@@ -88,7 +88,7 @@ impl PartialEq for Synapse {
     fn eq(&self, other: &Self) -> bool {
         self.innovation == other.innovation
             && self.active == other.active
-            && (self.weight - other.weight).abs() < Weight::new(f64::EPSILON).unwrap()
+            && (self.weight - other.weight).abs() < Weight::new(f32::EPSILON).unwrap()
     }
 }
 
@@ -152,7 +152,7 @@ mod tests {
 
     #[test]
     fn not_equal_by_innovation() {
-        let weight = Weight::new(0_f64).unwrap();
+        let weight = Weight::new(0_f32).unwrap();
         let a = Synapse::with_weight(0, 1, weight).unwrap();
         let b = Synapse::with_weight(0, 2, weight).unwrap();
 
@@ -161,7 +161,7 @@ mod tests {
 
     #[test]
     fn not_equal_by_weight() {
-        let weight = Weight::new(0_f64).unwrap();
+        let weight = Weight::new(0_f32).unwrap();
         let second_weight = Weight::new(0.5).unwrap();
         let a = Synapse::with_weight(0, 1, weight).unwrap();
         let b = Synapse::with_weight(0, 1, second_weight).unwrap();

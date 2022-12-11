@@ -97,7 +97,7 @@ pub struct MutationProbability(Probability);
 impl MutationProbability {
     pub fn from_genome(genome: &Genome) -> Self {
         let attribute_config = Self::default_config();
-        let value = Probability::new(attribute_config.read_genome(genome) as f64)
+        let value = Probability::new(attribute_config.read_genome(genome))
             .expect("Expected to be between 0.0 and 1.0.");
         Self(value)
     }
@@ -196,7 +196,7 @@ impl EyeAngle {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct InternalTimerBoundary(f64);
+pub struct InternalTimerBoundary(f32);
 
 impl InternalTimerBoundary {
     impl_from_genome!();
@@ -204,7 +204,7 @@ impl InternalTimerBoundary {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct LayEggBoundary(f64);
+pub struct LayEggBoundary(f32);
 
 impl LayEggBoundary {
     impl_from_genome!();
@@ -212,7 +212,7 @@ impl LayEggBoundary {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct WantToGrowBoundary(f64);
+pub struct WantToGrowBoundary(f32);
 
 impl WantToGrowBoundary {
     impl_from_genome!();
@@ -220,7 +220,7 @@ impl WantToGrowBoundary {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct EatingBoundary(f64);
+pub struct EatingBoundary(f32);
 
 impl EatingBoundary {
     impl_from_genome!();

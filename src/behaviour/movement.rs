@@ -48,11 +48,11 @@ pub fn movement_system(
     for (transform, mut velocity, outputs, mut movement_sum, max_rotation, max_speed) in
         query.iter_mut()
     {
-        let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0) as f32;
+        let rotation_factor = outputs[config::ROTATE_INDEX].clamp(-1.0, 1.0);
         movement_sum.add_rotation(rotation_factor, max_rotation.cost());
         velocity.angvel = rotation_factor * max_rotation.value();
 
-        let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0) as f32;
+        let movement_factor = outputs[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
         movement_sum.add_translation(movement_factor, max_speed.cost());
         let speed = movement_factor * max_speed.value();
         velocity.linvel = (speed * transform.local_y()).truncate();

@@ -3,7 +3,7 @@ use bevy::prelude::{Component, Query};
 use super::{sight::Vision, timers};
 use crate::{attributes, body, config, mind};
 
-const CONST: f64 = 1.0;
+const CONST: f32 = 1.0;
 
 pub fn sensory_system(
     mut query: Query<(
@@ -22,15 +22,15 @@ pub fn sensory_system(
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
         input[config::ENERGY_INDEX] = vitality.energy_store().proportion();
         input[config::HEALTH_INDEX] = vitality.health().proportion();
-        input[config::AGE_INDEX] = age.elapsed_secs() as f64;
-        input[config::VISIBLE_BUGS_INDEX] = vision.visible_bugs() as f64;
-        input[config::BUG_ANGLE_SCORE_INDEX] = vision.bug_angle_score() as f64;
-        input[config::BUG_DIST_SCORE_INDEX] = vision.bug_dist_score() as f64;
-        input[config::VISIBLE_FOOD_INDEX] = vision.visible_food() as f64;
-        input[config::FOOD_ANGLE_SCORE_INDEX] = vision.food_angle_score() as f64;
-        input[config::FOOD_DIST_SCORE_INDEX] = vision.food_dist_score() as f64;
-        input[config::HEARTBEAT_INDEX] = heart.pulse() as f64;
-        input[config::INTERNAL_TIMER_INDEX] = internal_timer.elapsed_secs() as f64;
+        input[config::AGE_INDEX] = age.elapsed_secs();
+        input[config::VISIBLE_BUGS_INDEX] = vision.visible_bugs() as f32;
+        input[config::BUG_ANGLE_SCORE_INDEX] = vision.bug_angle_score();
+        input[config::BUG_DIST_SCORE_INDEX] = vision.bug_dist_score();
+        input[config::VISIBLE_FOOD_INDEX] = vision.visible_food() as f32;
+        input[config::FOOD_ANGLE_SCORE_INDEX] = vision.food_angle_score();
+        input[config::FOOD_DIST_SCORE_INDEX] = vision.food_dist_score();
+        input[config::HEARTBEAT_INDEX] = heart.pulse();
+        input[config::INTERNAL_TIMER_INDEX] = internal_timer.elapsed_secs();
     }
 }
 
