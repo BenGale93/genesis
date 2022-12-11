@@ -45,7 +45,7 @@ impl GrowingSum {
     }
 
     pub fn add_growing_time(&mut self, time: f32, rate: f32) {
-        self.0 += time * rate
+        self.0 += time * rate;
     }
 
     pub fn uint_portion(&mut self) -> usize {
@@ -65,7 +65,7 @@ pub fn attempted_to_grow_system(
         let time_spent = trying_to_grow.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             grow_sum.add_growing_time(time_spent, **growth_rate);
-            trying_to_grow.reset()
+            trying_to_grow.reset();
         }
     }
 }
@@ -100,7 +100,7 @@ impl SizeSum {
     }
 
     pub fn add_existence_time(&mut self, time: f32, cost: f32) {
-        self.0 += time * cost
+        self.0 += time * cost;
     }
 
     pub fn uint_portion(&mut self) -> usize {

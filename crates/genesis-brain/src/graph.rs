@@ -38,7 +38,7 @@ pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSe
             (visited.contains(&synapse.from()) && !visited.contains(&synapse.to()))
                 .then(|| synapse.to())
         });
-        let c: HashSet<usize> = HashSet::from_iter(candidates);
+        let c = candidates.collect::<HashSet<_>>();
         let mut t = HashSet::new();
 
         for n in c {
@@ -94,7 +94,7 @@ mod tests {
 
         let layers = super::feed_forward_layers(&neurons, &synapses);
 
-        assert_eq!(layers, vec![HashSet::from([2])])
+        assert_eq!(layers, vec![HashSet::from([2])]);
     }
 
     #[test]
@@ -110,7 +110,7 @@ mod tests {
 
         let layers = super::feed_forward_layers(&neurons, &synapses);
 
-        assert_eq!(layers, vec![HashSet::from([3]), HashSet::from([2])])
+        assert_eq!(layers, vec![HashSet::from([3]), HashSet::from([2])]);
     }
 
     #[test]
@@ -128,7 +128,7 @@ mod tests {
 
         let layers = super::feed_forward_layers(&neurons, &synapses);
 
-        assert_eq!(layers, vec![HashSet::from([4, 5]), HashSet::from([2, 3])])
+        assert_eq!(layers, vec![HashSet::from([4, 5]), HashSet::from([2, 3])]);
     }
 
     #[test]
@@ -145,7 +145,7 @@ mod tests {
 
         let layers = super::feed_forward_layers(&neurons, &synapses);
 
-        assert_eq!(layers, vec![HashSet::from([2])])
+        assert_eq!(layers, vec![HashSet::from([2])]);
     }
 
     #[test]
@@ -203,6 +203,6 @@ mod tests {
                 HashSet::from([10]),
                 HashSet::from([12, 13])
             ]
-        )
+        );
     }
 }

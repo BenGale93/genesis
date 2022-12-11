@@ -1,5 +1,11 @@
 #![warn(clippy::all, clippy::nursery)]
 #![feature(exclusive_range_pattern)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::similar_names)]
+#![allow(clippy::many_single_char_names)]
 mod activation;
 pub mod brain_error;
 mod graph;
@@ -99,9 +105,10 @@ impl Brain {
         Ok(stored_values[self.inputs..(self.inputs + self.outputs)].to_vec())
     }
 
+    #[must_use]
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut new_brain = self.clone();
-        if rng.gen_bool(chance.as_float() as f64) {
+        if rng.gen_bool(f64::from(chance.as_float())) {
             match rng.gen_range(0..=16) {
                 0 => new_brain.deactivate_random_synapse(),
                 1 => new_brain.deactivate_random_neuron(),
@@ -428,10 +435,7 @@ impl Brain {
 
     fn remove_neuron(&mut self, neuron_index: usize) -> Result<(), BrainError> {
         {
-            let neuron_to_remove = match self.neurons.get(neuron_index) {
-                Some(neuron) => neuron,
-                None => return Err(BrainError::OutOfBounds),
-            };
+            let Some(neuron_to_remove) = self.neurons.get(neuron_index) else { return Err(BrainError::OutOfBounds) };
 
             if !matches!(neuron_to_remove.kind(), NeuronKind::Hidden) {
                 return Err(BrainError::NeuronRemovalError);

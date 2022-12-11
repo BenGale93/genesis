@@ -44,7 +44,7 @@ impl EatingSum {
     }
 
     pub fn add_eating_time(&mut self, time: f32, cost: f32) {
-        self.0 += time * cost
+        self.0 += time * cost;
     }
 
     pub fn uint_portion(&mut self) -> usize {
@@ -64,7 +64,7 @@ pub fn attempted_to_eat_system(
         let time_spent = trying_to_eat.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             eating_sum.add_eating_time(time_spent, **cost);
-            trying_to_eat.reset()
+            trying_to_eat.reset();
         }
     }
 }

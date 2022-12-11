@@ -76,11 +76,11 @@ impl Synapse {
     }
 
     pub fn activate(&mut self) {
-        self.set_active(true)
+        self.set_active(true);
     }
 
     pub fn deactivate(&mut self) {
-        self.set_active(false)
+        self.set_active(false);
     }
 }
 

@@ -43,7 +43,7 @@ impl ThinkingSum {
     }
 
     pub fn add_thought(&mut self, synapses: usize, cost: f32) {
-        self.0 += synapses as f32 * cost
+        self.0 += synapses as f32 * cost;
     }
 
     pub fn uint_portion(&mut self) -> usize {

@@ -17,13 +17,13 @@ where
 }
 
 #[derive(Debug, Getters, Serialize, Default, Resource)]
-pub struct CountStatistics {
+pub struct CountStats {
     adults: Vec<usize>,
     juveniles: Vec<usize>,
     eggs: Vec<usize>,
 }
 
-impl CountStatistics {
+impl CountStats {
     pub fn current_adults(&self) -> usize {
         last_element(&self.adults)
     }
@@ -42,12 +42,12 @@ impl CountStatistics {
 }
 
 #[derive(Debug, Getters, Serialize, Default, Resource)]
-pub struct EnergyStatistics {
+pub struct EnergyStats {
     available_energy: Vec<usize>,
     food_energy: Vec<usize>,
 }
 
-impl EnergyStatistics {
+impl EnergyStats {
     pub fn current_available_energy(&self) -> usize {
         last_element(&self.available_energy)
     }
@@ -58,14 +58,14 @@ impl EnergyStatistics {
 }
 
 #[derive(Debug, Getters, Serialize, Default, Resource)]
-pub struct BugPerformanceStatistics {
+pub struct BugPerformance {
     highest_energy_consumed: Vec<usize>,
     most_eggs_laid: Vec<usize>,
     max_generation: Vec<usize>,
     oldest_bug: Vec<f32>,
 }
 
-impl BugPerformanceStatistics {
+impl BugPerformance {
     pub fn current_highest_energy_consumed(&self) -> usize {
         last_element(&self.highest_energy_consumed)
     }
@@ -84,7 +84,7 @@ impl BugPerformanceStatistics {
 }
 
 #[derive(Debug, Getters, Serialize, Default, Resource)]
-pub struct AverageAttributeStatistics {
+pub struct AverageAttributes {
     pub hatch_age: Vec<f32>,
     pub adult_age: Vec<f32>,
     pub death_age: Vec<f32>,
@@ -107,7 +107,7 @@ pub struct AverageAttributeStatistics {
 }
 
 pub fn count_system(
-    mut stats: ResMut<CountStatistics>,
+    mut stats: ResMut<CountStats>,
     adult_query: Query<&lifecycle::Adult>,
     juvenile_query: Query<&lifecycle::Juvenile>,
     egg_query: Query<&lifecycle::EggEnergy>,
@@ -122,7 +122,7 @@ pub fn count_system(
 }
 
 pub fn energy_stats_system(
-    mut stats: ResMut<EnergyStatistics>,
+    mut stats: ResMut<EnergyStats>,
     ecosystem: Res<ecosystem::Ecosystem>,
     food_energy: Query<&ecosystem::Plant>,
 ) {
@@ -134,7 +134,7 @@ pub fn energy_stats_system(
 }
 
 pub fn performance_stats_system(
-    mut stats: ResMut<BugPerformanceStatistics>,
+    mut stats: ResMut<BugPerformance>,
     performance_query: Query<(
         &eating::EnergyConsumed,
         &lifecycle::EggsLaid,
@@ -147,7 +147,7 @@ pub fn performance_stats_system(
     let mut max_generation = lifecycle::Generation(0);
     let mut oldest_bug: f32 = 0.0;
 
-    for (energy_consumed, eggs_laid, generation, age) in performance_query.into_iter() {
+    for (energy_consumed, eggs_laid, generation, age) in &performance_query {
         max_consumption = max_consumption.max(*energy_consumed);
         max_eggs = max_eggs.max(*eggs_laid);
         max_generation = max_generation.max(*generation);
@@ -161,7 +161,7 @@ pub fn performance_stats_system(
 }
 
 pub fn attribute_stats_system(
-    mut stats: ResMut<AverageAttributeStatistics>,
+    mut stats: ResMut<AverageAttributes>,
     attribute_query_1: Query<attributes::BugAttributesPart1>,
     attribute_query_2: Query<attributes::BugAttributesPart2>,
     egg_attribute_query: Query<&attributes::HatchAge>,
@@ -213,7 +213,7 @@ pub fn attribute_stats_system(
         eating_boundary.push(**e);
         cost_of_thought.push(**cot);
         cost_of_eating.push(**coe);
-        hatch_size.push(**hs)
+        hatch_size.push(**hs);
     }
     for (ms, gr, mw) in attribute_query_2.iter() {
         max_size.push(**ms);

@@ -300,8 +300,8 @@ pub fn spawn_egg_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     spawners: Res<spawning::Spawners>,
-    count_stats: Res<ui::CountStatistics>,
-    performance_stats: Res<ui::BugPerformanceStatistics>,
+    count_stats: Res<ui::CountStats>,
+    performance_stats: Res<ui::BugPerformance>,
 ) {
     let config_instance = config::WorldConfig::global();
     let bug_num = count_stats.current_organisms();
@@ -310,10 +310,7 @@ pub fn spawn_egg_system(
     if (spawners.space_for_organisms(config_instance.minimum_number))
         || (bug_num < config_instance.start_num && max_generation < config::GENERATION_SWITCH)
     {
-        let energy = match ecosystem.request_energy(config_instance.start_energy) {
-            None => return,
-            Some(e) => e,
-        };
+        let Some(energy) = ecosystem.request_energy(config_instance.start_energy) else { return };
         let mut rng = rand::thread_rng();
         let location = spawners.random_organism_position(&mut rng);
         let bug_body = body::BugBody::random(&mut rng);

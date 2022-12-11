@@ -87,11 +87,10 @@ pub trait NeuronsExt {
 
 impl NeuronsExt for Neurons {
     fn get_indices(&self, kinds: &HashSet<NeuronKind>) -> HashSet<usize> {
-        HashSet::from_iter(
-            self.iter()
-                .enumerate()
-                .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then_some(i)),
-        )
+        self.iter()
+            .enumerate()
+            .filter_map(|(i, neuron)| kinds.contains(neuron.kind()).then_some(i))
+            .collect::<HashSet<_>>()
     }
 }
 

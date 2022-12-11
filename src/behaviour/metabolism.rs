@@ -53,6 +53,6 @@ pub fn energy_return_system(
         shift_energy!(movement_sum);
         shift_energy!(size_sum);
 
-        ecosystem.return_energy(burnt_energy.return_energy())
+        ecosystem.return_energy(burnt_energy.return_energy());
     }
 }

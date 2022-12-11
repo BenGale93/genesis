@@ -46,17 +46,17 @@ fn paint_synapses(ui: &mut egui::Ui, synapses: &Synapses, neuron_layout: &[GuiNe
             continue;
         };
 
-        let color = if !syn.active() {
-            egui::Color32::BLACK
-        } else {
+        let color = if syn.active() {
             let (r, g, b) = color::interpolate_color(syn.weight(), COLOR_ARRAY);
             egui::Color32::from_rgb(r, g, b)
+        } else {
+            egui::Color32::BLACK
         };
 
         ui.painter().line_segment(
             [egui::pos2(start_x, start_y), egui::pos2(end_x, end_y)],
             egui::Stroke::new(5.0, color),
-        )
+        );
     }
 }
 
@@ -71,7 +71,7 @@ fn paint_neuron_values(
         ui.painter().text(
             neuron_position,
             egui::Align2::CENTER_CENTER,
-            format!("{:.2}", val),
+            format!("{val:.2}"),
             egui::FontId::default(),
             egui::Color32::WHITE,
         );
@@ -117,7 +117,7 @@ fn paint_neurons(
         ui.painter().circle_filled(neuron_position, RADIUS, color);
 
         paint_neuron_values(ui, gui_neuron.index, neuron_position, mind_values);
-        paint_neuron_labels(ui, response, gui_neuron.index, neuron_position)
+        paint_neuron_labels(ui, response, gui_neuron.index, neuron_position);
     }
 }
 

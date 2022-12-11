@@ -14,9 +14,7 @@ pub use gui::{EntityPanelState, GlobalPanelState};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
-pub use statistics::{
-    AverageAttributeStatistics, BugPerformanceStatistics, CountStatistics, EnergyStatistics,
-};
+pub use statistics::{AverageAttributes, BugPerformance, CountStats, EnergyStats};
 
 use crate::config::WorldConfig;
 
@@ -24,20 +22,20 @@ use crate::config::WorldConfig;
 struct RunInfo<'a> {
     time_elapsed: &'a f32,
     run_config: &'a WorldConfig,
-    count_stats: &'a statistics::CountStatistics,
-    energy_stats: &'a statistics::EnergyStatistics,
-    performance_stats: &'a statistics::BugPerformanceStatistics,
-    attribute_stats: &'a statistics::AverageAttributeStatistics,
+    count_stats: &'a statistics::CountStats,
+    energy_stats: &'a statistics::EnergyStats,
+    performance_stats: &'a statistics::BugPerformance,
+    attribute_stats: &'a statistics::AverageAttributes,
 }
 
 impl<'a> RunInfo<'a> {
     const fn new(
         time_elapsed: &'a f32,
         run_config: &'a WorldConfig,
-        count_stats: &'a statistics::CountStatistics,
-        energy_stats: &'a statistics::EnergyStatistics,
-        performance_stats: &'a statistics::BugPerformanceStatistics,
-        attribute_stats: &'a statistics::AverageAttributeStatistics,
+        count_stats: &'a statistics::CountStats,
+        energy_stats: &'a statistics::EnergyStats,
+        performance_stats: &'a statistics::BugPerformance,
+        attribute_stats: &'a statistics::AverageAttributes,
     ) -> Self {
         Self {
             time_elapsed,
@@ -52,10 +50,10 @@ impl<'a> RunInfo<'a> {
 
 fn save_stats(
     time: &Res<Time>,
-    count_stats: &Res<statistics::CountStatistics>,
-    energy_stats: &Res<statistics::EnergyStatistics>,
-    performance_stats: &Res<statistics::BugPerformanceStatistics>,
-    attribute_stats: &Res<statistics::AverageAttributeStatistics>,
+    count_stats: &Res<statistics::CountStats>,
+    energy_stats: &Res<statistics::EnergyStats>,
+    performance_stats: &Res<statistics::BugPerformance>,
+    attribute_stats: &Res<statistics::AverageAttributes>,
 ) {
     let time = time.elapsed_seconds();
     let run_info = RunInfo::new(
@@ -73,10 +71,10 @@ fn save_stats(
 pub fn save_on_close(
     events: EventReader<AppExit>,
     time: Res<Time>,
-    count_stats: Res<statistics::CountStatistics>,
-    energy_stats: Res<statistics::EnergyStatistics>,
-    performance_stats: Res<statistics::BugPerformanceStatistics>,
-    attribute_stats: Res<statistics::AverageAttributeStatistics>,
+    count_stats: Res<statistics::CountStats>,
+    energy_stats: Res<statistics::EnergyStats>,
+    performance_stats: Res<statistics::BugPerformance>,
+    attribute_stats: Res<statistics::AverageAttributes>,
 ) {
     if !events.is_empty() {
         save_stats(
@@ -91,10 +89,10 @@ pub fn save_on_close(
 
 pub fn regular_saver(
     time: Res<Time>,
-    count_stats: Res<statistics::CountStatistics>,
-    energy_stats: Res<statistics::EnergyStatistics>,
-    performance_stats: Res<statistics::BugPerformanceStatistics>,
-    attribute_stats: Res<statistics::AverageAttributeStatistics>,
+    count_stats: Res<statistics::CountStats>,
+    energy_stats: Res<statistics::EnergyStats>,
+    performance_stats: Res<statistics::BugPerformance>,
+    attribute_stats: Res<statistics::AverageAttributes>,
 ) {
     save_stats(
         &time,
@@ -125,7 +123,7 @@ pub fn interaction_system_set() -> SystemSet {
 
 pub fn selection_system_set() -> SystemSet {
     ConditionSet::new()
-        .run_if_not(gui::using_gui)
+        .run_if_not(gui::using_ui)
         .with_system(gui::select_sprite_system)
         .into()
 }
@@ -150,10 +148,10 @@ impl Plugin for GenesisUiPlugin {
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
-            .insert_resource(AverageAttributeStatistics::default())
-            .insert_resource(CountStatistics::default())
-            .insert_resource(BugPerformanceStatistics::default())
-            .insert_resource(EnergyStatistics::default())
+            .insert_resource(AverageAttributes::default())
+            .insert_resource(CountStats::default())
+            .insert_resource(BugPerformance::default())
+            .insert_resource(EnergyStats::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())

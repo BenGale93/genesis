@@ -19,7 +19,7 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
             break;
         }
     }
-    if t == 1.0 {
+    if (t - 1.0).abs() < f32::EPSILON {
         sub_t = t;
         end_color_index = colors.len() - 1;
     }

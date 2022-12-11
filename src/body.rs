@@ -204,9 +204,10 @@ impl Vitality {
             .take_energy(amount * config::HEALTH_MULTIPLIER);
         self.health.energy_limit += amount * config::HEALTH_MULTIPLIER;
 
-        if self.health.add_energy(health_growing_energy) != ecosystem::Energy::new_empty() {
-            panic!("Tried to grow and couldn't add all the energy to health.")
-        };
+        assert!(
+            self.health.add_energy(health_growing_energy) == ecosystem::Energy::new_empty(),
+            "Tried to grow and couldn't add all the energy to health."
+        );
 
         self.size.grow(amount as f32);
 
@@ -263,6 +264,6 @@ impl Size {
     }
 
     pub fn at_max_size(&self) -> bool {
-        self.current_size == self.max_size
+        (self.current_size - self.max_size).abs() < f32::EPSILON
     }
 }

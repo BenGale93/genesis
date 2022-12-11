@@ -97,7 +97,7 @@ impl WorldConfig {
             (self.plant_size_range, "plant_size_range"),
         ];
         for (tuple, name) in low_high_tuples {
-            messages.push(validators::low_high_tuple(tuple, name))
+            messages.push(validators::low_high_tuple(tuple, name));
         }
         messages.extend(self.attributes.validate());
 
@@ -176,7 +176,7 @@ pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
 pub fn initialize_configs() {
     let config = match WorldConfig::from_config() {
         Ok(c) => c,
-        Err(e) => panic!("Config validation failed. Issues are: {:?}", e),
+        Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
     };
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);

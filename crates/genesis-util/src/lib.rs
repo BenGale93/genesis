@@ -1,4 +1,10 @@
 #![warn(clippy::all, clippy::nursery)]
+#![allow(clippy::cast_possible_truncation)]
+#![allow(clippy::cast_precision_loss)]
+#![allow(clippy::cast_sign_loss)]
+#![allow(clippy::module_name_repetitions)]
+#![allow(clippy::similar_names)]
+#![allow(clippy::many_single_char_names)]
 pub mod color;
 pub mod maths;
 pub mod probability;
