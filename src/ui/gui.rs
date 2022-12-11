@@ -252,9 +252,10 @@ fn bug_attribute_sub_panel(
     ui.label(format!("Eating boundary: {:.3}", **bug_info_part1.11));
     ui.label(format!("Cost of thought: {:.3}", **bug_info_part1.12));
     ui.label(format!("Cost of eating: {:.3}", **bug_info_part1.13));
-    ui.label(format!("Maximum size: {:.3}", **bug_info_part1.14));
-    ui.label(format!("Growth rate: {:.3}", **bug_info_part2.0));
-    ui.label(format!("Mouth width: {:.3}", **bug_info_part2.1));
+    ui.label(format!("Hatch size: {:.3}", **bug_info_part1.14));
+    ui.label(format!("Maximum size: {:.3}", **bug_info_part1.0));
+    ui.label(format!("Growth rate: {:.3}", **bug_info_part2.1));
+    ui.label(format!("Mouth width: {:.3}", **bug_info_part2.2));
 }
 
 pub fn bug_brain_info_system(
