@@ -56,7 +56,7 @@ pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSe
             break;
         }
 
-        visited = visited.union(&t).cloned().collect();
+        visited = visited.union(&t).copied().collect();
         layers.push(t);
     }
     layers

@@ -42,22 +42,27 @@ impl Synapse {
         (x / 2) + to
     }
 
+    #[must_use]
     pub const fn from(&self) -> usize {
         self.from
     }
 
+    #[must_use]
     pub const fn to(&self) -> usize {
         self.to
     }
 
+    #[must_use]
     pub const fn weight(&self) -> Weight {
         self.weight
     }
 
+    #[must_use]
     pub const fn active(&self) -> bool {
         self.active
     }
 
+    #[must_use]
     pub const fn innovation(&self) -> usize {
         self.innovation
     }

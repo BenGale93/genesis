@@ -17,6 +17,7 @@ impl Weight {
         Ok(Self(w))
     }
 
+    #[must_use]
     pub fn random() -> Self {
         let mut rng = rand::thread_rng();
         let x: f64 = rng.gen();
@@ -25,10 +26,12 @@ impl Weight {
         Self(w)
     }
 
+    #[must_use]
     pub fn abs(&self) -> Self {
         Self::new(self.0.abs()).unwrap()
     }
 
+    #[must_use]
     pub const fn as_float(&self) -> f64 {
         self.0
     }

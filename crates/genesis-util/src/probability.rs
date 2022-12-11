@@ -11,6 +11,7 @@ impl Probability {
         Ok(Self(w))
     }
 
+    #[must_use]
     pub const fn as_float(&self) -> f64 {
         self.0
     }

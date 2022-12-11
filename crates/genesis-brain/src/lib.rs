@@ -32,6 +32,7 @@ pub struct Brain {
 }
 
 impl Brain {
+    #[must_use]
     pub fn new(inputs: usize, outputs: usize) -> Self {
         let mut neurons = vec![];
 
@@ -46,18 +47,22 @@ impl Brain {
         }
     }
 
+    #[must_use]
     pub const fn inputs(&self) -> usize {
         self.inputs
     }
 
+    #[must_use]
     pub const fn outputs(&self) -> usize {
         self.outputs
     }
 
+    #[must_use]
     pub fn neurons(&self) -> &[Neuron] {
         self.neurons.as_ref()
     }
 
+    #[must_use]
     pub fn synapses(&self) -> &[Synapse] {
         self.synapses.as_ref()
     }
@@ -111,11 +116,12 @@ impl Brain {
         new_brain
     }
 
+    #[must_use]
     pub fn innovations(&self) -> Vec<usize> {
         self.synapses
             .iter()
             .filter(|s| s.active())
-            .map(|s| s.innovation())
+            .map(synapse::Synapse::innovation)
             .collect()
     }
 
@@ -252,6 +258,7 @@ impl Brain {
         random_neuron.set_activation(random::<ActivationFunctionKind>());
     }
 
+    #[must_use]
     pub fn layout_neurons(&self, start: &(f32, f32), radius: f32, spacing: f32) -> Vec<GuiNeuron> {
         let max_layer = 10;
         let impossible_layer = max_layer + 1;
@@ -440,7 +447,7 @@ impl Brain {
             .synapses
             .iter()
             .filter(|syn| syn.from() == neuron_index && syn.active())
-            .map(|syn| syn.to())
+            .map(synapse::Synapse::to)
             .collect();
 
         let new_from_to_pairs: Vec<(usize, usize, Weight)> = incoming_synapses

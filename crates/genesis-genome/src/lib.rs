@@ -15,6 +15,7 @@ pub struct Genome {
 }
 
 impl Genome {
+    #[must_use]
     pub fn new(number: usize, length: usize) -> Self {
         let mut chromosomes = Vec::with_capacity(number);
 
@@ -36,7 +37,7 @@ impl Genome {
     pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
         let mut new_chromosomes = Vec::with_capacity(self.chromosomes.len());
 
-        for c in self.chromosomes.iter() {
+        for c in &self.chromosomes {
             new_chromosomes.push(c.mutate(rng, chance));
         }
         Self {

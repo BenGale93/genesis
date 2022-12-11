@@ -20,6 +20,7 @@ pub struct Neuron {
 }
 
 impl Neuron {
+    #[must_use]
     pub fn new(kind: NeuronKind) -> Self {
         let activation = match kind {
             NeuronKind::Input => activation::ActivationFunctionKind::Identity,
@@ -39,10 +40,12 @@ impl Neuron {
         }
     }
 
+    #[must_use]
     pub const fn kind(&self) -> &NeuronKind {
         &self.kind
     }
 
+    #[must_use]
     pub const fn activation(&self) -> &activation::ActivationFunctionKind {
         &self.activation
     }
@@ -51,6 +54,7 @@ impl Neuron {
         self.activation = activation;
     }
 
+    #[must_use]
     pub const fn bias(&self) -> Bias {
         self.bias
     }
@@ -59,6 +63,7 @@ impl Neuron {
         self.bias = bias;
     }
 
+    #[must_use]
     pub fn activate(&self, input: f64) -> f64 {
         activation::activate(input, self.activation()) + self.bias().as_float()
     }

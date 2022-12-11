@@ -5,6 +5,7 @@ use nalgebra::wrap;
 
 use crate::util_error::GenesisUtilError;
 
+#[must_use]
 pub fn mean<T>(numbers: Vec<T>) -> f32
 where
     T: Copy + Sum + Div<f32, Output = f32>,
@@ -17,19 +18,23 @@ where
     sum / len as f32
 }
 
+#[must_use]
 pub fn polars_to_cart(r: f32, theta: f32) -> (f32, f32) {
     let (y_ang, x_ang) = theta.sin_cos();
     (r * x_ang, r * y_ang)
 }
 
+#[must_use]
 pub fn angle_to_point(diff: Vec3) -> f32 {
     diff.y.atan2(diff.x)
 }
 
+#[must_use]
 pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
     (angle_from_x - (PI / 2.0) - angle_from_y).abs()
 }
 
+#[must_use]
 pub fn linear_interpolate(x: f32, x_min: f32, x_max: f32, y_min: f32, y_max: f32) -> f32 {
     y_min.mul_add(x_max - x, y_max * (x - x_min)) / (x_max - x_min)
 }
@@ -65,18 +70,22 @@ impl Cone {
         })
     }
 
+    #[must_use]
     pub const fn point(&self) -> Vec3 {
         self.point
     }
 
+    #[must_use]
     pub const fn angle(&self) -> f32 {
         self.fov_angle
     }
 
+    #[must_use]
     pub const fn length(&self) -> f32 {
         self.fov_length
     }
 
+    #[must_use]
     pub fn is_within_cone(&self, target: Vec3) -> bool {
         let distance = target - self.point;
 
@@ -108,7 +117,7 @@ mod tests {
         let me = Vec3::new(0.0, 0.0, 0.0);
         let them = Vec3::new(3.0, 4.0, 0.0);
 
-        assert_eq!(angle_to_point(them - me), 0.9272952);
+        assert_eq!(angle_to_point(them - me), 0.927_295_2);
     }
 
     #[test]
@@ -116,7 +125,7 @@ mod tests {
         let me = Vec3::new(1.0, 0.0, 0.0);
         let them = Vec3::new(1.0, 4.0, 0.0);
 
-        assert_eq!(angle_to_point(them - me), 1.5707964);
+        assert_eq!(angle_to_point(them - me), 1.570_796_4);
     }
 
     #[test]

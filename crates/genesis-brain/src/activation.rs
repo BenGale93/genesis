@@ -77,8 +77,8 @@ fn bent_iden(x: f64) -> f64 {
 }
 
 fn selu(x: f64) -> f64 {
-    let alpha = 1.6732632423543772;
-    let scale = 1.05070098735548;
+    let alpha = 1.673_263_242_354_377_2;
+    let scale = 1.050_700_987_355_48;
 
     let fx = if x > 0. { x } else { alpha * x.exp_m1() };
 
@@ -182,7 +182,7 @@ mod tests {
     fn bent_iden_test() {
         assert_eq!(
             activation::activate(1.0, &activation::ActivationFunctionKind::BentIdentity),
-            1.2071067811865475
+            1.207_106_781_186_547_5
         );
     }
 
@@ -190,11 +190,11 @@ mod tests {
     fn selu_test() {
         assert_eq!(
             activation::activate(1.0, &activation::ActivationFunctionKind::Selu),
-            1.05070098735548
+            1.050_700_987_355_48
         );
         assert_eq!(
             activation::activate(-1.0, &activation::ActivationFunctionKind::Selu),
-            -1.111330737812562
+            -1.111_330_737_812_562
         );
     }
 
