@@ -85,6 +85,7 @@ impl BugPerformanceStatistics {
 
 #[derive(Debug, Getters, Serialize, Default, Resource)]
 pub struct AverageAttributeStatistics {
+    pub hatch_age: Vec<f32>,
     pub adult_age: Vec<f32>,
     pub death_age: Vec<f32>,
     pub mutation_probability: Vec<f32>,
@@ -102,7 +103,7 @@ pub struct AverageAttributeStatistics {
     pub hatch_size: Vec<f32>,
     pub max_size: Vec<f32>,
     pub growth_rate: Vec<f32>,
-    pub mouth_widths: Vec<f32>,
+    pub mouth_width: Vec<f32>,
 }
 
 pub fn count_system(
@@ -165,69 +166,92 @@ pub fn attribute_stats_system(
     attribute_query_2: Query<attributes::BugAttributesPart2>,
     egg_attribute_query: Query<&attributes::HatchAge>,
 ) {
-    let mut adult_ages = vec![];
-    let mut death_ages = vec![];
-    let mut eye_angles = vec![];
-    let mut eye_ranges = vec![];
-    let mut max_rotation_rates = vec![];
-    let mut max_speeds = vec![];
-    let mut mutation_probabilities = vec![];
-    let mut offspring_energies = vec![];
-    let mut lay_eggs = vec![];
-    let mut internal_timers = vec![];
-    let mut want_to_grows = vec![];
-    let mut eatings = vec![];
-    let mut costs_of_thought = vec![];
-    let mut costs_of_eating = vec![];
-    let mut hatch_ages = vec![];
-    let mut max_sizes = vec![];
-    let mut growth_rates = vec![];
-    let mut mouth_width = vec![];
-
-    for (aa, da, ea, er, mrr, ms, mp, oe, le, it, wtg, e, cot, coe, msz) in attribute_query_1.iter()
-    {
-        adult_ages.push(**aa);
-        death_ages.push(**da);
-        eye_angles.push(**ea);
-        eye_ranges.push(**er);
-        max_rotation_rates.push(mrr.value());
-        max_speeds.push(ms.value());
-        mutation_probabilities.push(mp.as_float() as f32);
-        offspring_energies.push(**oe);
-        lay_eggs.push(**le as f32);
-        internal_timers.push(**it as f32);
-        want_to_grows.push(**wtg as f32);
-        eatings.push(**e as f32);
-        costs_of_thought.push(**cot);
-        costs_of_eating.push(**coe);
-        max_sizes.push(**msz);
+    macro_rules! attr_vecs {
+        ($attr:ident) => {
+            let mut $attr = vec![];
+        };
+        ($attr:ident, $($attrs:ident), +) => {
+            attr_vecs!($attr);
+            attr_vecs!($($attrs), +)
+        }
     }
-    for (gr, mw) in attribute_query_2.iter() {
-        growth_rates.push(**gr);
+    attr_vecs!(
+        hatch_age,
+        adult_age,
+        death_age,
+        eye_angle,
+        eye_range,
+        rotation_speed,
+        translation_speed,
+        mutation_probability,
+        offspring_energy,
+        lay_egg_boundary,
+        internal_timer_boundary,
+        want_to_grow_boundary,
+        eating_boundary,
+        cost_of_thought,
+        cost_of_eating,
+        hatch_size,
+        max_size,
+        growth_rate,
+        mouth_width
+    );
+
+    for (aa, da, ea, er, mrr, ms, mp, oe, le, it, wtg, e, cot, coe, hs) in attribute_query_1.iter()
+    {
+        adult_age.push(**aa);
+        death_age.push(**da);
+        eye_angle.push(**ea);
+        eye_range.push(**er);
+        rotation_speed.push(mrr.value());
+        translation_speed.push(ms.value());
+        mutation_probability.push(mp.as_float() as f32);
+        offspring_energy.push(**oe);
+        lay_egg_boundary.push(**le as f32);
+        internal_timer_boundary.push(**it as f32);
+        want_to_grow_boundary.push(**wtg as f32);
+        eating_boundary.push(**e as f32);
+        cost_of_thought.push(**cot);
+        cost_of_eating.push(**coe);
+        hatch_size.push(**hs)
+    }
+    for (ms, gr, mw) in attribute_query_2.iter() {
+        max_size.push(**ms);
+        growth_rate.push(**gr);
         mouth_width.push(**mw);
     }
     for ha in egg_attribute_query.iter() {
-        hatch_ages.push(**ha);
+        hatch_age.push(**ha);
     }
 
-    stats.adult_age.push(mean(adult_ages));
-    stats.death_age.push(mean(death_ages));
-    stats.eye_angle.push(mean(eye_angles));
-    stats.eye_range.push(mean(eye_ranges));
-    stats.rotation_speed.push(mean(max_rotation_rates));
-    stats.translation_speed.push(mean(max_speeds));
-    stats
-        .mutation_probability
-        .push(mean(mutation_probabilities));
-    stats.offspring_energy.push(mean(offspring_energies));
-    stats.lay_egg_boundary.push(mean(lay_eggs));
-    stats.internal_timer_boundary.push(mean(internal_timers));
-    stats.want_to_grow_boundary.push(mean(want_to_grows));
-    stats.eating_boundary.push(mean(eatings));
-    stats.cost_of_thought.push(mean(costs_of_thought));
-    stats.cost_of_eating.push(mean(costs_of_eating));
-    stats.hatch_size.push(mean(hatch_ages));
-    stats.max_size.push(mean(max_sizes));
-    stats.growth_rate.push(mean(growth_rates));
-    stats.mouth_widths.push(mean(mouth_width));
+    macro_rules! push_attr {
+        ($attr:ident) => {
+            stats.$attr.push(mean($attr))
+        };
+        ($attr:ident, $($attrs:ident), +) => {
+            push_attr!($attr);
+            push_attr!($($attrs), +)
+        }
+    }
+    push_attr!(
+        hatch_age,
+        adult_age,
+        death_age,
+        eye_angle,
+        eye_range,
+        rotation_speed,
+        translation_speed,
+        mutation_probability,
+        offspring_energy,
+        lay_egg_boundary,
+        internal_timer_boundary,
+        want_to_grow_boundary,
+        eating_boundary,
+        cost_of_thought,
+        cost_of_eating,
+        hatch_size,
+        max_size,
+        growth_rate,
+        mouth_width
+    );
 }

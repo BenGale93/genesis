@@ -57,13 +57,20 @@ impl AttributeConfig {
 }
 
 macro_rules! impl_from_genome {
-    ($name:ident) => {
-        impl $name {
-            pub fn from_genome(genome: &Genome) -> Self {
-                let attribute_config = Self::default_config();
-                let value = attribute_config.read_genome(genome);
-                $name(value.into())
-            }
+    () => {
+        pub fn from_genome(genome: &Genome) -> Self {
+            let attribute_config = Self::default_config();
+            let value = attribute_config.read_genome(genome);
+            Self(value.into())
+        }
+    };
+}
+
+macro_rules! impl_default_config {
+    ($attr:ident, $chromosome:literal, $start:literal) => {
+        fn default_config() -> AttributeConfig {
+            let (min, max, length) = config::WorldConfig::global().attributes.$attr;
+            AttributeConfig::new(min, max, $chromosome, $start, length)
         }
     };
 }
@@ -72,25 +79,17 @@ macro_rules! impl_from_genome {
 pub struct AdultAge(f32);
 
 impl AdultAge {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.adult_age;
-        AttributeConfig::new(min, max, 0, 0, length)
-    }
+    impl_default_config!(adult_age, 0, 0);
+    impl_from_genome!();
 }
-
-impl_from_genome!(AdultAge);
 
 #[derive(Component, Debug, Deref)]
 pub struct DeathAge(f32);
 
 impl DeathAge {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.death_age;
-        AttributeConfig::new(min, max, 0, 4, length)
-    }
+    impl_default_config!(death_age, 0, 4);
+    impl_from_genome!();
 }
-
-impl_from_genome!(DeathAge);
 
 #[derive(Component, Debug, Deref)]
 pub struct MutationProbability(Probability);
@@ -102,13 +101,7 @@ impl MutationProbability {
             .expect("Expected to be between 0.0 and 1.0.");
         Self(value)
     }
-
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global()
-            .attributes
-            .mutation_probability;
-        AttributeConfig::new(min, max, 1, 0, length)
-    }
+    impl_default_config!(mutation_probability, 1, 0);
 }
 
 #[derive(Component, Debug)]
@@ -133,11 +126,6 @@ impl MaxSpeed {
         Self { value, cost }
     }
 
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.max_speed;
-        AttributeConfig::new(min, max, 2, 0, length)
-    }
-
     fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
         let cost_bounds = config::WorldConfig::global().translation_cost;
         linear_interpolate(
@@ -148,6 +136,8 @@ impl MaxSpeed {
             cost_bounds.1,
         )
     }
+
+    impl_default_config!(max_speed, 2, 0);
 }
 
 #[derive(Component, Debug)]
@@ -171,10 +161,6 @@ impl MaxRotationRate {
         let cost = Self::compute_cost(value, &attribute_config);
         Self { value, cost }
     }
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.max_rotation;
-        AttributeConfig::new(min, max, 2, 20, length)
-    }
 
     fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
         let cost_bounds = config::WorldConfig::global().rotation_cost;
@@ -186,19 +172,17 @@ impl MaxRotationRate {
             cost_bounds.1,
         )
     }
+
+    impl_default_config!(max_rotation, 2, 20);
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct EyeRange(f32);
 
 impl EyeRange {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.eye_range;
-        AttributeConfig::new(min, max, 3, 0, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(eye_range, 3, 0);
 }
-
-impl_from_genome!(EyeRange);
 
 #[derive(Component, Debug, Deref)]
 pub struct EyeAngle(f32);
@@ -208,145 +192,97 @@ impl EyeAngle {
         let (min, max, length) = config::WorldConfig::global().attributes.eye_angle;
         AttributeConfig::new(f32::to_radians(min), f32::to_radians(max), 3, 0, length)
     }
+    impl_from_genome!();
 }
-
-impl_from_genome!(EyeAngle);
 
 #[derive(Component, Debug, Deref)]
 pub struct InternalTimerBoundary(f64);
 
 impl InternalTimerBoundary {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global()
-            .attributes
-            .internal_timer_boundary;
-        AttributeConfig::new(min, max, 4, 0, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(internal_timer_boundary, 4, 0);
 }
-
-impl_from_genome!(InternalTimerBoundary);
 
 #[derive(Component, Debug, Deref)]
 pub struct LayEggBoundary(f64);
 
 impl LayEggBoundary {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.lay_egg_boundary;
-        AttributeConfig::new(min, max, 4, 30, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(lay_egg_boundary, 4, 30);
 }
-
-impl_from_genome!(LayEggBoundary);
 
 #[derive(Component, Debug, Deref)]
 pub struct WantToGrowBoundary(f64);
 
 impl WantToGrowBoundary {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global()
-            .attributes
-            .want_to_grow_boundary;
-        AttributeConfig::new(min, max, 4, 60, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(want_to_grow_boundary, 4, 60);
 }
-
-impl_from_genome!(WantToGrowBoundary);
 
 #[derive(Component, Debug, Deref)]
 pub struct EatingBoundary(f64);
 
 impl EatingBoundary {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.eating_boundary;
-        AttributeConfig::new(min, max, 4, 50, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(eating_boundary, 4, 50);
 }
-
-impl_from_genome!(EatingBoundary);
 
 #[derive(Component, Debug, Deref)]
 pub struct CostOfThought(f32);
 
 impl CostOfThought {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_thought;
-        AttributeConfig::new(min, max, 5, 0, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(cost_of_thought, 5, 0);
 }
-
-impl_from_genome!(CostOfThought);
 
 #[derive(Component, Debug, Deref)]
 pub struct CostOfEating(f32);
 
 impl CostOfEating {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_eating;
-        AttributeConfig::new(min, max, 5, 5, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(cost_of_eating, 5, 5);
 }
-
-impl_from_genome!(CostOfEating);
 
 #[derive(Component, Debug, Deref)]
 pub struct MouthWidth(f32);
 
 impl MouthWidth {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.cost_of_eating;
-        AttributeConfig::new(min, max, 5, 5, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(mouth_width, 5, 5);
 }
-
-impl_from_genome!(MouthWidth);
 
 #[derive(Component, Debug, Deref)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.offspring_energy;
-        AttributeConfig::new(min, max, 10, 0, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(offspring_energy, 10, 0);
 }
-
-impl_from_genome!(OffspringEnergy);
 
 #[derive(Component, Debug, Deref)]
 pub struct HatchSize(f32);
 
 impl HatchSize {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.hatch_size;
-        AttributeConfig::new(min, max, 10, 3, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(hatch_size, 10, 3);
 }
-
-impl_from_genome!(HatchSize);
 
 #[derive(Component, Debug, Deref)]
 pub struct MaxSize(f32);
 
 impl MaxSize {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.max_size;
-        AttributeConfig::new(min, max, 10, 8, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(max_size, 10, 8);
 }
-
-impl_from_genome!(MaxSize);
 
 #[derive(Component, Debug, Deref)]
 pub struct GrowthRate(f32);
 
 impl GrowthRate {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.growth_rate;
-        AttributeConfig::new(min, max, 0, 5, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(growth_rate, 0, 5);
 }
 
-impl_from_genome!(GrowthRate);
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -371,44 +307,25 @@ pub struct AttributeBundle {
 
 impl AttributeBundle {
     pub fn new(genome: &Genome) -> Self {
-        let adult_age = AdultAge::from_genome(genome);
-        let death_age = DeathAge::from_genome(genome);
-        let mutation_probability = MutationProbability::from_genome(genome);
-        let translation_speed = MaxSpeed::from_genome(genome);
-        let rotation_speed = MaxRotationRate::from_genome(genome);
-        let eye_range = EyeRange::from_genome(genome);
-        let eye_angle = EyeAngle::from_genome(genome);
-        let internal_timer_boundary = InternalTimerBoundary::from_genome(genome);
-        let lay_egg_boundary = LayEggBoundary::from_genome(genome);
-        let want_to_grow_boundary = WantToGrowBoundary::from_genome(genome);
-        let eating_boundary = EatingBoundary::from_genome(genome);
-        let cost_of_thought = CostOfThought::from_genome(genome);
-        let cost_of_eating = CostOfEating::from_genome(genome);
-        let mouth_width = MouthWidth::from_genome(genome);
-        let offspring_energy = OffspringEnergy::from_genome(genome);
-        let hatch_size = HatchSize::from_genome(genome);
-        let max_size = MaxSize::from_genome(genome);
-        let growth_rate = GrowthRate::from_genome(genome);
-
         Self {
-            adult_age,
-            death_age,
-            mutation_probability,
-            translation_speed,
-            rotation_speed,
-            eye_range,
-            eye_angle,
-            internal_timer_boundary,
-            lay_egg_boundary,
-            want_to_grow_boundary,
-            eating_boundary,
-            cost_of_thought,
-            cost_of_eating,
-            mouth_width,
-            offspring_energy,
-            hatch_size,
-            max_size,
-            growth_rate,
+            adult_age: AdultAge::from_genome(genome),
+            death_age: DeathAge::from_genome(genome),
+            mutation_probability: MutationProbability::from_genome(genome),
+            translation_speed: MaxSpeed::from_genome(genome),
+            rotation_speed: MaxRotationRate::from_genome(genome),
+            eye_range: EyeRange::from_genome(genome),
+            eye_angle: EyeAngle::from_genome(genome),
+            internal_timer_boundary: InternalTimerBoundary::from_genome(genome),
+            lay_egg_boundary: LayEggBoundary::from_genome(genome),
+            want_to_grow_boundary: WantToGrowBoundary::from_genome(genome),
+            eating_boundary: EatingBoundary::from_genome(genome),
+            cost_of_thought: CostOfThought::from_genome(genome),
+            cost_of_eating: CostOfEating::from_genome(genome),
+            mouth_width: MouthWidth::from_genome(genome),
+            offspring_energy: OffspringEnergy::from_genome(genome),
+            hatch_size: HatchSize::from_genome(genome),
+            max_size: MaxSize::from_genome(genome),
+            growth_rate: GrowthRate::from_genome(genome),
         }
     }
 }
@@ -417,13 +334,9 @@ impl AttributeBundle {
 pub struct HatchAge(f32);
 
 impl HatchAge {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.hatch_age;
-        AttributeConfig::new(min, max, 10, 5, length)
-    }
+    impl_from_genome!();
+    impl_default_config!(hatch_age, 10, 5);
 }
-
-impl_from_genome!(HatchAge);
 
 #[derive(Bundle, Debug)]
 pub struct EggAttributeBundle {
@@ -453,7 +366,7 @@ pub type BugAttributesPart1<'a> = (
     &'a EatingBoundary,
     &'a CostOfThought,
     &'a CostOfEating,
-    &'a MaxSize,
+    &'a HatchSize,
 );
 
-pub type BugAttributesPart2<'a> = (&'a GrowthRate, &'a MouthWidth);
+pub type BugAttributesPart2<'a> = (&'a MaxSize, &'a GrowthRate, &'a MouthWidth);

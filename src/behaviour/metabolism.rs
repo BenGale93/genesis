@@ -40,24 +40,18 @@ pub fn energy_return_system(
         mut burnt_energy,
     ) in query.iter_mut()
     {
-        let thought_cost = thinking_sum.uint_portion();
-        if thought_cost >= 1 {
-            burnt_energy.add_energy(vitality.take_energy(thought_cost));
+        macro_rules! shift_energy {
+            ($energy_sum:ident) => {
+                let cost = $energy_sum.uint_portion();
+                if cost >= 1 {
+                    burnt_energy.add_energy(vitality.take_energy(cost));
+                }
+            };
         }
-
-        let eating_cost = eating_sum.uint_portion();
-        if eating_cost >= 1 {
-            burnt_energy.add_energy(vitality.take_energy(eating_cost));
-        }
-
-        let movement_cost = movement_sum.uint_portion();
-        if movement_cost >= 1 {
-            burnt_energy.add_energy(vitality.take_energy(movement_cost));
-        }
-        let size_cost = size_sum.uint_portion();
-        if size_cost >= 1 {
-            burnt_energy.add_energy(vitality.take_energy(size_cost));
-        }
+        shift_energy!(thinking_sum);
+        shift_energy!(eating_sum);
+        shift_energy!(movement_sum);
+        shift_energy!(size_sum);
 
         ecosystem.return_energy(burnt_energy.return_energy())
     }
