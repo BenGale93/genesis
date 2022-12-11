@@ -15,19 +15,12 @@ pub mod synapse;
 use activation::ActivationFunctionKind;
 pub use brain_error::BrainError;
 use genesis_util::{Bias, Probability, Weight};
-use graph::feed_forward_layers;
+pub use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
-
-#[derive(Debug)]
-pub struct GuiNeuron {
-    pub index: usize,
-    pub pos: Option<(f32, f32)>,
-    pub bias: Bias,
-}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Brain {
@@ -265,53 +258,6 @@ impl Brain {
         random_neuron.set_activation(random::<ActivationFunctionKind>());
     }
 
-    #[must_use]
-    pub fn layout_neurons(&self, start: &(f32, f32), radius: f32, spacing: f32) -> Vec<GuiNeuron> {
-        let max_layer = 10;
-        let impossible_layer = max_layer + 1;
-        let layers = feed_forward_layers(&self.neurons, &self.synapses);
-
-        let mut positions = Vec::new();
-        let total_hidden_layers = layers.len();
-
-        let mut layer_index;
-        let mut offsets: Vec<usize> = vec![0; impossible_layer + 1];
-        for (k, neuron) in self.neurons().iter().enumerate() {
-            match neuron.kind() {
-                NeuronKind::Input => layer_index = 0,
-                NeuronKind::Output => layer_index = max_layer,
-                NeuronKind::Hidden => {
-                    layer_index = impossible_layer;
-                    for (i, layer) in layers.iter().enumerate() {
-                        if layer.contains(&k) {
-                            layer_index = (max_layer / total_hidden_layers) * (i + 1);
-                            break;
-                        }
-                    }
-                }
-            }
-
-            let offset = &mut offsets[layer_index];
-
-            let pos = if layer_index == impossible_layer {
-                None
-            } else {
-                Some((
-                    (*offset as f32).mul_add(2.0f32.mul_add(radius, spacing), start.0),
-                    (layer_index as f32).mul_add(2.0f32.mul_add(radius, spacing), start.1),
-                ))
-            };
-            positions.push(GuiNeuron {
-                index: k,
-                pos,
-                bias: neuron.bias(),
-            });
-
-            *offset += 1;
-        }
-        positions
-    }
-
     fn can_connect(&self, from: usize, to: usize) -> bool {
         let from_kind = match self.neurons.get(from) {
             Some(n) => n.kind(),
@@ -332,7 +278,12 @@ impl Brain {
         true
     }
 
-    fn add_synapse(&mut self, from: usize, to: usize, weight: Weight) -> Result<usize, BrainError> {
+    pub fn add_synapse(
+        &mut self,
+        from: usize,
+        to: usize,
+        weight: Weight,
+    ) -> Result<usize, BrainError> {
         let new_synapse = Synapse::with_weight(from, to, weight)?;
 
         if self.synapses.contains(&new_synapse) {
@@ -356,7 +307,7 @@ impl Brain {
         Ok(self.synapses.len() - 1)
     }
 
-    fn deactivate_synapse(&mut self, synapse_index: usize) -> Result<(), BrainError> {
+    pub fn deactivate_synapse(&mut self, synapse_index: usize) -> Result<(), BrainError> {
         if self.synapses.get(synapse_index).is_none() {
             return Err(BrainError::OutOfBounds);
         }
@@ -404,7 +355,7 @@ impl Brain {
         self.synapses.get_mut(synapse_index).unwrap().deactivate();
     }
 
-    fn add_neuron(&mut self, synapse_index: usize) -> Result<usize, BrainError> {
+    pub fn add_neuron(&mut self, synapse_index: usize) -> Result<usize, BrainError> {
         let target_from: usize;
         let target_to: usize;
         let target_weight: Weight;
@@ -433,7 +384,7 @@ impl Brain {
         Ok(new_neuron_index)
     }
 
-    fn remove_neuron(&mut self, neuron_index: usize) -> Result<(), BrainError> {
+    pub fn remove_neuron(&mut self, neuron_index: usize) -> Result<(), BrainError> {
         {
             let Some(neuron_to_remove) = self.neurons.get(neuron_index) else { return Err(BrainError::OutOfBounds) };
 
@@ -906,21 +857,5 @@ mod tests {
         test_brain.deactivate_random_neuron();
         let layers = feed_forward_layers(test_brain.neurons(), test_brain.synapses());
         assert_eq!(layers.len(), 1);
-    }
-
-    #[test]
-    fn brain_layout_with_unconnected_neuron() {
-        let mut test_brain = super::Brain::new(3, 1);
-        let w = Weight::new(1.0).unwrap();
-
-        test_brain.add_synapse(0, 3, w).unwrap();
-        test_brain.add_neuron(0).unwrap();
-        test_brain.add_synapse(1, 3, w).unwrap();
-        test_brain.add_synapse(2, 3, w).unwrap();
-        test_brain.deactivate_synapse(2).unwrap();
-
-        let layout = test_brain.layout_neurons(&(0.0, 0.0), 10.0, 10.0);
-
-        assert_eq!(layout.iter().filter(|x| x.pos.is_some()).count(), 4);
     }
 }
