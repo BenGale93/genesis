@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use crate::{NeuronKind, Neurons, NeuronsExt, Synapse, Synapses};
+use cached::proc_macro::cached;
+
+use crate::{Neuron, NeuronKind, NeuronsExt, Synapse, Synapses};
 
 pub fn creates_cycle(synapses: &Synapses, from: usize, to: usize) -> bool {
     let mut visited = HashSet::from([to]);
@@ -24,7 +26,8 @@ pub fn creates_cycle(synapses: &Synapses, from: usize, to: usize) -> bool {
     }
 }
 
-pub fn feed_forward_layers(neurons: &Neurons, synapses: &Synapses) -> Vec<HashSet<usize>> {
+#[cached]
+pub fn feed_forward_layers(neurons: Vec<Neuron>, synapses: Vec<Synapse>) -> Vec<HashSet<usize>> {
     let required = neurons.get_indices(&HashSet::from([NeuronKind::Hidden, NeuronKind::Output]));
     let mut visited = neurons.get_indices(&HashSet::from([NeuronKind::Input]));
 
@@ -92,7 +95,7 @@ mod tests {
 
         let synapses = brain::create_synapses(&[(0, 2), (1, 2)]).unwrap();
 
-        let layers = super::feed_forward_layers(&neurons, &synapses);
+        let layers = super::feed_forward_layers(neurons.to_vec(), synapses);
 
         assert_eq!(layers, vec![HashSet::from([2])]);
     }
@@ -108,7 +111,7 @@ mod tests {
 
         let synapses = brain::create_synapses(&[(0, 3), (1, 3), (3, 2)]).unwrap();
 
-        let layers = super::feed_forward_layers(&neurons, &synapses);
+        let layers = super::feed_forward_layers(neurons.to_vec(), synapses);
 
         assert_eq!(layers, vec![HashSet::from([3]), HashSet::from([2])]);
     }
@@ -126,7 +129,7 @@ mod tests {
 
         let synapses = brain::create_synapses(&[(0, 4), (1, 5), (4, 2), (5, 3)]).unwrap();
 
-        let layers = super::feed_forward_layers(&neurons, &synapses);
+        let layers = super::feed_forward_layers(neurons.to_vec(), synapses);
 
         assert_eq!(layers, vec![HashSet::from([4, 5]), HashSet::from([2, 3])]);
     }
@@ -143,7 +146,7 @@ mod tests {
 
         let synapses = brain::create_synapses(&[(0, 2), (1, 2)]).unwrap();
 
-        let layers = super::feed_forward_layers(&neurons, &synapses);
+        let layers = super::feed_forward_layers(neurons.to_vec(), synapses);
 
         assert_eq!(layers, vec![HashSet::from([2])]);
     }
@@ -192,7 +195,7 @@ mod tests {
         ])
         .unwrap();
 
-        let layers = super::feed_forward_layers(&neurons, &synapses);
+        let layers = super::feed_forward_layers(neurons.to_vec(), synapses);
 
         assert_eq!(
             layers,

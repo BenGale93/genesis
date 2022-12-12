@@ -1,16 +1,13 @@
 use bevy_egui::egui;
-use genesis_brain::{GuiNeuron, Synapses};
-use genesis_util::color;
-use itertools::Itertools;
 
 use crate::mind;
 
-pub(super) type BugBrainInfo<'a> = (&'a mind::MindInput, &'a mind::Mind, &'a mind::MindOutput);
+pub(super) type BugBrainInfo<'a> = (
+    &'a mind::MindInput,
+    &'a mind::MindLayout,
+    &'a mind::MindOutput,
+);
 
-const RADIUS: f32 = 20.0;
-const SPACING: f32 = 20.0;
-const START_POS: (f32, f32) = (30.0, 100.0);
-const COLOR_ARRAY: &[(u8, u8, u8)] = &[(255, 0, 0), (160, 160, 160), (0, 150, 0)];
 const NEURON_NAMES: [&str; 20] = [
     "Constant",
     "Movement",
@@ -34,29 +31,10 @@ const NEURON_NAMES: [&str; 20] = [
     "Want to grow",
 ];
 
-fn paint_synapses(ui: &mut egui::Ui, synapses: &Synapses, neuron_layout: &[GuiNeuron]) {
-    let sorted_synapses = synapses
-        .iter()
-        .sorted_by(|a, b| a.active().cmp(&b.active()));
-    for syn in sorted_synapses {
-        let start_pos = &neuron_layout[syn.from()];
-        let end_pos = &neuron_layout[syn.to()];
-
-        let (Some((start_x, start_y)), Some((end_x, end_y))) = (start_pos.pos, end_pos.pos) else {
-            continue;
-        };
-
-        let color = if syn.active() {
-            let (r, g, b) = color::interpolate_color(syn.weight(), COLOR_ARRAY);
-            egui::Color32::from_rgb(r, g, b)
-        } else {
-            egui::Color32::BLACK
-        };
-
-        ui.painter().line_segment(
-            [egui::pos2(start_x, start_y), egui::pos2(end_x, end_y)],
-            egui::Stroke::new(5.0, color),
-        );
+fn paint_synapses(ui: &mut egui::Ui, synapses: &[mind::PaintedSynapse]) {
+    for syn in synapses {
+        ui.painter()
+            .line_segment([syn.start, syn.end], egui::Stroke::new(5.0, syn.color));
     }
 }
 
@@ -86,7 +64,7 @@ fn paint_neuron_labels(
 ) {
     if let Some(hover_pos) = response.hover_pos() {
         let dist = (neuron_position - hover_pos).length();
-        if dist < RADIUS {
+        if dist < mind::RADIUS {
             let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
             ui.painter().text(
                 egui::pos2(380.0, 42.0),
@@ -102,19 +80,16 @@ fn paint_neuron_labels(
 fn paint_neurons(
     ui: &mut egui::Ui,
     response: &egui::Response,
-    neuron_layout: &[GuiNeuron],
+    neuron_layout: &[mind::GuiNeuron],
     mind_values: &[f32],
 ) {
     for gui_neuron in neuron_layout {
-        let Some((x, y)) = gui_neuron.pos else {
+        let Some(neuron_position) = gui_neuron.pos else {
             continue;
         };
-        let neuron_position = egui::Pos2::new(x, y);
 
-        let (r, g, b) = color::interpolate_color(gui_neuron.bias, COLOR_ARRAY);
-        let color = egui::Color32::from_rgb(r, g, b);
-
-        ui.painter().circle_filled(neuron_position, RADIUS, color);
+        ui.painter()
+            .circle_filled(neuron_position, mind::RADIUS, gui_neuron.color);
 
         paint_neuron_values(ui, gui_neuron.index, neuron_position, mind_values);
         paint_neuron_labels(ui, response, gui_neuron.index, neuron_position);
@@ -122,16 +97,14 @@ fn paint_neurons(
 }
 
 pub(super) fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) {
-    let (mind_in, mind, mind_out) = brain_info;
+    let (mind_in, mind_layout, mind_out) = brain_info;
 
     let mut mind_values: Vec<f32> = mind_in.iter().copied().collect();
     mind_values.extend(&mind_out.0);
 
-    let neuron_layout = mind.layout_neurons(&START_POS, RADIUS, SPACING);
-
     let (_rect, response) =
         ui.allocate_exact_size(egui::Vec2::new(1000.0, 680.0), egui::Sense::hover());
 
-    paint_synapses(ui, mind.synapses(), &neuron_layout);
-    paint_neurons(ui, &response, &neuron_layout, &mind_values);
+    paint_synapses(ui, mind_layout.synapses());
+    paint_neurons(ui, &response, mind_layout.neurons(), &mind_values);
 }

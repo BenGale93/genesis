@@ -4,7 +4,7 @@ use genesis_util::Weight;
 
 use crate::BrainError;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Synapse {
     from: usize,
     to: usize,
