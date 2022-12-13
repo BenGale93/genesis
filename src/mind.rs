@@ -180,20 +180,18 @@ impl MindLayout {
 #[derive(Bundle, Debug)]
 pub struct MindBundle {
     pub input: MindInput,
-    pub mind: Mind,
     pub output: MindOutput,
     pub layout: MindLayout,
 }
 
 impl MindBundle {
-    pub fn new(mind: Mind) -> Self {
+    pub fn new(mind: &Mind) -> Self {
         let input_vec = MindInput(vec![0.0; mind.inputs()]);
         let output_vec = MindOutput(vec![0.0; mind.outputs()]);
-        let layout = MindLayout::new(&mind);
+        let layout = MindLayout::new(mind);
 
         Self {
             input: input_vec,
-            mind,
             output: output_vec,
             layout,
         }

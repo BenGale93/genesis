@@ -7,6 +7,7 @@
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::similar_names)]
 #![allow(clippy::many_single_char_names)]
+#![allow(clippy::type_complexity)]
 use std::time::Duration;
 
 use behaviour::lifecycle;
