@@ -312,6 +312,7 @@ fn spawn_egg(
     };
 
     let mut egg_entity = commands.spawn(sprite);
+    let entity = egg_entity.id();
 
     egg_entity
         .insert(RigidBody::Dynamic)
@@ -329,10 +330,10 @@ fn spawn_egg(
         .insert(mind)
         .insert(timers::Age::default())
         .insert(generation)
-        .insert(ancestors::Relations::new(parent_id))
+        .insert(ancestors::Relations::new(entity, parent_id))
         .insert(metabolism::BurntEnergy::new());
 
-    egg_entity.id()
+    entity
 }
 
 pub fn spawn_egg_system(

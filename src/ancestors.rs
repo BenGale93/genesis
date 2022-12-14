@@ -3,13 +3,15 @@ use serde_derive::Serialize;
 
 #[derive(Debug, Component, Serialize, Clone)]
 pub struct Relations {
+    entity: Entity,
     parent: Option<Entity>,
     children: Vec<Entity>,
 }
 
 impl Relations {
-    pub const fn new(parent: Option<Entity>) -> Self {
+    pub const fn new(entity: Entity, parent: Option<Entity>) -> Self {
         Self {
+            entity,
             parent,
             children: vec![],
         }
