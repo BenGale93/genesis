@@ -8,12 +8,14 @@
 #![allow(clippy::similar_names)]
 #![allow(clippy::many_single_char_names)]
 #![allow(clippy::type_complexity)]
+#![allow(clippy::too_many_arguments)]
 use std::time::Duration;
 
 use behaviour::lifecycle;
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
 use iyes_loopless::prelude::*;
 
+mod ancestors;
 mod attributes;
 mod behaviour;
 mod body;
@@ -66,6 +68,7 @@ impl Plugin for GenesisPlugin {
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
             .insert_resource(config::BACKGROUND)
+            .insert_resource(ancestors::FamilyTree::default())
             .insert_resource(spawners)
             .insert_resource(plant_spawn_size)
             .insert_resource(ecosystem)

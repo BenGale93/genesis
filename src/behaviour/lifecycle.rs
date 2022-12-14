@@ -11,7 +11,9 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui};
+use crate::{
+    ancestors, attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui,
+};
 
 #[derive(Component, Debug)]
 pub struct Egg;
@@ -127,6 +129,7 @@ fn egg_position(parent_transform: &Transform) -> Vec3 {
 pub struct EggsLaid(pub usize);
 
 type Parent<'a> = (
+    Entity,
     &'a Transform,
     &'a body::BugBody,
     &'a mind::Mind,
@@ -135,6 +138,7 @@ type Parent<'a> = (
     &'a attributes::OffspringEnergy,
     &'a Generation,
     &'a mut EggsLaid,
+    &'a mut ancestors::Relations,
 );
 
 pub fn lay_egg_system(
@@ -144,6 +148,7 @@ pub fn lay_egg_system(
 ) {
     let mut rng = rand::thread_rng();
     for (
+        entity,
         transform,
         bug_body,
         mind,
@@ -152,6 +157,7 @@ pub fn lay_egg_system(
         offspring_energy,
         generation,
         mut eggs_laid,
+        mut relations,
     ) in parent_query.iter_mut()
     {
         let egg_energy =
@@ -164,7 +170,7 @@ pub fn lay_egg_system(
         let offspring_body = bug_body.mutate(&mut rng, **prob);
         let offspring_mind = mind.mutate(&mut rng, **prob).into();
         eggs_laid.0 += 1;
-        spawn_egg(
+        let egg_entity = spawn_egg(
             &mut commands,
             &asset_server,
             energy,
@@ -172,7 +178,9 @@ pub fn lay_egg_system(
             offspring_body,
             offspring_mind,
             *generation + 1.into(),
+            Some(entity),
         );
+        relations.add_child(egg_entity);
     }
 }
 
@@ -239,16 +247,19 @@ fn spawn_bug(
 pub fn kill_bug_system(
     mut commands: Commands,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    mut family_tree: ResMut<ancestors::FamilyTree>,
     mut query: Query<(
         Entity,
         &mut body::Vitality,
         &attributes::DeathAge,
         &timers::Age,
+        &ancestors::Relations,
     )>,
 ) {
-    for (entity, mut vitality, death_age, age) in query.iter_mut() {
+    for (entity, mut vitality, death_age, age, relations) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
             ecosystem.return_energy(vitality.take_all_energy());
+            family_tree.relations.push(relations.clone());
             commands.entity(entity).despawn_recursive();
         }
     }
@@ -283,7 +294,8 @@ fn spawn_egg(
     bug_body: body::BugBody,
     mind: mind::Mind,
     generation: Generation,
-) {
+    parent_id: Option<Entity>,
+) -> Entity {
     let size = 16.0;
 
     let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
@@ -299,8 +311,9 @@ fn spawn_egg(
         ..default()
     };
 
-    commands
-        .spawn(sprite)
+    let mut egg_entity = commands.spawn(sprite);
+
+    egg_entity
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 1.0,
@@ -316,7 +329,10 @@ fn spawn_egg(
         .insert(mind)
         .insert(timers::Age::default())
         .insert(generation)
+        .insert(ancestors::Relations::new(parent_id))
         .insert(metabolism::BurntEnergy::new());
+
+    egg_entity.id()
 }
 
 pub fn spawn_egg_system(
@@ -350,6 +366,7 @@ pub fn spawn_egg_system(
             bug_body,
             mind,
             Generation(0),
+            None,
         );
     }
 }

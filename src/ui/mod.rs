@@ -16,7 +16,7 @@ use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
 pub use statistics::{AverageAttributes, BugPerformance, CountStats, EnergyStats};
 
-use crate::config::WorldConfig;
+use crate::{ancestors, config::WorldConfig};
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
@@ -26,6 +26,7 @@ struct RunInfo<'a> {
     energy_stats: &'a statistics::EnergyStats,
     performance_stats: &'a statistics::BugPerformance,
     attribute_stats: &'a statistics::AverageAttributes,
+    family_tree: &'a ancestors::FamilyTree,
 }
 
 impl<'a> RunInfo<'a> {
@@ -36,6 +37,7 @@ impl<'a> RunInfo<'a> {
         energy_stats: &'a statistics::EnergyStats,
         performance_stats: &'a statistics::BugPerformance,
         attribute_stats: &'a statistics::AverageAttributes,
+        family_tree: &'a ancestors::FamilyTree,
     ) -> Self {
         Self {
             time_elapsed,
@@ -44,6 +46,7 @@ impl<'a> RunInfo<'a> {
             energy_stats,
             performance_stats,
             attribute_stats,
+            family_tree,
         }
     }
 }
@@ -54,6 +57,7 @@ fn save_stats(
     energy_stats: &Res<statistics::EnergyStats>,
     performance_stats: &Res<statistics::BugPerformance>,
     attribute_stats: &Res<statistics::AverageAttributes>,
+    family_tree: &Res<ancestors::FamilyTree>,
 ) {
     let time = time.elapsed_seconds();
     let run_info = RunInfo::new(
@@ -63,6 +67,7 @@ fn save_stats(
         energy_stats,
         performance_stats,
         attribute_stats,
+        family_tree,
     );
     let j = serde_json::to_string_pretty(&run_info).unwrap();
     fs::write("./run_data.json", j).expect("Unable to write file.");
@@ -75,6 +80,7 @@ pub fn save_on_close(
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
     attribute_stats: Res<statistics::AverageAttributes>,
+    family_tree: Res<ancestors::FamilyTree>,
 ) {
     if !events.is_empty() {
         save_stats(
@@ -83,6 +89,7 @@ pub fn save_on_close(
             &energy_stats,
             &performance_stats,
             &attribute_stats,
+            &family_tree,
         );
     }
 }
@@ -93,6 +100,7 @@ pub fn regular_saver(
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
     attribute_stats: Res<statistics::AverageAttributes>,
+    family_tree: Res<ancestors::FamilyTree>,
 ) {
     save_stats(
         &time,
@@ -100,6 +108,7 @@ pub fn regular_saver(
         &energy_stats,
         &performance_stats,
         &attribute_stats,
+        &family_tree,
     );
 }
 
