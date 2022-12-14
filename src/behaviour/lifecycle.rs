@@ -259,7 +259,9 @@ pub fn kill_bug_system(
     for (entity, mut vitality, death_age, age, relations) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
             ecosystem.return_energy(vitality.take_all_energy());
-            family_tree.relations.push(relations.clone());
+            if relations.is_interesting() {
+                family_tree.relations.push(relations.clone());
+            }
             commands.entity(entity).despawn_recursive();
         }
     }

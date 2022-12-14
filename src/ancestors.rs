@@ -20,6 +20,10 @@ impl Relations {
     pub fn add_child(&mut self, child: Entity) {
         self.children.push(child)
     }
+
+    pub fn is_interesting(&self) -> bool {
+        !(self.parent.is_none() && self.children.is_empty())
+    }
 }
 
 #[derive(Resource, Serialize, Debug, Default)]
