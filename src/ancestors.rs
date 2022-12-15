@@ -1,4 +1,4 @@
-use bevy::prelude::{Color, Component, Entity, Resource};
+use bevy::prelude::{Color, Component, Entity, Query, ResMut, Resource};
 use genesis_util::{color, maths};
 use serde_derive::Serialize;
 
@@ -38,5 +38,16 @@ impl Relations {
 
 #[derive(Resource, Serialize, Debug, Default)]
 pub struct FamilyTree {
-    pub relations: Vec<Relations>,
+    pub dead_relations: Vec<Relations>,
+    pub active_relations: Vec<Relations>,
+}
+
+pub fn family_tree_update(mut family_tree: ResMut<FamilyTree>, relations_query: Query<&Relations>) {
+    let interesting_relations = relations_query
+        .into_iter()
+        .cloned()
+        .filter(|x| x.is_interesting())
+        .collect();
+
+    family_tree.active_relations = interesting_relations;
 }

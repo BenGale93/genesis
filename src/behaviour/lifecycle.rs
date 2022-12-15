@@ -261,7 +261,7 @@ pub fn kill_bug_system(
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
             ecosystem.return_energy(vitality.take_all_energy());
             if relations.is_interesting() {
-                family_tree.relations.push(relations.clone());
+                family_tree.dead_relations.push(relations.clone());
             }
             commands.entity(entity).despawn_recursive();
         }

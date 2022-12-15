@@ -74,6 +74,8 @@ impl Plugin for GenesisPlugin {
             .insert_resource(ecosystem)
             .add_startup_system_set(setup::setup_system_set())
             .add_system_set(plant_system_set())
+            .add_fixed_timestep(Duration::from_secs(10), "family_tree")
+            .add_fixed_timestep_system("family_tree", 0, ancestors::family_tree_update)
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
             .add_fixed_timestep_system(
                 "spawner_stats",
