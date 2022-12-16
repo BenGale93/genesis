@@ -5,13 +5,13 @@ use serde_derive::Serialize;
 #[derive(Debug, Component, Serialize, Clone)]
 pub struct Relations {
     entity: (u32, String),
-    parent: Option<(u32, String)>,
-    children: Vec<(u32, String)>,
+    parent: Option<u32>,
+    children: Vec<u32>,
 }
 
 impl Relations {
-    pub fn new(entity: (Entity, Color), parent: Option<(Entity, Color)>) -> Self {
-        let parent = parent.map(Self::convert);
+    pub fn new(entity: (Entity, Color), parent: Option<Entity>) -> Self {
+        let parent = parent.map(|e| maths::cantor_pairing(e.generation(), e.index()));
         Self {
             entity: Self::convert(entity),
             parent,
@@ -19,8 +19,9 @@ impl Relations {
         }
     }
 
-    pub fn add_child(&mut self, child: (Entity, Color)) {
-        self.children.push(Self::convert(child))
+    pub fn add_child(&mut self, child: Entity) {
+        self.children
+            .push(maths::cantor_pairing(child.generation(), child.index()))
     }
 
     pub fn is_interesting(&self) -> bool {

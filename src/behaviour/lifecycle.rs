@@ -167,21 +167,18 @@ pub fn lay_egg_system(
         }
         let energy = vitality.take_energy(egg_energy);
         let location = egg_position(transform);
-        let offspring_body = bug_body.mutate(&mut rng, **prob);
-        let offspring_mind: mind::Mind = mind.mutate(&mut rng, **prob).into();
-        let offspring_color = offspring_mind.color();
         eggs_laid.0 += 1;
         let egg_entity = spawn_egg(
             &mut commands,
             &asset_server,
             energy,
             location,
-            offspring_body,
-            offspring_mind,
+            bug_body.mutate(&mut rng, **prob),
+            mind.mutate(&mut rng, **prob).into(),
             *generation + 1.into(),
-            Some((entity, mind.color())),
+            Some(entity),
         );
-        relations.add_child((egg_entity, offspring_color));
+        relations.add_child(egg_entity);
     }
 }
 
@@ -297,7 +294,7 @@ fn spawn_egg(
     bug_body: body::BugBody,
     mind: mind::Mind,
     generation: Generation,
-    parent_id: Option<(Entity, Color)>,
+    parent_id: Option<Entity>,
 ) -> Entity {
     let size = 16.0;
 
