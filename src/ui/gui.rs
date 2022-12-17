@@ -12,10 +12,7 @@ use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use super::{brain_panel, interaction, statistics};
 use crate::{
     attributes,
-    behaviour::{
-        eating, lifecycle, sight,
-        timers::{self, SimulationTime},
-    },
+    behaviour::{eating, lifecycle, sight, timers},
     body, ecosystem,
 };
 
@@ -38,7 +35,7 @@ fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel)
 }
 
 pub fn global_ui_update_system(
-    time: Res<SimulationTime>,
+    time: Res<timers::SimulationTime>,
     count_stats: Res<statistics::CountStats>,
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
@@ -60,7 +57,7 @@ pub fn global_ui_update_system(
 
 fn environment_sub_panel(
     ui: &mut egui::Ui,
-    time: &Res<SimulationTime>,
+    time: &Res<timers::SimulationTime>,
     energy_stats: &Res<statistics::EnergyStats>,
     count_stats: &Res<statistics::CountStats>,
 ) {
@@ -204,25 +201,33 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Generation: {}", &bug_info.4 .0));
 }
 
-pub fn bug_attribute_info_system(
-    bug_query_part1: Query<attributes::BugAttributesPart1, With<Selected>>,
-    bug_query_part2: Query<attributes::BugAttributesPart2, With<Selected>>,
+pub fn attribute_info_system(
+    is_egg_query: Query<&lifecycle::Egg, With<Selected>>,
+    attr_query_part1: Query<attributes::BugAttributesPart1, With<Selected>>,
+    attr_query_part2: Query<attributes::BugAttributesPart2, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let (Ok(bug_info_part1), Ok(bug_info_part2)) =
-        (bug_query_part1.get_single(), bug_query_part2.get_single())
+    if let (Ok(attr_info_part1), Ok(attr_info_part2)) =
+        (attr_query_part1.get_single(), attr_query_part2.get_single())
     {
-        if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
-            top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
-                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                bug_attribute_sub_panel(ui, &bug_info_part1, &bug_info_part2);
+        if is_egg_query.get_single().is_err() {
+            if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
+                top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                    bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+                    attribute_sub_panel(ui, &attr_info_part1, &attr_info_part2);
+                });
+            }
+        } else if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
+            top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+                attribute_sub_panel(ui, &attr_info_part1, &attr_info_part2);
             });
         }
     }
 }
 
-fn bug_attribute_sub_panel(
+fn attribute_sub_panel(
     ui: &mut egui::Ui,
     bug_info_part1: &attributes::BugAttributesPart1,
     bug_info_part2: &attributes::BugAttributesPart2,
@@ -253,6 +258,7 @@ fn bug_attribute_sub_panel(
     ui.label(format!("Maximum size: {:.3}", **bug_info_part1.0));
     ui.label(format!("Growth rate: {:.3}", **bug_info_part2.1));
     ui.label(format!("Mouth width: {:.3}", **bug_info_part2.2));
+    ui.label(format!("Hatch age: {:.3}", **bug_info_part2.3));
 }
 
 pub fn bug_brain_info_system(
@@ -327,27 +333,6 @@ pub fn egg_live_info_panel_system(
 fn egg_live_sub_panel(ui: &mut egui::Ui, egg_info: &EggLiveInfo) {
     ui.label(format!("Age: {:.2}", &egg_info.0.elapsed_secs()));
     ui.label(format!("Generation: {}", &egg_info.1 .0));
-}
-
-type EggAttributeInfo<'a> = &'a attributes::HatchAge;
-
-pub fn egg_attribute_info_panel_system(
-    egg_query: Query<EggAttributeInfo, With<Selected>>,
-    mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<EntityPanelState>,
-) {
-    if let Ok(egg_info) = egg_query.get_single() {
-        if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
-            top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
-                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
-                egg_attribute_sub_panel(ui, egg_info);
-            });
-        }
-    }
-}
-
-fn egg_attribute_sub_panel(ui: &mut egui::Ui, egg_info: EggAttributeInfo) {
-    ui.label(format!("Hatch age: {}", **egg_info));
 }
 
 type PlantInfo<'a> = &'a ecosystem::Plant;

@@ -164,7 +164,6 @@ pub fn attribute_stats_system(
     mut stats: ResMut<AverageAttributes>,
     attribute_query_1: Query<attributes::BugAttributesPart1>,
     attribute_query_2: Query<attributes::BugAttributesPart2>,
-    egg_attribute_query: Query<&attributes::HatchAge>,
 ) {
     macro_rules! attr_vecs {
         ($attr:ident) => {
@@ -215,12 +214,10 @@ pub fn attribute_stats_system(
         cost_of_eating.push(**coe);
         hatch_size.push(**hs);
     }
-    for (ms, gr, mw) in attribute_query_2.iter() {
+    for (ms, gr, mw, ha) in attribute_query_2.iter() {
         max_size.push(**ms);
         growth_rate.push(**gr);
         mouth_width.push(**mw);
-    }
-    for ha in egg_attribute_query.iter() {
         hatch_age.push(**ha);
     }
 

@@ -1,6 +1,6 @@
 use std::hash::{Hash, Hasher};
 
-use genesis_util::Weight;
+use genesis_util::{maths, Weight};
 
 use crate::BrainError;
 
@@ -18,7 +18,7 @@ impl Synapse {
         if from == to {
             return Err(BrainError::InvalidFromTo);
         }
-        let innovation = Self::compute_innovation(from, to);
+        let innovation = maths::cantor_pairing(from, to);
         let weight = Weight::random();
 
         Ok(Self {
@@ -34,12 +34,6 @@ impl Synapse {
         let mut synapse = Self::new(from, to)?;
         synapse.set_weight(weight);
         Ok(synapse)
-    }
-
-    // Cantor Pairing Function
-    const fn compute_innovation(from: usize, to: usize) -> usize {
-        let x = (from + to) * (from + to + 1);
-        (x / 2) + to
     }
 
     #[must_use]

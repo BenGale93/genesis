@@ -37,6 +37,14 @@ pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8
     (r, g, b)
 }
 
+pub fn rgb_to_hex(r: f32, g: f32, b: f32) -> String {
+    let r_int = (r * 255.0) as u8;
+    let g_int = (g * 255.0) as u8;
+    let b_int = (b * 255.0) as u8;
+
+    format!("#{r_int:02X}{g_int:02X}{b_int:02X}")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -49,5 +57,10 @@ mod tests {
         let color = interpolate_color(w, &[(0, 0, 0), (100, 100, 100), (200, 200, 200)]);
 
         assert_eq!(color, (200, 200, 200));
+    }
+
+    #[test]
+    fn rgb_to_hex_value() {
+        assert_eq!("#FFD700", rgb_to_hex(1.0, 215.0 / 255.0, 0.0));
     }
 }

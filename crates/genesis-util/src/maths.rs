@@ -2,6 +2,7 @@ use std::{f32::consts::PI, iter::Sum, ops::Div};
 
 use glam::{Quat, Vec3};
 use nalgebra::wrap;
+use num::{One, Unsigned};
 
 use crate::util_error::GenesisUtilError;
 
@@ -37,6 +38,12 @@ pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
 #[must_use]
 pub fn linear_interpolate(x: f32, x_min: f32, x_max: f32, y_min: f32, y_max: f32) -> f32 {
     y_min.mul_add(x_max - x, y_max * (x - x_min)) / (x_max - x_min)
+}
+
+#[must_use]
+pub fn cantor_pairing<T: Unsigned + One + Copy>(x: T, y: T) -> T {
+    let z = (x + y) * (x + y + T::one());
+    (z / (T::one() + T::one())) + y
 }
 
 #[derive(Debug)]

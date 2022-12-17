@@ -118,7 +118,7 @@ mod tests {
         app.add_system(thinking_system);
         let mind = Mind::random(3, 2);
 
-        let bug_id = app.world.spawn(MindBundle::new(mind)).id();
+        let bug_id = app.world.spawn(MindBundle::new(&mind)).id();
 
         app.update();
 

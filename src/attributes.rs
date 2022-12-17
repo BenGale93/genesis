@@ -283,6 +283,14 @@ impl GrowthRate {
     impl_default_config!(growth_rate, 0, 5);
 }
 
+#[derive(Component, Debug, Deref)]
+pub struct HatchAge(f32);
+
+impl HatchAge {
+    impl_from_genome!();
+    impl_default_config!(hatch_age, 10, 5);
+}
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub adult_age: AdultAge,
@@ -303,6 +311,7 @@ pub struct AttributeBundle {
     pub hatch_size: HatchSize,
     pub max_size: MaxSize,
     pub growth_rate: GrowthRate,
+    pub hatch_age: HatchAge,
 }
 
 impl AttributeBundle {
@@ -326,28 +335,8 @@ impl AttributeBundle {
             hatch_size: HatchSize::from_genome(genome),
             max_size: MaxSize::from_genome(genome),
             growth_rate: GrowthRate::from_genome(genome),
+            hatch_age: HatchAge::from_genome(genome),
         }
-    }
-}
-
-#[derive(Component, Debug, Deref)]
-pub struct HatchAge(f32);
-
-impl HatchAge {
-    impl_from_genome!();
-    impl_default_config!(hatch_age, 10, 5);
-}
-
-#[derive(Bundle, Debug)]
-pub struct EggAttributeBundle {
-    pub hatch_age: HatchAge,
-}
-
-impl EggAttributeBundle {
-    pub fn new(genome: &Genome) -> Self {
-        let hatch_age = HatchAge::from_genome(genome);
-
-        Self { hatch_age }
     }
 }
 
@@ -369,4 +358,4 @@ pub type BugAttributesPart1<'a> = (
     &'a HatchSize,
 );
 
-pub type BugAttributesPart2<'a> = (&'a MaxSize, &'a GrowthRate, &'a MouthWidth);
+pub type BugAttributesPart2<'a> = (&'a MaxSize, &'a GrowthRate, &'a MouthWidth, &'a HatchAge);

@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::RapierContext;
 use derive_more::{Deref, DerefMut};
 use genesis_util::maths;
 
-use super::metabolism::BurntEnergy;
+use super::{lifecycle::Egg, metabolism::BurntEnergy};
 use crate::{attributes, body::Vitality, config, ecosystem::Plant, mind::MindOutput};
 
 #[derive(Component, Debug, Deref, DerefMut)]
@@ -16,7 +16,7 @@ pub fn process_eaters_system(
     mut commands: Commands,
     not_eating_query: Query<
         (Entity, &MindOutput, &attributes::EatingBoundary),
-        Without<TryingToEat>,
+        (Without<Egg>, Without<TryingToEat>),
     >,
     eating_query: Query<(Entity, &MindOutput, &attributes::EatingBoundary), With<TryingToEat>>,
 ) {

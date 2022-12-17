@@ -5,6 +5,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::Collider;
 
+use super::lifecycle::Egg;
 use crate::{attributes, body, config, mind};
 
 #[derive(Component, Debug, Deref, DerefMut)]
@@ -18,7 +19,7 @@ type GrowerTest<'a> = (
 
 pub fn process_growers_system(
     mut commands: Commands,
-    not_growing_query: Query<GrowerTest, Without<TryingToGrow>>,
+    not_growing_query: Query<GrowerTest, (Without<Egg>, Without<TryingToGrow>)>,
     growing_query: Query<GrowerTest, With<TryingToGrow>>,
 ) {
     for (entity, mind_out, boundary) in not_growing_query.iter() {
