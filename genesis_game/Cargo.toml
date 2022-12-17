@@ -1,0 +1,15 @@
+
+[package]
+name = "genesis-game"
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/BenGale93/genesis"
+readme = "../../README.md"
+
+[dependencies]
+bevy = "0.9.1"
+bevy_egui = "0.17.1"
+bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
+genesis-lib = { path = "../crates/genesis-lib/"}

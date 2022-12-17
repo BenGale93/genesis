@@ -1785,7 +1785,39 @@ dependencies = [
 ]
 
 [[package]]
-name = "genesis"
+name = "genesis-brain"
+version = "0.1.0"
+dependencies = [
+ "cached",
+ "genesis-util",
+ "rand",
+ "rand_distr",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis-game"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "bevy_rapier2d",
+ "genesis-lib",
+]
+
+[[package]]
+name = "genesis-genome"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "genesis-util",
+ "ndarray",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis-lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -1806,28 +1838,6 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "thiserror",
-]
-
-[[package]]
-name = "genesis-brain"
-version = "0.1.0"
-dependencies = [
- "cached",
- "genesis-util",
- "rand",
- "rand_distr",
- "thiserror",
-]
-
-[[package]]
-name = "genesis-genome"
-version = "0.1.0"
-dependencies = [
- "bitvec",
- "genesis-util",
- "ndarray",
- "rand",
  "thiserror",
 ]
 

@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_egui::EguiPlugin;
 use bevy_rapier2d::prelude::*;
-use genesis::GenesisPlugin;
+use genesis_lib::GenesisPlugin;
 
 fn main() {
     let mut app = App::new();

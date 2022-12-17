@@ -11,7 +11,7 @@ Install Rust and Bevy OS dependencies as described
 [here](https://bevyengine.org/learn/book/getting-started/setup/).
 
 Clone this repository and run `cargo r --release`. You may also want to adjust
-the config in `./assets/config/genesis.toml`. It is currently set up in more of
+the config in `./genesis_game/assets/config/genesis.toml`. It is currently set up in more of
 a development mode.
 
 When you close a simulation it will produce a `run_data.json` file containing
