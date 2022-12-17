@@ -6,8 +6,8 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_newtype = {path = "../genesis_newtype/"}
-genesis_maths = {path = "../genesis_maths/"}
+genesis_newtype = { workspace = true }
+genesis_maths = { workspace = true }
 rand = { workspace = true }
 rand_distr = { workspace = true }
 thiserror = { workspace = true }

@@ -6,16 +6,16 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_brain = { path = "../genesis_brain" }
-genesis_genome = { path = "../genesis_genome" }
-genesis_newtype = { path = "../genesis_newtype/"}
-genesis_color = { path = "../genesis_color/"}
-genesis_maths = {path = "../genesis_maths/"}
-genesis_spawners = { path = "../genesis_spawners" }
-genesis_config = { path = "../genesis_config" }
-genesis_ecosystem = { path = "../genesis_ecosystem" }
-genesis_attributes = { path = "../genesis_attributes" }
-genesis_body = { path = "../genesis_body" }
+genesis_brain = { workspace = true }
+genesis_genome = { workspace = true }
+genesis_newtype = { workspace = true }
+genesis_color = { workspace = true }
+genesis_maths = { workspace = true }
+genesis_spawners = { workspace = true }
+genesis_config = { workspace = true }
+genesis_ecosystem = { workspace = true }
+genesis_attributes = { workspace = true }
+genesis_body = { workspace = true }
 bevy = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }

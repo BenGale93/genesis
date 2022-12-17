@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_config = { path = "../genesis_config/"}
+genesis_config = { workspace = true }
 bevy = { workspace = true }
 bevy_rapier2d = { workspace = true }
 derive_more = { workspace = true}

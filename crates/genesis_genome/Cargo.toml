@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_newtype = {path = "../genesis_newtype/"}
+genesis_newtype = { workspace = true}
 rand = { workspace = true}
 thiserror = { workspace = true}
 bitvec = { workspace = true}

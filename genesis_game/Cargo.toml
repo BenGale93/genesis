@@ -9,7 +9,7 @@ repository = "https://github.com/BenGale93/genesis"
 readme = "../../README.md"
 
 [dependencies]
-genesis_lib = { path = "../crates/genesis_lib/"}
+genesis_lib = {workspace= true}
 bevy = {workspace= true}
 bevy_egui = {workspace= true}
 bevy_rapier2d = {workspace = true}

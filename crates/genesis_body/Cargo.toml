@@ -6,10 +6,10 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_newtype = { path = "../genesis_newtype/"}
-genesis_genome = { path = "../genesis_genome/"}
-genesis_ecosystem = { path = "../genesis_ecosystem/"}
-genesis_config = { path = "../genesis_config/"}
+genesis_newtype = {workspace = true}
+genesis_genome = {workspace = true}
+genesis_ecosystem = {workspace = true}
+genesis_config = {workspace = true}
 bevy = {workspace = true}
 bevy_rapier2d = {workspace = true}
 anyhow = {workspace = true}
