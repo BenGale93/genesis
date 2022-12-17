@@ -1,6 +1,5 @@
+use genesis_newtype::Weight;
 use ndarray::Array;
-
-use crate::Weight;
 
 #[must_use]
 pub fn interpolate_color(weight: Weight, colors: &[(u8, u8, u8)]) -> (u8, u8, u8) {
@@ -47,12 +46,13 @@ pub fn rgb_to_hex(r: f32, g: f32, b: f32) -> String {
 
 #[cfg(test)]
 mod tests {
+    use genesis_newtype::Weight;
+
     use super::*;
-    use crate::weight;
 
     #[test]
     fn test_weight_is_one() {
-        let w = weight::Weight::new(1.0).unwrap();
+        let w = Weight::new(1.0).unwrap();
 
         let color = interpolate_color(w, &[(0, 0, 0), (100, 100, 100), (200, 200, 200)]);
 

@@ -5,7 +5,7 @@ use bevy::prelude::{Color, Component, Vec2};
 use bevy_rapier2d::prelude::Collider;
 use derive_more::{Deref, DerefMut};
 use genesis_genome::Genome;
-use genesis_util::Probability;
+use genesis_newtype::Probability;
 use rand::RngCore;
 
 use crate::{config, ecosystem};

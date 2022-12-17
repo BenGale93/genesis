@@ -8,8 +8,8 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
 use derive_more::{Add, Deref, DerefMut, From};
+use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
-use genesis_util::Probability;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
 use crate::{ancestors, attributes, behaviour::timers, body, config, ecosystem, mind, ui};

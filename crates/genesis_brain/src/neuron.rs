@@ -3,7 +3,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use genesis_util::Bias;
+use genesis_newtype::Bias;
 use rand::random;
 
 use crate::activation::{self, ActivationFunctionKind};
@@ -106,7 +106,7 @@ impl NeuronsExt for Neurons {
 
 #[cfg(test)]
 mod tests {
-    use genesis_util::Bias;
+    use genesis_newtype::Bias;
 
     use super::{Neuron, NeuronKind};
     use crate::activation;

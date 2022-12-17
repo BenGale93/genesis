@@ -1,6 +1,6 @@
 use bevy::prelude::{Color, Component, Entity, Query, ResMut, Resource};
+use genesis_color as color;
 use genesis_maths::cantor_pairing;
-use genesis_util::color;
 use serde_derive::Serialize;
 
 #[derive(Debug, Component, Serialize, Clone)]

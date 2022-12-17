@@ -5,16 +5,110 @@
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::similar_names)]
 #![allow(clippy::many_single_char_names)]
-pub mod color;
-pub mod probability;
-pub mod util_error;
-pub mod weight;
 
-pub use crate::{
-    probability::Probability,
-    util_error::GenesisUtilError,
-    weight::{Bias, Weight},
-};
+use std::ops;
+
+use rand::Rng;
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum GenesisNewTypeError {
+    #[error("Weight must be between -1 and 1.")]
+    InvalidWeight,
+
+    #[error("Probability must be between 0 and 1.")]
+    InvalidProbability,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct Probability(f32);
+
+impl Probability {
+    pub fn new(w: f32) -> Result<Self, GenesisNewTypeError> {
+        if !(0_f32..=1_f32).contains(&w) {
+            return Err(GenesisNewTypeError::InvalidProbability);
+        }
+        Ok(Self(w))
+    }
+
+    #[must_use]
+    pub const fn as_float(&self) -> f32 {
+        self.0
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+pub struct Weight(f32);
+
+pub type Bias = Weight;
+
+impl Weight {
+    pub fn new(w: f32) -> Result<Self, GenesisNewTypeError> {
+        if !(-1_f32..=1_f32).contains(&w) {
+            return Err(GenesisNewTypeError::InvalidWeight);
+        }
+        Ok(Self(w))
+    }
+
+    #[must_use]
+    pub fn random() -> Self {
+        let mut rng = rand::thread_rng();
+        let x: f32 = rng.gen();
+        let w = 2_f32.mul_add(x, -1_f32);
+
+        Self(w)
+    }
+
+    #[must_use]
+    pub fn abs(&self) -> Self {
+        Self::new(self.0.abs()).unwrap()
+    }
+
+    #[must_use]
+    pub const fn as_float(&self) -> f32 {
+        self.0
+    }
+}
+
+impl ops::Add for Weight {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self {
+        let result = self.0.add(rhs.0);
+
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
+    }
+}
+
+impl ops::Sub for Weight {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self {
+        let result = self.0.sub(rhs.0);
+
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
+    }
+}
+
+impl ops::Mul for Weight {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self {
+        let result = self.0.mul(rhs.0);
+
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
+    }
+}
+
+impl ops::Div for Weight {
+    type Output = Self;
+
+    fn div(self, rhs: Self) -> Self {
+        let result = self.0.div(rhs.0);
+
+        Self::new(result.clamp(-1.0, 1.0)).unwrap()
+    }
+}
 
 #[cfg(test)]
 mod tests {

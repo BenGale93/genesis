@@ -2,7 +2,7 @@ use bevy::prelude::{Bundle, Color, Component};
 use bevy_egui::egui;
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::{feed_forward_layers, Brain, NeuronKind, Neurons, Synapses};
-use genesis_util::color;
+use genesis_color as color;
 use itertools::Itertools;
 
 use crate::config;
@@ -201,7 +201,7 @@ impl MindBundle {
 #[cfg(test)]
 mod tests {
     use genesis_brain::Brain;
-    use genesis_util::Weight;
+    use genesis_newtype::Weight;
 
     use super::*;
     #[test]

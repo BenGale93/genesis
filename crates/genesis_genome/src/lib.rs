@@ -10,7 +10,7 @@ mod genome_error;
 
 use bitvec::slice::BitSlice;
 use chromosome::Chromosome;
-use genesis_util::Probability;
+use genesis_newtype::Probability;
 pub use genome_error::GenomeError;
 use ndarray::Array;
 use rand::RngCore;
@@ -89,7 +89,7 @@ impl Genome {
 #[cfg(test)]
 mod tests {
     use bitvec::prelude::*;
-    use genesis_util::Probability;
+    use genesis_newtype::Probability;
     use rand::{prelude::StdRng, SeedableRng};
 
     use super::Genome;

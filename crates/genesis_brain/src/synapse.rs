@@ -1,7 +1,7 @@
 use std::hash::{Hash, Hasher};
 
 use genesis_maths::cantor_pairing;
-use genesis_util::Weight;
+use genesis_newtype::Weight;
 
 use crate::BrainError;
 
@@ -141,7 +141,7 @@ pub fn create_synapses(links: &[(usize, usize)]) -> Result<Vec<Synapse>, BrainEr
 
 #[cfg(test)]
 mod tests {
-    use genesis_util::Weight;
+    use genesis_newtype::Weight;
 
     use super::Synapse;
 

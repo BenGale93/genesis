@@ -1,5 +1,5 @@
 use bitvec::prelude::*;
-use genesis_util::Probability;
+use genesis_newtype::Probability;
 use rand::{Rng, RngCore};
 
 use crate::GenomeError;
@@ -55,7 +55,7 @@ impl Chromosome {
 #[cfg(test)]
 mod tests {
     use bitvec::prelude::*;
-    use genesis_util::Probability;
+    use genesis_newtype::Probability;
     use rand::{prelude::StdRng, SeedableRng};
 
     use super::Chromosome;

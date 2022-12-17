@@ -1790,10 +1790,18 @@ version = "0.1.0"
 dependencies = [
  "cached",
  "genesis_maths",
- "genesis_util",
+ "genesis_newtype",
  "rand",
  "rand_distr",
  "thiserror",
+]
+
+[[package]]
+name = "genesis_color"
+version = "0.1.0"
+dependencies = [
+ "genesis_newtype",
+ "ndarray",
 ]
 
 [[package]]
@@ -1811,7 +1819,7 @@ name = "genesis_genome"
 version = "0.1.0"
 dependencies = [
  "bitvec",
- "genesis_util",
+ "genesis_newtype",
  "ndarray",
  "rand",
  "thiserror",
@@ -1829,10 +1837,11 @@ dependencies = [
  "derive-getters",
  "derive_more",
  "genesis_brain",
+ "genesis_color",
  "genesis_genome",
  "genesis_maths",
+ "genesis_newtype",
  "genesis_spawners",
- "genesis_util",
  "itertools",
  "iyes_loopless",
  "once_cell",
@@ -1857,6 +1866,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "genesis_newtype"
+version = "0.1.0"
+dependencies = [
+ "rand",
+ "thiserror",
+]
+
+[[package]]
 name = "genesis_spawners"
 version = "0.1.0"
 dependencies = [
@@ -1868,18 +1885,6 @@ dependencies = [
  "rand_distr",
  "serde",
  "serde_derive",
-]
-
-[[package]]
-name = "genesis_util"
-version = "0.1.0"
-dependencies = [
- "glam",
- "nalgebra",
- "ndarray",
- "num",
- "rand",
- "thiserror",
 ]
 
 [[package]]

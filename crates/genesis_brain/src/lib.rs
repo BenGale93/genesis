@@ -14,7 +14,7 @@ pub mod synapse;
 
 use activation::ActivationFunctionKind;
 pub use brain_error::BrainError;
-use genesis_util::{Bias, Probability, Weight};
+use genesis_newtype::{Bias, Probability, Weight};
 pub use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
@@ -444,7 +444,7 @@ impl Brain {
 
 #[cfg(test)]
 mod tests {
-    use genesis_util::Weight;
+    use genesis_newtype::Weight;
 
     use crate::{activation::ActivationFunctionKind, graph::feed_forward_layers, SynapsesExt};
 

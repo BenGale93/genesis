@@ -74,7 +74,7 @@ impl WorldConfig {
     }
 
     pub fn from_config() -> Result<Self, Vec<String>> {
-        let world_config: Self = confy::load_path("./assets/config/genesis.toml").unwrap();
+        let world_config: Self = confy::load_path("./config/genesis.toml").unwrap();
         world_config.validate()?;
         Ok(world_config)
     }

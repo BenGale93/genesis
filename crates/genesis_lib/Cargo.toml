@@ -8,7 +8,8 @@ license = "MIT"
 [dependencies]
 genesis_brain = { path = "../genesis_brain" }
 genesis_genome = { path = "../genesis_genome" }
-genesis_util = { path = "../genesis_util/"}
+genesis_newtype = { path = "../genesis_newtype/"}
+genesis_color = { path = "../genesis_color/"}
 genesis_maths = {path = "../genesis_maths/"}
 genesis_spawners = { path = "../genesis_spawners" }
 bevy = { workspace = true }
