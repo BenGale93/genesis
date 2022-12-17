@@ -1,30 +1,27 @@
 use bevy::{
     ecs::system::EntityCommands,
     prelude::{
-        default, AssetServer, Bundle, Color, Commands, Component, Entity, Handle, Image, Query,
-        Res, ResMut, Transform, Vec2, Vec3, With, Without,
+        default, AssetServer, Bundle, Color, Commands, Entity, Handle, Image, Query, Res, ResMut,
+        Transform, Vec2, Vec3, With, Without,
     },
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
-use derive_more::Deref;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 
-use super::{eating, growth, metabolism, movement, sight, thinking};
 use crate::{
-    ancestors, attributes, behaviour::timers, body, config, ecosystem, lifecycle, mind, ui,
+    attributes, body,
+    components::{self, eat, grow, lay::*, mind, see, time, BurntEnergy},
+    config, ecosystem, statistics,
 };
-
-#[derive(Component)]
-pub struct TryingToLay;
 
 type LayerTest<'a> = (Entity, &'a mind::MindOutput, &'a attributes::LayEggBoundary);
 
 pub fn process_layers_system(
     mut commands: Commands,
-    not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<lifecycle::Adult>)>,
-    laying_query: Query<LayerTest, (With<TryingToLay>, With<lifecycle::Adult>)>,
+    not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<components::Adult>)>,
+    laying_query: Query<LayerTest, (With<TryingToLay>, With<components::Adult>)>,
 ) {
     for (entity, mind_out, boundary) in not_laying_query.iter() {
         if mind_out[config::REPRODUCE_INDEX] > **boundary {
@@ -39,9 +36,6 @@ pub fn process_layers_system(
     }
 }
 
-#[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
-pub struct EggsLaid(pub usize);
-
 type Parent<'a> = (
     Entity,
     &'a Transform,
@@ -50,9 +44,9 @@ type Parent<'a> = (
     &'a attributes::MutationProbability,
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
-    &'a lifecycle::Generation,
+    &'a components::Generation,
     &'a mut EggsLaid,
-    &'a mut ancestors::Relations,
+    &'a mut components::Relations,
 );
 
 pub fn lay_egg_system(
@@ -148,21 +142,21 @@ fn spawn_bug(
         .insert(sprite)
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(vitality.size().collider())
-        .insert(lifecycle::Juvenile)
+        .insert(components::Juvenile)
         .insert(original_color)
         .insert(bug_body)
         .insert(vitality)
         .insert(mind_bundle)
-        .insert(sight::Vision::new())
-        .insert(timers::Age::default())
-        .insert(timers::Heart::new())
-        .insert(timers::InternalTimer::new())
-        .insert(movement::MovementSum::new())
-        .insert(thinking::ThinkingSum::new())
-        .insert(eating::EatingSum::new())
-        .insert(growth::GrowingSum::new())
-        .insert(growth::SizeSum::new())
-        .insert(eating::EnergyConsumed(0))
+        .insert(see::Vision::new())
+        .insert(time::Age::default())
+        .insert(time::Heart::new())
+        .insert(time::InternalTimer::new())
+        .insert(components::MovementSum::new())
+        .insert(components::ThinkingSum::new())
+        .insert(eat::EatingSum::new())
+        .insert(grow::GrowingSum::new())
+        .insert(grow::SizeSum::new())
+        .insert(eat::EnergyConsumed(0))
         .insert(EggsLaid(0));
 
     leftover_energy
@@ -170,13 +164,13 @@ fn spawn_bug(
 
 #[derive(Bundle)]
 struct EggBundle {
-    pub egg: lifecycle::Egg,
+    pub egg: components::Egg,
     pub egg_energy: ecosystem::EggEnergy,
     pub sprite: Sprite,
     pub handle: Handle<Image>,
     pub original_color: body::OriginalColor,
     pub collider: Collider,
-    pub age: timers::Age,
+    pub age: time::Age,
 }
 
 fn spawn_egg(
@@ -186,7 +180,7 @@ fn spawn_egg(
     location: Vec3,
     bug_body: body::BugBody,
     mind: mind::Mind,
-    generation: lifecycle::Generation,
+    generation: components::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
     let size = 16.0;
@@ -215,16 +209,19 @@ fn spawn_egg(
         })
         .insert(Velocity::zero())
         .insert(Collider::ball(size / 2.0))
-        .insert(lifecycle::Egg)
+        .insert(components::Egg)
         .insert(attribute_bundle)
         .insert(ecosystem::EggEnergy(energy))
         .insert(original_color)
         .insert(bug_body)
-        .insert(ancestors::Relations::new((entity, mind.color()), parent_id))
+        .insert(components::Relations::new(
+            (entity, mind.color()),
+            parent_id,
+        ))
         .insert(mind)
-        .insert(timers::Age::default())
+        .insert(time::Age::default())
         .insert(generation)
-        .insert(metabolism::BurntEnergy::new());
+        .insert(BurntEnergy::new());
 
     entity
 }
@@ -234,8 +231,8 @@ pub fn spawn_egg_system(
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     spawners: Res<Spawners>,
-    count_stats: Res<ui::CountStats>,
-    performance_stats: Res<ui::BugPerformance>,
+    count_stats: Res<statistics::CountStats>,
+    performance_stats: Res<statistics::BugPerformance>,
 ) {
     let config_instance = config::WorldConfig::global();
     let bug_num = count_stats.current_organisms();
@@ -259,7 +256,7 @@ pub fn spawn_egg_system(
             location,
             bug_body,
             mind,
-            lifecycle::Generation(0),
+            components::Generation(0),
             None,
         );
     }
@@ -279,7 +276,7 @@ pub fn hatch_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut hatch_query: Query<EggQuery, With<lifecycle::Hatching>>,
+    mut hatch_query: Query<EggQuery, With<components::Hatching>>,
 ) {
     for (entity, mut egg_energy, mind, body, sprite, hatch_size, max_size) in hatch_query.iter_mut()
     {

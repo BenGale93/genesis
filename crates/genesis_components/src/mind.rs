@@ -3,9 +3,8 @@ use bevy_egui::egui;
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::{feed_forward_layers, Brain, NeuronKind, Neurons, Synapses};
 use genesis_color as color;
+use genesis_config as config;
 use itertools::Itertools;
-
-use crate::config;
 
 #[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From)]
 pub struct Mind(pub Brain);

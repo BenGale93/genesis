@@ -1,12 +1,13 @@
 use bevy::prelude::{Query, Res, ResMut, Resource};
+use components::Relations;
 use derive_getters::Getters;
 use genesis_maths::mean;
 use serde_derive::Serialize;
 
 use crate::{
     attributes,
-    behaviour::{eating, laying, timers},
-    ecosystem, lifecycle,
+    components::{self, eat, lay, time},
+    ecosystem,
 };
 
 fn last_element<T>(vector: &[T]) -> T
@@ -108,8 +109,8 @@ pub struct AverageAttributes {
 
 pub fn count_system(
     mut stats: ResMut<CountStats>,
-    adult_query: Query<&lifecycle::Adult>,
-    juvenile_query: Query<&lifecycle::Juvenile>,
+    adult_query: Query<&components::Adult>,
+    juvenile_query: Query<&components::Juvenile>,
     egg_query: Query<&ecosystem::EggEnergy>,
 ) {
     let adults = adult_query.into_iter().len();
@@ -136,15 +137,15 @@ pub fn energy_stats_system(
 pub fn performance_stats_system(
     mut stats: ResMut<BugPerformance>,
     performance_query: Query<(
-        &eating::EnergyConsumed,
-        &laying::EggsLaid,
-        &lifecycle::Generation,
-        &timers::Age,
+        &eat::EnergyConsumed,
+        &lay::EggsLaid,
+        &components::Generation,
+        &time::Age,
     )>,
 ) {
-    let mut max_consumption = eating::EnergyConsumed(0);
-    let mut max_eggs = laying::EggsLaid(0);
-    let mut max_generation = lifecycle::Generation(0);
+    let mut max_consumption = eat::EnergyConsumed(0);
+    let mut max_eggs = lay::EggsLaid(0);
+    let mut max_generation = components::Generation(0);
     let mut oldest_bug: f32 = 0.0;
 
     for (energy_consumed, eggs_laid, generation, age) in &performance_query {
@@ -251,4 +252,20 @@ pub fn attribute_stats_system(
         growth_rate,
         mouth_width
     );
+}
+
+#[derive(Resource, Serialize, Debug, Default)]
+pub struct FamilyTree {
+    pub dead_relations: Vec<Relations>,
+    pub active_relations: Vec<Relations>,
+}
+
+pub fn family_tree_update(mut family_tree: ResMut<FamilyTree>, relations_query: Query<&Relations>) {
+    let interesting_relations = relations_query
+        .into_iter()
+        .cloned()
+        .filter(|x| x.is_interesting())
+        .collect();
+
+    family_tree.active_relations = interesting_relations;
 }

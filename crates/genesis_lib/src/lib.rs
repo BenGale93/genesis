@@ -14,17 +14,17 @@ use std::time::Duration;
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
 use genesis_attributes as attributes;
 use genesis_body as body;
+use genesis_components as components;
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
-mod ancestors;
 mod behaviour;
 mod lifecycle;
-mod mind;
 mod setup;
 mod spawning;
+mod statistics;
 mod ui;
 
 pub fn plant_system_set() -> SystemSet {
@@ -78,14 +78,14 @@ impl Plugin for GenesisPlugin {
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
             .insert_resource(config::BACKGROUND)
-            .insert_resource(ancestors::FamilyTree::default())
+            .insert_resource(statistics::FamilyTree::default())
             .insert_resource(spawners)
             .insert_resource(plant_spawn_size)
             .insert_resource(ecosystem)
             .add_startup_system_set(setup::setup_system_set())
             .add_system_set(plant_system_set())
             .add_fixed_timestep(Duration::from_secs(10), "family_tree")
-            .add_fixed_timestep_system("family_tree", 0, ancestors::family_tree_update)
+            .add_fixed_timestep_system("family_tree", 0, statistics::family_tree_update)
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
             .add_fixed_timestep_system(
                 "spawner_stats",

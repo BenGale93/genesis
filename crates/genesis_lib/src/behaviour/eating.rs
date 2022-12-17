@@ -1,18 +1,17 @@
 use bevy::{
-    prelude::{Commands, Component, Entity, Query, Res, Transform, With, Without},
+    prelude::{Commands, Entity, Query, Res, Transform, With, Without},
     time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::RapierContext;
-use derive_more::{Deref, DerefMut};
 use genesis_maths::{angle_to_point, rebased_angle};
 
-use super::metabolism::BurntEnergy;
 use crate::{
-    attributes, body::Vitality, config, ecosystem::Plant, lifecycle::Egg, mind::MindOutput,
+    attributes,
+    body::Vitality,
+    components::{eat::*, mind::MindOutput, BurntEnergy, Egg},
+    config,
+    ecosystem::Plant,
 };
-
-#[derive(Component, Debug, Deref, DerefMut)]
-pub struct TryingToEat(pub Stopwatch);
 
 pub fn process_eaters_system(
     mut commands: Commands,
@@ -37,26 +36,6 @@ pub fn process_eaters_system(
     }
 }
 
-#[derive(Component, Debug)]
-pub struct EatingSum(f32);
-
-impl EatingSum {
-    pub const fn new() -> Self {
-        Self(0.0)
-    }
-
-    pub fn add_eating_time(&mut self, time: f32, cost: f32) {
-        self.0 += time * cost;
-    }
-
-    pub fn uint_portion(&mut self) -> usize {
-        let eating_floor = self.0.floor();
-        self.0 -= eating_floor;
-
-        eating_floor as usize
-    }
-}
-
 pub fn attempted_to_eat_system(
     time: Res<Time>,
     mut bug_query: Query<(&mut TryingToEat, &mut EatingSum, &attributes::CostOfEating)>,
@@ -70,12 +49,6 @@ pub fn attempted_to_eat_system(
         }
     }
 }
-
-#[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
-pub struct EnergyConsumed(pub usize);
-
-#[derive(Component, Debug)]
-pub struct Eaten;
 
 pub type EatingBug<'a> = (
     Entity,

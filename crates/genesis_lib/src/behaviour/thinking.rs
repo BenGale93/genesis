@@ -1,7 +1,10 @@
-use bevy::prelude::{Component, Query};
+use bevy::prelude::Query;
 
-use super::{sight::Vision, timers};
-use crate::{attributes, body, config, mind};
+use crate::{
+    attributes, body,
+    components::{mind, see::Vision, time, ThinkingSum},
+    config,
+};
 
 const CONST: f32 = 1.0;
 
@@ -10,10 +13,10 @@ pub fn sensory_system(
         &mut mind::MindInput,
         &mind::MindOutput,
         &body::Vitality,
-        &timers::Age,
+        &time::Age,
         &Vision,
-        &timers::Heart,
-        &timers::InternalTimer,
+        &time::Heart,
+        &time::InternalTimer,
     )>,
 ) {
     for (mut input, output, vitality, age, vision, heart, internal_timer) in query.iter_mut() {
@@ -23,34 +26,14 @@ pub fn sensory_system(
         input[config::ENERGY_INDEX] = vitality.energy_store().proportion();
         input[config::HEALTH_INDEX] = vitality.health().proportion();
         input[config::AGE_INDEX] = age.elapsed_secs();
-        input[config::VISIBLE_BUGS_INDEX] = vision.visible_bugs() as f32;
-        input[config::BUG_ANGLE_SCORE_INDEX] = vision.bug_angle_score();
-        input[config::BUG_DIST_SCORE_INDEX] = vision.bug_dist_score();
-        input[config::VISIBLE_FOOD_INDEX] = vision.visible_food() as f32;
-        input[config::FOOD_ANGLE_SCORE_INDEX] = vision.food_angle_score();
-        input[config::FOOD_DIST_SCORE_INDEX] = vision.food_dist_score();
+        input[config::VISIBLE_BUGS_INDEX] = *vision.visible_bugs() as f32;
+        input[config::BUG_ANGLE_SCORE_INDEX] = *vision.bug_angle_score();
+        input[config::BUG_DIST_SCORE_INDEX] = *vision.bug_dist_score();
+        input[config::VISIBLE_FOOD_INDEX] = *vision.visible_food() as f32;
+        input[config::FOOD_ANGLE_SCORE_INDEX] = *vision.food_angle_score();
+        input[config::FOOD_DIST_SCORE_INDEX] = *vision.food_dist_score();
         input[config::HEARTBEAT_INDEX] = heart.pulse();
         input[config::INTERNAL_TIMER_INDEX] = internal_timer.elapsed_secs();
-    }
-}
-
-#[derive(Component, Debug)]
-pub struct ThinkingSum(f32);
-
-impl ThinkingSum {
-    pub const fn new() -> Self {
-        Self(0.0)
-    }
-
-    pub fn add_thought(&mut self, synapses: usize, cost: f32) {
-        self.0 += synapses as f32 * cost;
-    }
-
-    pub fn uint_portion(&mut self) -> usize {
-        let thought_floor = self.0.floor();
-        self.0 -= thought_floor;
-
-        thought_floor as usize
     }
 }
 
@@ -76,10 +59,7 @@ mod tests {
     use genesis_genome::Genome;
 
     use super::*;
-    use crate::{
-        config,
-        mind::{Mind, MindBundle, MindInput, MindOutput},
-    };
+    use crate::{components::mind::*, config};
 
     #[test]
     fn mind_thinks() {

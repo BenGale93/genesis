@@ -11,9 +11,9 @@ use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 
 use super::{brain_panel, interaction, statistics};
 use crate::{
-    attributes,
-    behaviour::{eating, laying, sight, timers},
-    body, ecosystem, lifecycle,
+    attributes, body,
+    components::{self, eat, lay, see, time},
+    ecosystem,
 };
 
 #[derive(Debug, Default, Resource)]
@@ -35,7 +35,7 @@ fn global_panel_buttons(ui: &mut egui::Ui, global_panel_state: &mut GlobalPanel)
 }
 
 pub fn global_ui_update_system(
-    time: Res<timers::SimulationTime>,
+    time: Res<time::SimulationTime>,
     count_stats: Res<statistics::CountStats>,
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
@@ -57,7 +57,7 @@ pub fn global_ui_update_system(
 
 fn environment_sub_panel(
     ui: &mut egui::Ui,
-    time: &Res<timers::SimulationTime>,
+    time: &Res<time::SimulationTime>,
     energy_stats: &Res<statistics::EnergyStats>,
     count_stats: &Res<statistics::CountStats>,
 ) {
@@ -168,11 +168,11 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
 }
 
 type BugLiveInfo<'a> = (
-    &'a timers::Age,
+    &'a time::Age,
     &'a body::Vitality,
-    &'a sight::Vision,
-    &'a timers::InternalTimer,
-    &'a lifecycle::Generation,
+    &'a see::Vision,
+    &'a time::InternalTimer,
+    &'a components::Generation,
 );
 
 pub fn bug_live_info_system(
@@ -202,7 +202,7 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
 }
 
 pub fn attribute_info_system(
-    is_egg_query: Query<&lifecycle::Egg, With<Selected>>,
+    is_egg_query: Query<&components::Egg, With<Selected>>,
     attr_query_part1: Query<attributes::BugAttributesPart1, With<Selected>>,
     attr_query_part2: Query<attributes::BugAttributesPart2, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
@@ -276,7 +276,7 @@ pub fn bug_brain_info_system(
     }
 }
 
-type BugStatsInfo<'a> = (&'a eating::EnergyConsumed, &'a laying::EggsLaid);
+type BugStatsInfo<'a> = (&'a eat::EnergyConsumed, &'a lay::EggsLaid);
 
 pub fn bug_stats_info_system(
     bug_query: Query<BugStatsInfo, With<Selected>>,
@@ -313,7 +313,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
     ui.end_row();
 }
 
-type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
+type EggLiveInfo<'a> = (&'a time::Age, &'a components::Generation);
 
 pub fn egg_live_info_panel_system(
     egg_query: Query<EggLiveInfo, (With<Selected>, With<ecosystem::EggEnergy>)>,

@@ -10,6 +10,7 @@ genesis_attributes = { path = "./crates/genesis_attributes" }
 genesis_body = { path = "./crates/genesis_body" }
 genesis_brain = { path = "./crates/genesis_brain" }
 genesis_color = { path = "./crates/genesis_color/"}
+genesis_components = { path = "./crates/genesis_components/"}
 genesis_config = { path = "./crates/genesis_config" }
 genesis_ecosystem = { path = "./crates/genesis_ecosystem" }
 genesis_genome = { path = "./crates/genesis_genome" }

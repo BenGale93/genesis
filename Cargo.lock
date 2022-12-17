@@ -1832,6 +1832,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "genesis_components"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "derive-getters",
+ "derive_more",
+ "genesis_brain",
+ "genesis_color",
+ "genesis_config",
+ "genesis_ecosystem",
+ "genesis_maths",
+ "genesis_newtype",
+ "itertools",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
 name = "genesis_config"
 version = "0.1.0"
 dependencies = [
@@ -1888,6 +1907,7 @@ dependencies = [
  "genesis_body",
  "genesis_brain",
  "genesis_color",
+ "genesis_components",
  "genesis_config",
  "genesis_ecosystem",
  "genesis_genome",

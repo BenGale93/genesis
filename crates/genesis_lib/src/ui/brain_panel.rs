@@ -1,6 +1,6 @@
 use bevy_egui::egui;
 
-use crate::mind;
+use crate::components::mind;
 
 pub(super) type BugBrainInfo<'a> = (
     &'a mind::MindInput,

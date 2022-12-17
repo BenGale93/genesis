@@ -1,24 +1,10 @@
-use bevy::prelude::{Component, Query, ResMut};
-use derive_more::{Add, Deref, DerefMut, From};
+use bevy::prelude::{Query, ResMut};
 
-use super::{eating::EatingSum, growth::SizeSum, movement::MovementSum, thinking::ThinkingSum};
-use crate::{body, ecosystem};
-
-#[derive(Component, Debug, PartialEq, Eq, Deref, DerefMut, From, Add)]
-pub struct BurntEnergy(ecosystem::Energy);
-
-impl BurntEnergy {
-    pub const fn new() -> Self {
-        Self(ecosystem::Energy::new_empty())
-    }
-}
-
-impl BurntEnergy {
-    pub fn return_energy(&mut self) -> ecosystem::Energy {
-        let amount = self.amount();
-        self.take_energy(amount)
-    }
-}
+use crate::{
+    body,
+    components::{eat::EatingSum, grow::SizeSum, BurntEnergy, MovementSum, ThinkingSum},
+    ecosystem,
+};
 
 pub fn energy_return_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,

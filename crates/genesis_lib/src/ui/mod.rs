@@ -1,7 +1,6 @@
 mod brain_panel;
 mod gui;
 mod interaction;
-mod statistics;
 
 use std::{fs, time::Duration};
 
@@ -14,9 +13,8 @@ pub use gui::{EntityPanelState, GlobalPanelState};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
-pub use statistics::{AverageAttributes, BugPerformance, CountStats, EnergyStats};
 
-use crate::{ancestors, config::WorldConfig};
+use crate::{config::WorldConfig, statistics};
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
@@ -26,7 +24,7 @@ struct RunInfo<'a> {
     energy_stats: &'a statistics::EnergyStats,
     performance_stats: &'a statistics::BugPerformance,
     attribute_stats: &'a statistics::AverageAttributes,
-    family_tree: &'a ancestors::FamilyTree,
+    family_tree: &'a statistics::FamilyTree,
 }
 
 impl<'a> RunInfo<'a> {
@@ -37,7 +35,7 @@ impl<'a> RunInfo<'a> {
         energy_stats: &'a statistics::EnergyStats,
         performance_stats: &'a statistics::BugPerformance,
         attribute_stats: &'a statistics::AverageAttributes,
-        family_tree: &'a ancestors::FamilyTree,
+        family_tree: &'a statistics::FamilyTree,
     ) -> Self {
         Self {
             time_elapsed,
@@ -57,7 +55,7 @@ fn save_stats(
     energy_stats: &Res<statistics::EnergyStats>,
     performance_stats: &Res<statistics::BugPerformance>,
     attribute_stats: &Res<statistics::AverageAttributes>,
-    family_tree: &Res<ancestors::FamilyTree>,
+    family_tree: &Res<statistics::FamilyTree>,
 ) {
     let time = time.elapsed_seconds();
     let run_info = RunInfo::new(
@@ -80,7 +78,7 @@ pub fn save_on_close(
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
     attribute_stats: Res<statistics::AverageAttributes>,
-    family_tree: Res<ancestors::FamilyTree>,
+    family_tree: Res<statistics::FamilyTree>,
 ) {
     if !events.is_empty() {
         save_stats(
@@ -100,7 +98,7 @@ pub fn regular_saver(
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
     attribute_stats: Res<statistics::AverageAttributes>,
-    family_tree: Res<ancestors::FamilyTree>,
+    family_tree: Res<statistics::FamilyTree>,
 ) {
     save_stats(
         &time,
@@ -156,10 +154,10 @@ impl Plugin for GenesisUiPlugin {
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
-            .insert_resource(AverageAttributes::default())
-            .insert_resource(CountStats::default())
-            .insert_resource(BugPerformance::default())
-            .insert_resource(EnergyStats::default())
+            .insert_resource(statistics::AverageAttributes::default())
+            .insert_resource(statistics::CountStats::default())
+            .insert_resource(statistics::BugPerformance::default())
+            .insert_resource(statistics::EnergyStats::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())

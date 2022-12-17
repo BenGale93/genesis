@@ -10,7 +10,11 @@ use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
 use genesis_spawners::Spawners;
 use rand_distr::{Distribution, Uniform};
 
-use crate::{behaviour::eating::Eaten, body, config, ecosystem, lifecycle::Generation};
+use crate::{
+    body,
+    components::{eat::Eaten, Generation},
+    config, ecosystem,
+};
 
 pub fn nearest_spawner_system(
     mut spawners: ResMut<Spawners>,

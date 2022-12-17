@@ -10,6 +10,7 @@ genesis_brain = { workspace = true }
 genesis_genome = { workspace = true }
 genesis_newtype = { workspace = true }
 genesis_color = { workspace = true }
+genesis_components = { workspace = true }
 genesis_maths = { workspace = true }
 genesis_spawners = { workspace = true }
 genesis_config = { workspace = true }
