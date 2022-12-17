@@ -64,8 +64,7 @@ pub(super) fn attribute_limit(
     if let Some(v) = lower {
         if floor <= v {
             let message = Some(format!(
-                "The lowest value of '{}' must be higher than {}.",
-                name, v,
+                "The lowest value of '{name}' must be higher than {v}."
             ));
             messages.push(message);
         }
@@ -73,8 +72,7 @@ pub(super) fn attribute_limit(
     if let Some(v) = upper {
         if v < ceil {
             let message = Some(format!(
-                "The highest value of '{}' must be lower than {}.",
-                name, v,
+                "The highest value of '{name}' must be lower than {v}."
             ));
             messages.push(message);
         }
