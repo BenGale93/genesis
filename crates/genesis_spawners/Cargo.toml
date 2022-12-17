@@ -7,10 +7,9 @@ license = "MIT"
 
 [dependencies]
 genesis_maths = { path = "../genesis_maths/"}
+genesis_config = { path = "../genesis_config/"}
 bevy = {workspace= true}
 derive_more = {workspace= true}
 anyhow = {workspace= true}
-serde = {workspace= true}
-serde_derive = {workspace= true}
 rand = {workspace= true}
 rand_distr = {workspace= true}

@@ -3,10 +3,10 @@ use std::f32::consts::PI;
 use anyhow::anyhow;
 use bevy::prelude::{Resource, Vec3};
 use derive_more::{Deref, DerefMut};
+use genesis_config::{DistributionConfig, SpawnerConfig};
 use genesis_maths::polars_to_cart;
 use rand::{rngs::ThreadRng, Rng};
 use rand_distr::{Distribution, Gamma, InverseGaussian, LogNormal, Normal, Uniform};
-use serde_derive::{Deserialize, Serialize};
 
 pub enum DistributionKind {
     Gamma(Gamma<f32>),
@@ -143,35 +143,5 @@ impl Spawners {
 
     pub fn space_for_organisms(&self, min_number: usize) -> bool {
         self.iter().any(|s| s.nearby_organisms() < min_number)
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct DistributionConfig {
-    name: String,
-    a: f32,
-    b: f32,
-}
-
-impl DistributionConfig {
-    pub const fn new(name: String, a: f32, b: f32) -> Self {
-        Self { name, a, b }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SpawnerConfig {
-    centre: (f32, f32),
-    radius: f32,
-    dist: DistributionConfig,
-}
-
-impl SpawnerConfig {
-    pub const fn new(centre: (f32, f32), radius: f32, dist: DistributionConfig) -> Self {
-        Self {
-            centre,
-            radius,
-            dist,
-        }
     }
 }

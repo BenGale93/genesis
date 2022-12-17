@@ -1805,6 +1805,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "genesis_config"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "confy",
+ "once_cell",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
 name = "genesis_game"
 version = "0.1.0"
 dependencies = [
@@ -1833,18 +1844,17 @@ dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_rapier2d",
- "confy",
  "derive-getters",
  "derive_more",
  "genesis_brain",
  "genesis_color",
+ "genesis_config",
  "genesis_genome",
  "genesis_maths",
  "genesis_newtype",
  "genesis_spawners",
  "itertools",
  "iyes_loopless",
- "once_cell",
  "rand",
  "rand_distr",
  "serde",
@@ -1880,11 +1890,10 @@ dependencies = [
  "anyhow",
  "bevy",
  "derive_more",
+ "genesis_config",
  "genesis_maths",
  "rand",
  "rand_distr",
- "serde",
- "serde_derive",
 ]
 
 [[package]]

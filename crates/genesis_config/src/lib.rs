@@ -2,9 +2,9 @@ mod attr_config;
 mod validators;
 
 use bevy::prelude::{ClearColor, Color};
-use genesis_spawners as spawners;
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
+extern crate serde;
 
 pub const BACKGROUND: ClearColor = ClearColor(Color::rgb(0.004, 0.09, 0.15));
 
@@ -49,6 +49,36 @@ pub const INTERNAL_TIMER_INDEX: usize = 13;
 pub const GENERATION_SWITCH: usize = 5;
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct DistributionConfig {
+    pub name: String,
+    pub a: f32,
+    pub b: f32,
+}
+
+impl DistributionConfig {
+    pub const fn new(name: String, a: f32, b: f32) -> Self {
+        Self { name, a, b }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SpawnerConfig {
+    pub centre: (f32, f32),
+    pub radius: f32,
+    pub dist: DistributionConfig,
+}
+
+impl SpawnerConfig {
+    pub const fn new(centre: (f32, f32), radius: f32, dist: DistributionConfig) -> Self {
+        Self {
+            centre,
+            radius,
+            dist,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct WorldConfig {
     pub start_num: usize,
     pub minimum_number: usize,
@@ -62,7 +92,7 @@ pub struct WorldConfig {
     pub world_energy: usize,
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
-    pub spawners: Vec<spawners::SpawnerConfig>,
+    pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
 }
 
@@ -110,8 +140,8 @@ impl WorldConfig {
 
 impl Default for WorldConfig {
     fn default() -> Self {
-        let dist = spawners::DistributionConfig::new("normal".to_string(), 0.0, 1.0);
-        let spawner = spawners::SpawnerConfig::new((0.0, 0.0), 500.0, dist);
+        let dist = DistributionConfig::new("normal".to_string(), 0.0, 1.0);
+        let spawner = SpawnerConfig::new((0.0, 0.0), 500.0, dist);
         Self {
             start_num: 10,
             minimum_number: 5,

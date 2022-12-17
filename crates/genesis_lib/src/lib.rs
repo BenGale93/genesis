@@ -20,7 +20,7 @@ mod ancestors;
 mod attributes;
 mod behaviour;
 mod body;
-mod config;
+use genesis_config as config;
 mod ecosystem;
 mod mind;
 mod setup;
