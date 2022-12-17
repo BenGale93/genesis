@@ -1816,6 +1816,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "genesis_ecosystem"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "bevy_rapier2d",
+ "derive_more",
+ "genesis_config",
+]
+
+[[package]]
 name = "genesis_game"
 version = "0.1.0"
 dependencies = [
@@ -1849,6 +1860,7 @@ dependencies = [
  "genesis_brain",
  "genesis_color",
  "genesis_config",
+ "genesis_ecosystem",
  "genesis_genome",
  "genesis_maths",
  "genesis_newtype",

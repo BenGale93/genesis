@@ -1,9 +1,11 @@
 extern crate derive_more;
+use std::fmt;
+
+use anyhow::{anyhow, Result};
 use bevy::prelude::{Component, Resource, Vec2};
 use bevy_rapier2d::prelude::Collider;
 use derive_more::{Add, Constructor, Display, Sub};
-
-use crate::config;
+use genesis_config as config;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
 pub struct Energy(usize);
@@ -96,13 +98,74 @@ impl Ecosystem {
     }
 }
 
+#[derive(Debug)]
+pub struct EnergyReserve {
+    energy: Energy,
+    energy_limit: usize,
+}
+
+impl EnergyReserve {
+    pub fn new(energy: Energy, limit: usize) -> Result<Self> {
+        if energy.amount() > limit {
+            return Err(anyhow!("Limit should be higher than energy passed in."));
+        }
+        Ok(Self {
+            energy,
+            energy_limit: limit,
+        })
+    }
+
+    pub const fn amount(&self) -> usize {
+        self.energy.amount()
+    }
+
+    #[must_use]
+    pub fn proportion(&self) -> f32 {
+        self.energy.amount() as f32 / self.energy_limit as f32
+    }
+
+    #[must_use]
+    pub const fn available_space(&self) -> usize {
+        self.energy_limit - self.energy.amount()
+    }
+
+    #[must_use]
+    pub fn add_energy(&mut self, mut energy: Energy) -> Energy {
+        let energy_taken = energy.take_energy(self.available_space());
+        self.energy.add_energy(energy_taken);
+        energy
+    }
+
+    #[must_use]
+    pub fn take_energy(&mut self, amount: usize) -> Energy {
+        self.energy.take_energy(amount)
+    }
+
+    pub const fn energy_limit(&self) -> usize {
+        self.energy_limit
+    }
+
+    pub fn set_energy_limit(&mut self, energy_limit: usize) {
+        self.energy_limit = energy_limit;
+    }
+
+    pub fn take_all_energy(&mut self) -> Energy {
+        self.energy.take_all_energy()
+    }
+}
+impl fmt::Display for EnergyReserve {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}/{}", self.energy.amount(), self.energy_limit)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::ecosystem;
+    use super::*;
 
     #[test]
     fn request_energy_success() {
-        let mut eco_system = ecosystem::Ecosystem::new(100);
+        let mut eco_system = Ecosystem::new(100);
 
         let energy = eco_system.request_energy(20).unwrap();
 

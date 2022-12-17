@@ -1,5 +1,3 @@
-use std::fmt;
-
 use anyhow::{anyhow, Result};
 use bevy::prelude::{Color, Component, Vec2};
 use bevy_rapier2d::prelude::Collider;
@@ -48,64 +46,11 @@ impl Default for BugBody {
     }
 }
 
-#[derive(Debug)]
-pub struct EnergyReserve {
-    energy: ecosystem::Energy,
-    energy_limit: usize,
-}
-
-impl EnergyReserve {
-    fn new(energy: ecosystem::Energy, limit: usize) -> Result<Self> {
-        if energy.amount() > limit {
-            return Err(anyhow!("Limit should be higher than energy passed in."));
-        }
-        Ok(Self {
-            energy,
-            energy_limit: limit,
-        })
-    }
-
-    pub const fn amount(&self) -> usize {
-        self.energy.amount()
-    }
-
-    #[must_use]
-    pub fn proportion(&self) -> f32 {
-        self.energy.amount() as f32 / self.energy_limit as f32
-    }
-
-    #[must_use]
-    const fn available_space(&self) -> usize {
-        self.energy_limit - self.energy.amount()
-    }
-
-    #[must_use]
-    fn add_energy(&mut self, mut energy: ecosystem::Energy) -> ecosystem::Energy {
-        let energy_taken = energy.take_energy(self.available_space());
-        self.energy.add_energy(energy_taken);
-        energy
-    }
-
-    #[must_use]
-    fn take_energy(&mut self, amount: usize) -> ecosystem::Energy {
-        self.energy.take_energy(amount)
-    }
-
-    pub const fn energy_limit(&self) -> usize {
-        self.energy_limit
-    }
-}
-impl fmt::Display for EnergyReserve {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}/{}", self.energy.amount(), self.energy_limit)
-    }
-}
+#[derive(Debug, Deref, DerefMut)]
+struct EnergyStore(ecosystem::EnergyReserve);
 
 #[derive(Debug, Deref, DerefMut)]
-struct EnergyStore(EnergyReserve);
-
-#[derive(Debug, Deref, DerefMut)]
-struct Health(EnergyReserve);
+struct Health(ecosystem::EnergyReserve);
 
 #[derive(Debug, PartialEq, Eq, Deref, DerefMut)]
 pub struct CoreReserve(ecosystem::Energy);
@@ -126,12 +71,14 @@ impl Vitality {
 
         let health_energy = total_energy.take_energy(config::HEALTH_MULTIPLIER * size_uint);
         let health = Health(
-            EnergyReserve::new(health_energy, config::HEALTH_MULTIPLIER * size_uint).unwrap(),
+            ecosystem::EnergyReserve::new(health_energy, config::HEALTH_MULTIPLIER * size_uint)
+                .unwrap(),
         );
 
         let energy_limit = config::EnergyLimitConfig::global().energy_limit(size.as_uint());
         let energy_store = EnergyStore(
-            EnergyReserve::new(total_energy.take_energy(energy_limit), energy_limit).unwrap(),
+            ecosystem::EnergyReserve::new(total_energy.take_energy(energy_limit), energy_limit)
+                .unwrap(),
         );
 
         (
@@ -145,11 +92,11 @@ impl Vitality {
         )
     }
 
-    pub fn energy_store(&self) -> &EnergyReserve {
+    pub fn energy_store(&self) -> &ecosystem::EnergyReserve {
         &self.energy_store
     }
 
-    pub fn health(&self) -> &EnergyReserve {
+    pub fn health(&self) -> &ecosystem::EnergyReserve {
         &self.health
     }
 
@@ -202,7 +149,8 @@ impl Vitality {
         let health_growing_energy = self
             .energy_store
             .take_energy(amount * config::HEALTH_MULTIPLIER);
-        self.health.energy_limit += amount * config::HEALTH_MULTIPLIER;
+        let new_health_limit = self.health.energy_limit() + amount * config::HEALTH_MULTIPLIER;
+        self.health.set_energy_limit(new_health_limit);
 
         assert!(
             self.health.add_energy(health_growing_energy) == ecosystem::Energy::new_empty(),
@@ -211,15 +159,16 @@ impl Vitality {
 
         self.size.grow(amount as f32);
 
-        self.energy_store.energy_limit =
-            config::EnergyLimitConfig::global().energy_limit(self.size.as_uint());
+        self.energy_store.set_energy_limit(
+            config::EnergyLimitConfig::global().energy_limit(self.size.as_uint()),
+        );
         Ok(())
     }
 
     #[must_use]
     pub fn take_all_energy(&mut self) -> ecosystem::Energy {
-        let mut returning_energy = self.energy_store.0.energy.take_all_energy();
-        returning_energy = returning_energy + self.health.0.energy.take_all_energy();
+        let mut returning_energy = self.energy_store.0.take_all_energy();
+        returning_energy = returning_energy + self.health.0.take_all_energy();
         returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
         returning_energy
     }

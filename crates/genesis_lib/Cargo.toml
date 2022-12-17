@@ -13,6 +13,7 @@ genesis_color = { path = "../genesis_color/"}
 genesis_maths = {path = "../genesis_maths/"}
 genesis_spawners = { path = "../genesis_spawners" }
 genesis_config = { path = "../genesis_config" }
+genesis_ecosystem = { path = "../genesis_ecosystem" }
 bevy = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }

@@ -1,0 +1,13 @@
+[package]
+name = "genesis_ecosystem"
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+genesis_config = { path = "../genesis_config/"}
+bevy = { workspace = true }
+bevy_rapier2d = { workspace = true }
+derive_more = { workspace = true}
+anyhow = { workspace = true }
