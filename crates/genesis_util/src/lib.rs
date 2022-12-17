@@ -6,7 +6,6 @@
 #![allow(clippy::similar_names)]
 #![allow(clippy::many_single_char_names)]
 pub mod color;
-pub mod maths;
 pub mod probability;
 pub mod util_error;
 pub mod weight;

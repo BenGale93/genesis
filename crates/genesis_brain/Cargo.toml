@@ -7,6 +7,7 @@ license = "MIT"
 
 [dependencies]
 genesis_util = {path = "../genesis_util/"}
+genesis_maths = {path = "../genesis_maths/"}
 rand = { workspace = true }
 rand_distr = { workspace = true }
 thiserror = { workspace = true }

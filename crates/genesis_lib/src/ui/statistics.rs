@@ -1,6 +1,6 @@
 use bevy::prelude::{Query, Res, ResMut, Resource};
 use derive_getters::Getters;
-use genesis_util::maths::mean;
+use genesis_maths::mean;
 use serde_derive::Serialize;
 
 use crate::{

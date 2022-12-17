@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::{Component, Quat, Query, Transform, With};
-use genesis_util::maths;
+use genesis_maths::{angle_to_point, Cone};
 
 use crate::{
     attributes::{EyeAngle, EyeRange},
@@ -74,7 +74,7 @@ impl Default for Vision {
 fn dist_angle_score(transform: &Transform, target_transform: &Transform) -> (f32, f32) {
     let dist = target_transform.translation - transform.translation;
     let dist_score = 1.0 / dist.length();
-    let angle_to_target = maths::angle_to_point(dist) - PI / 2.0;
+    let angle_to_target = angle_to_point(dist) - PI / 2.0;
     let angle_diff = transform
         .rotation
         .angle_between(Quat::from_rotation_z(angle_to_target));
@@ -88,7 +88,7 @@ pub fn process_sight_system(
     food_query: Query<&Transform, With<Plant>>,
 ) {
     for (eye_range, eye_angle, transform, mut vision) in eye_query.iter_mut() {
-        let cone = maths::Cone::new(
+        let cone = Cone::new(
             transform.translation,
             transform.rotation,
             **eye_angle,

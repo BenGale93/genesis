@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::RapierContext;
 use derive_more::{Deref, DerefMut};
-use genesis_util::maths;
+use genesis_maths::{angle_to_point, rebased_angle};
 
 use super::{lifecycle::Egg, metabolism::BurntEnergy};
 use crate::{attributes, body::Vitality, config, ecosystem::Plant, mind::MindOutput};
@@ -107,11 +107,9 @@ pub fn eating_system(
             };
             for (plant_entity, mut plant_energy, plant_transform) in plant_query.iter_mut() {
                 if other_collider == plant_entity {
-                    let angle = maths::angle_to_point(
-                        plant_transform.translation - bug_transform.translation,
-                    );
-                    let rebased_angle =
-                        maths::rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
+                    let angle =
+                        angle_to_point(plant_transform.translation - bug_transform.translation);
+                    let rebased_angle = rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
                     if rebased_angle < **mouth_width {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);

@@ -3,8 +3,16 @@ use std::{f32::consts::PI, iter::Sum, ops::Div};
 use glam::{Quat, Vec3};
 use nalgebra::wrap;
 use num::{One, Unsigned};
+use thiserror::Error;
 
-use crate::util_error::GenesisUtilError;
+#[derive(Error, Debug)]
+pub enum GenesisMathsError {
+    #[error("The length provided should be strictly greater than 0.")]
+    LengthError,
+
+    #[error("The angle provided should be between 0 and pi radians.")]
+    AngleError,
+}
 
 #[must_use]
 pub fn mean<T>(numbers: Vec<T>) -> f32
@@ -60,13 +68,13 @@ impl Cone {
         rotation: Quat,
         angle: f32,
         length: f32,
-    ) -> Result<Self, GenesisUtilError> {
+    ) -> Result<Self, GenesisMathsError> {
         if length <= 0.0 {
-            return Err(GenesisUtilError::LengthError);
+            return Err(GenesisMathsError::LengthError);
         }
 
         if angle <= 0.0 || angle > f32::to_radians(360.0) {
-            return Err(GenesisUtilError::AngleError);
+            return Err(GenesisMathsError::AngleError);
         }
 
         Ok(Self {

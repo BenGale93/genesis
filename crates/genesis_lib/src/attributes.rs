@@ -14,7 +14,8 @@
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
 use genesis_genome::Genome;
-use genesis_util::{maths::linear_interpolate, Probability};
+use genesis_maths::linear_interpolate;
+use genesis_util::Probability;
 
 use crate::config;
 

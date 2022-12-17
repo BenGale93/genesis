@@ -1,5 +1,6 @@
 use bevy::prelude::{Color, Component, Entity, Query, ResMut, Resource};
-use genesis_util::{color, maths};
+use genesis_maths::cantor_pairing;
+use genesis_util::color;
 use serde_derive::Serialize;
 
 #[derive(Debug, Component, Serialize, Clone)]
@@ -11,7 +12,7 @@ pub struct Relations {
 
 impl Relations {
     pub fn new(entity: (Entity, Color), parent: Option<Entity>) -> Self {
-        let parent = parent.map(|e| maths::cantor_pairing(e.generation(), e.index()));
+        let parent = parent.map(|e| cantor_pairing(e.generation(), e.index()));
         Self {
             entity: Self::convert(entity),
             parent,
@@ -21,7 +22,7 @@ impl Relations {
 
     pub fn add_child(&mut self, child: Entity) {
         self.children
-            .push(maths::cantor_pairing(child.generation(), child.index()))
+            .push(cantor_pairing(child.generation(), child.index()))
     }
 
     pub fn is_interesting(&self) -> bool {
@@ -31,7 +32,7 @@ impl Relations {
     fn convert(input: (Entity, Color)) -> (u32, String) {
         let (e, c) = input;
         (
-            maths::cantor_pairing(e.generation(), e.index()),
+            cantor_pairing(e.generation(), e.index()),
             color::rgb_to_hex(c.r(), c.g(), c.b()),
         )
     }

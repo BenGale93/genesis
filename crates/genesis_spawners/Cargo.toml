@@ -6,7 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis_util = { path = "../genesis_util/"}
+genesis_maths = { path = "../genesis_maths/"}
 bevy = {workspace= true}
 derive_more = {workspace= true}
 anyhow = {workspace= true}

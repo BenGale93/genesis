@@ -1,6 +1,7 @@
 use std::hash::{Hash, Hasher};
 
-use genesis_util::{maths, Weight};
+use genesis_maths::cantor_pairing;
+use genesis_util::Weight;
 
 use crate::BrainError;
 
@@ -18,7 +19,7 @@ impl Synapse {
         if from == to {
             return Err(BrainError::InvalidFromTo);
         }
-        let innovation = maths::cantor_pairing(from, to);
+        let innovation = cantor_pairing(from, to);
         let weight = Weight::random();
 
         Ok(Self {

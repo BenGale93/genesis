@@ -9,6 +9,7 @@ license = "MIT"
 genesis_brain = { path = "../genesis_brain" }
 genesis_genome = { path = "../genesis_genome" }
 genesis_util = { path = "../genesis_util/"}
+genesis_maths = {path = "../genesis_maths/"}
 genesis_spawners = { path = "../genesis_spawners" }
 bevy = { workspace = true }
 rand = { workspace = true }

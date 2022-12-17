@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use anyhow::anyhow;
 use bevy::prelude::{Resource, Vec3};
 use derive_more::{Deref, DerefMut};
-use genesis_util::maths::polars_to_cart;
+use genesis_maths::polars_to_cart;
 use rand::{rngs::ThreadRng, Rng};
 use rand_distr::{Distribution, Gamma, InverseGaussian, LogNormal, Normal, Uniform};
 use serde_derive::{Deserialize, Serialize};

@@ -1789,6 +1789,7 @@ name = "genesis_brain"
 version = "0.1.0"
 dependencies = [
  "cached",
+ "genesis_maths",
  "genesis_util",
  "rand",
  "rand_distr",
@@ -1829,6 +1830,7 @@ dependencies = [
  "derive_more",
  "genesis_brain",
  "genesis_genome",
+ "genesis_maths",
  "genesis_spawners",
  "genesis_util",
  "itertools",
@@ -1843,13 +1845,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "genesis_maths"
+version = "0.1.0"
+dependencies = [
+ "glam",
+ "nalgebra",
+ "ndarray",
+ "num",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
 name = "genesis_spawners"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
  "derive_more",
- "genesis_util",
+ "genesis_maths",
  "rand",
  "rand_distr",
  "serde",
