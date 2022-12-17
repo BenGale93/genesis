@@ -13,11 +13,10 @@
 //! Offspring energy and hatch age are on chromosome 10.
 use bevy::prelude::{Bundle, Component};
 use derive_more::Deref;
+use genesis_config as config;
 use genesis_genome::Genome;
 use genesis_maths::linear_interpolate;
 use genesis_newtype::Probability;
-
-use crate::config;
 
 #[derive(Debug)]
 struct AttributeConfig {

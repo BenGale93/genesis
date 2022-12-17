@@ -14,6 +14,7 @@ genesis_maths = {path = "../genesis_maths/"}
 genesis_spawners = { path = "../genesis_spawners" }
 genesis_config = { path = "../genesis_config" }
 genesis_ecosystem = { path = "../genesis_ecosystem" }
+genesis_attributes = { path = "../genesis_attributes" }
 bevy = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }

@@ -1,0 +1,14 @@
+[package]
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+name = "genesis_attributes"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+genesis_newtype = { path = "../genesis_newtype/"}
+genesis_genome = { path = "../genesis_genome/"}
+genesis_maths = { path = "../genesis_maths/"}
+genesis_config = { path = "../genesis_config/"}
+bevy = {workspace = true}
+derive_more = {workspace = true}

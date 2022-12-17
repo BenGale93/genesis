@@ -13,13 +13,13 @@ use std::time::Duration;
 
 use behaviour::lifecycle;
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
+use genesis_attributes as attributes;
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
 mod ancestors;
-mod attributes;
 mod behaviour;
 mod body;
 mod mind;
