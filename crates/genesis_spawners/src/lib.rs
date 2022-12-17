@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 use std::f32::consts::PI;
 
 use anyhow::anyhow;

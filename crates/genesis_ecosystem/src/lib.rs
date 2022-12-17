@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 extern crate derive_more;
 use std::fmt;
 

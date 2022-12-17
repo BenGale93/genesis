@@ -1,4 +1,4 @@
-pub(super) fn low_high_tuple(tuple: (f32, f32), name: &str) -> Option<String> {
+pub fn low_high_tuple(tuple: (f32, f32), name: &str) -> Option<String> {
     if tuple.0 >= tuple.1 {
         Some(format!(
             "Lower limit of '{name}' is higher than upper limit"
@@ -8,7 +8,7 @@ pub(super) fn low_high_tuple(tuple: (f32, f32), name: &str) -> Option<String> {
     }
 }
 
-pub(super) fn min_value<T: PartialOrd + Clone + std::fmt::Display>(
+pub fn min_value<T: PartialOrd + Clone + std::fmt::Display>(
     floor: T,
     value: T,
     name: &str,
@@ -20,7 +20,7 @@ pub(super) fn min_value<T: PartialOrd + Clone + std::fmt::Display>(
     }
 }
 
-pub(super) fn low_high<T: PartialOrd + Clone>(
+pub fn low_high<T: PartialOrd + Clone>(
     lower: T,
     higher: T,
     low_name: &str,
@@ -35,7 +35,7 @@ pub(super) fn low_high<T: PartialOrd + Clone>(
     }
 }
 
-pub(super) fn attribute_overlap(
+pub fn attribute_overlap(
     lower: (f32, f32, usize),
     higher: (f32, f32, usize),
     low_name: &str,
@@ -51,7 +51,7 @@ pub(super) fn attribute_overlap(
     }
 }
 
-pub(super) fn attribute_limit(
+pub fn attribute_limit(
     attr: (f32, f32, usize),
     validator: (Option<f32>, Option<f32>),
     name: &str,

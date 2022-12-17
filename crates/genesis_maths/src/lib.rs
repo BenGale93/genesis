@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 use std::{f32::consts::PI, iter::Sum, ops::Div};
 
 use glam::{Quat, Vec3};

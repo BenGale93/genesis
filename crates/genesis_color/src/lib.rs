@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::nursery)]
 use genesis_newtype::Weight;
 use ndarray::Array;
 
