@@ -11,9 +11,7 @@ use derive_more::{Add, Deref, DerefMut, From};
 use genesis_util::Probability;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{
-    ancestors, attributes, behaviour::timers, body, config, ecosystem, mind, spawning, ui,
-};
+use crate::{ancestors, attributes, behaviour::timers, body, config, ecosystem, mind, ui};
 
 #[derive(Component, Debug)]
 pub struct Egg;
@@ -340,7 +338,7 @@ pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    spawners: Res<spawning::Spawners>,
+    spawners: Res<spawners::Spawners>,
     count_stats: Res<ui::CountStats>,
     performance_stats: Res<ui::BugPerformance>,
 ) {

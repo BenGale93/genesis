@@ -1,0 +1,16 @@
+[package]
+name = "spawners"
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+genesis-util = { path = "../genesis-util/"}
+bevy = {workspace= true}
+derive_more = {workspace= true}
+anyhow = {workspace= true}
+serde = {workspace= true}
+serde_derive = {workspace= true}
+rand = {workspace= true}
+rand_distr = {workspace= true}

@@ -5,8 +5,6 @@ use bevy::prelude::{ClearColor, Color};
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 
-use crate::spawning;
-
 pub const BACKGROUND: ClearColor = ClearColor(Color::rgb(0.004, 0.09, 0.15));
 
 // Camera
@@ -63,7 +61,7 @@ pub struct WorldConfig {
     pub world_energy: usize,
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
-    pub spawners: Vec<spawning::SpawnerConfig>,
+    pub spawners: Vec<spawners::SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
 }
 
@@ -111,8 +109,8 @@ impl WorldConfig {
 
 impl Default for WorldConfig {
     fn default() -> Self {
-        let dist = spawning::DistributionConfig::new("normal".to_string(), 0.0, 1.0);
-        let spawner = spawning::SpawnerConfig::new((0.0, 0.0), 500.0, dist);
+        let dist = spawners::DistributionConfig::new("normal".to_string(), 0.0, 1.0);
+        let spawner = spawners::SpawnerConfig::new((0.0, 0.0), 500.0, dist);
         Self {
             start_num: 10,
             minimum_number: 5,

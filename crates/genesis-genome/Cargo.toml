@@ -6,8 +6,8 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-rand = "0.8.5"
-thiserror = "1.0.37"
-bitvec = "1.0.1"
 genesis-util = {path = "../genesis-util/"}
-ndarray = "0.15.6"
+rand = { workspace = true}
+thiserror = { workspace = true}
+bitvec = { workspace = true}
+ndarray = { workspace = true}

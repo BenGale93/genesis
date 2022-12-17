@@ -9,21 +9,22 @@ license = "MIT"
 genesis-brain = { path = "../genesis-brain" }
 genesis-genome = { path = "../genesis-genome" }
 genesis-util = { path = "../genesis-util/"}
-bevy = { version = "0.9.1", features = [] }
-rand = "0.8.5"
-thiserror = "1.0.37"
-derive_more = "0.99.17"
-bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
-anyhow = "1.0.66"
-once_cell = "1.16.0"
-confy = "0.5.1"
-serde_derive = "1.0.147"
-serde = "1.0.149"
-bevy_egui = "0.17.1"
-derive-getters = "0.2.0"
-serde_json = "1.0.89"
-rand_distr = "0.4.3"
-iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}
-itertools = "0.10.5"
+spawners = { path = "../spawners" }
+bevy = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+derive_more = { workspace = true }
+bevy_rapier2d = { workspace = true }
+anyhow = { workspace = true }
+once_cell = { workspace = true}
+confy = { workspace = true}
+serde_derive = { workspace = true}
+serde = { workspace = true}
+bevy_egui = { workspace = true}
+derive-getters = { workspace = true}
+serde_json = { workspace = true}
+rand_distr = { workspace = true}
+iyes_loopless = { workspace = true}
+itertools = { workspace = true }
 
 [dev-dependencies]

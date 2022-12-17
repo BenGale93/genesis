@@ -56,7 +56,7 @@ impl Plugin for GenesisPlugin {
 
         let config_instance = config::WorldConfig::global();
 
-        let spawners = spawning::Spawners::from_configs(&config_instance.spawners).unwrap();
+        let spawners = spawners::Spawners::from_configs(&config_instance.spawners).unwrap();
         let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
         let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 
