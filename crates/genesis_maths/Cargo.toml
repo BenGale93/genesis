@@ -6,9 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-rand = {workspace = true}
 thiserror = {workspace = true}
 nalgebra = {workspace = true}
 glam = {workspace = true}
-ndarray = {workspace = true}
 num = {workspace = true}

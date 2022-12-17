@@ -12,3 +12,6 @@ test PACKAGE:
 
 clean:
     @rm config/genesis.toml
+
+udeps:
+    @cargo +nightly udeps
