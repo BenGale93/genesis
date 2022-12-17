@@ -2,6 +2,7 @@ mod attr_config;
 mod validators;
 
 use bevy::prelude::{ClearColor, Color};
+use genesis_spawners as spawners;
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 

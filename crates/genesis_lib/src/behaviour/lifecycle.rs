@@ -8,6 +8,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
 use derive_more::{Add, Deref, DerefMut, From};
+use genesis_spawners::Spawners;
 use genesis_util::Probability;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
@@ -338,7 +339,7 @@ pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    spawners: Res<spawners::Spawners>,
+    spawners: Res<Spawners>,
     count_stats: Res<ui::CountStats>,
     performance_stats: Res<ui::BugPerformance>,
 ) {

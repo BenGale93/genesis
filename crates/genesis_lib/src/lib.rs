@@ -13,6 +13,7 @@ use std::time::Duration;
 
 use behaviour::lifecycle;
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
+use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
 mod ancestors;
@@ -56,7 +57,7 @@ impl Plugin for GenesisPlugin {
 
         let config_instance = config::WorldConfig::global();
 
-        let spawners = spawners::Spawners::from_configs(&config_instance.spawners).unwrap();
+        let spawners = Spawners::from_configs(&config_instance.spawners).unwrap();
         let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
         let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 

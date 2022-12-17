@@ -1785,39 +1785,39 @@ dependencies = [
 ]
 
 [[package]]
-name = "genesis-brain"
+name = "genesis_brain"
 version = "0.1.0"
 dependencies = [
  "cached",
- "genesis-util",
+ "genesis_util",
  "rand",
  "rand_distr",
  "thiserror",
 ]
 
 [[package]]
-name = "genesis-game"
+name = "genesis_game"
 version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_egui",
  "bevy_rapier2d",
- "genesis-lib",
+ "genesis_lib",
 ]
 
 [[package]]
-name = "genesis-genome"
+name = "genesis_genome"
 version = "0.1.0"
 dependencies = [
  "bitvec",
- "genesis-util",
+ "genesis_util",
  "ndarray",
  "rand",
  "thiserror",
 ]
 
 [[package]]
-name = "genesis-lib"
+name = "genesis_lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -1827,9 +1827,10 @@ dependencies = [
  "confy",
  "derive-getters",
  "derive_more",
- "genesis-brain",
- "genesis-genome",
- "genesis-util",
+ "genesis_brain",
+ "genesis_genome",
+ "genesis_spawners",
+ "genesis_util",
  "itertools",
  "iyes_loopless",
  "once_cell",
@@ -1838,12 +1839,25 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
- "spawners",
  "thiserror",
 ]
 
 [[package]]
-name = "genesis-util"
+name = "genesis_spawners"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy",
+ "derive_more",
+ "genesis_util",
+ "rand",
+ "rand_distr",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "genesis_util"
 version = "0.1.0"
 dependencies = [
  "glam",
@@ -3482,20 +3496,6 @@ dependencies = [
  "optional",
  "robust",
  "smallvec",
-]
-
-[[package]]
-name = "spawners"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "bevy",
- "derive_more",
- "genesis-util",
- "rand",
- "rand_distr",
- "serde",
- "serde_derive",
 ]
 
 [[package]]

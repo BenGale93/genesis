@@ -1,12 +1,12 @@
 [package]
 authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
-name = "genesis-brain"
+name = "genesis_brain"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis-util = {path = "../genesis-util/"}
+genesis_util = {path = "../genesis_util/"}
 rand = { workspace = true }
 rand_distr = { workspace = true }
 thiserror = { workspace = true }

@@ -7,6 +7,7 @@ use bevy::{
     transform::TransformBundle,
 };
 use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
+use genesis_spawners::Spawners;
 use rand_distr::{Distribution, Uniform};
 
 use crate::{
@@ -15,7 +16,7 @@ use crate::{
 };
 
 pub fn nearest_spawner_system(
-    mut spawners: ResMut<spawners::Spawners>,
+    mut spawners: ResMut<Spawners>,
     organisms: Query<&Transform, With<Generation>>,
     plants: Query<(&Transform, &ecosystem::Plant)>,
 ) {
@@ -102,7 +103,7 @@ pub fn spawn_plant_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    spawners: Res<spawners::Spawners>,
+    spawners: Res<Spawners>,
     plant_size_randomiser: Res<PlantSizeRandomiser>,
 ) {
     let config_instance = config::WorldConfig::global();

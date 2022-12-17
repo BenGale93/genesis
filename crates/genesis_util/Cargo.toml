@@ -1,6 +1,6 @@
 [package]
 authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
-name = "genesis-util"
+name = "genesis_util"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"

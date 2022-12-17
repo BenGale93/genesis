@@ -1,12 +1,12 @@
 [package]
-name = "spawners"
+name = "genesis_spawners"
 authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis-util = { path = "../genesis-util/"}
+genesis_util = { path = "../genesis_util/"}
 bevy = {workspace= true}
 derive_more = {workspace= true}
 anyhow = {workspace= true}

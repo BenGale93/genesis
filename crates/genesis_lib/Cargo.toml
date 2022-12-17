@@ -1,15 +1,15 @@
 [package]
-name = "genesis-lib"
+name = "genesis_lib"
 authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
 [dependencies]
-genesis-brain = { path = "../genesis-brain" }
-genesis-genome = { path = "../genesis-genome" }
-genesis-util = { path = "../genesis-util/"}
-spawners = { path = "../spawners" }
+genesis_brain = { path = "../genesis_brain" }
+genesis_genome = { path = "../genesis_genome" }
+genesis_util = { path = "../genesis_util/"}
+genesis_spawners = { path = "../genesis_spawners" }
 bevy = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }
