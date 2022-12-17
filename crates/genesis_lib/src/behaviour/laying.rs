@@ -1,93 +1,20 @@
 use bevy::{
     ecs::system::EntityCommands,
     prelude::{
-        default, AssetServer, Bundle, Color, Commands, Component, DespawnRecursiveExt, Entity,
-        Handle, Image, Query, Res, ResMut, Transform, Vec2, Vec3, With, Without,
+        default, AssetServer, Bundle, Color, Commands, Component, Entity, Handle, Image, Query,
+        Res, ResMut, Transform, Vec2, Vec3, With, Without,
     },
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
-use derive_more::{Add, Deref, DerefMut, From};
+use derive_more::Deref;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 
 use super::{eating, growth, metabolism, movement, sight, thinking};
-use crate::{ancestors, attributes, behaviour::timers, body, config, ecosystem, mind, ui};
-
-#[derive(Component, Debug)]
-pub struct Egg;
-
-#[derive(Component, Debug)]
-pub struct Hatching;
-
-#[derive(Component, Debug)]
-pub struct Juvenile;
-
-#[derive(Component, Debug)]
-pub struct Adult;
-
-#[derive(
-    Component, Debug, Deref, DerefMut, Clone, Copy, From, Add, Ord, PartialOrd, Eq, PartialEq,
-)]
-pub struct Generation(pub usize);
-
-pub fn transition_to_adult_system(
-    mut commands: Commands,
-    bug_query: Query<(Entity, &timers::Age, &attributes::AdultAge), With<Juvenile>>,
-) {
-    for (entity, age, adult_age) in bug_query.iter() {
-        if age.elapsed_secs() > **adult_age {
-            commands.entity(entity).remove::<Juvenile>().insert(Adult);
-        }
-    }
-}
-
-pub fn transition_to_hatching_system(
-    mut commands: Commands,
-    egg_query: Query<(Entity, &timers::Age, &attributes::HatchAge), (With<Egg>, Without<Hatching>)>,
-) {
-    for (entity, age, hatch_age) in egg_query.iter() {
-        if age.elapsed_secs() > **hatch_age {
-            commands.entity(entity).insert(Hatching);
-        }
-    }
-}
-
-type EggQuery<'a> = (
-    Entity,
-    &'a mut EggEnergy,
-    &'a mind::Mind,
-    &'a body::BugBody,
-    &'a Sprite,
-    &'a attributes::HatchSize,
-    &'a attributes::MaxSize,
-);
-
-pub fn hatch_egg_system(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut hatch_query: Query<EggQuery, With<Hatching>>,
-) {
-    for (entity, mut egg_energy, mind, body, sprite, hatch_size, max_size) in hatch_query.iter_mut()
-    {
-        commands.entity(entity).remove::<EggBundle>();
-        let hatching_entity = commands.entity(entity);
-        let leftover_energy = spawn_bug(
-            &asset_server,
-            egg_energy.move_all_energy(),
-            (
-                body.clone(),
-                mind.clone(),
-                &sprite.color,
-                hatch_size,
-                max_size,
-            ),
-            hatching_entity,
-        );
-        ecosystem.return_energy(leftover_energy);
-    }
-}
+use crate::{
+    ancestors, attributes, behaviour::timers, body, config, ecosystem, lifecycle, mind, ui,
+};
 
 #[derive(Component)]
 pub struct TryingToLay;
@@ -96,8 +23,8 @@ type LayerTest<'a> = (Entity, &'a mind::MindOutput, &'a attributes::LayEggBounda
 
 pub fn process_layers_system(
     mut commands: Commands,
-    not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<Adult>)>,
-    laying_query: Query<LayerTest, (With<TryingToLay>, With<Adult>)>,
+    not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<lifecycle::Adult>)>,
+    laying_query: Query<LayerTest, (With<TryingToLay>, With<lifecycle::Adult>)>,
 ) {
     for (entity, mind_out, boundary) in not_laying_query.iter() {
         if mind_out[config::REPRODUCE_INDEX] > **boundary {
@@ -112,18 +39,6 @@ pub fn process_layers_system(
     }
 }
 
-fn egg_position(parent_transform: &Transform) -> Vec3 {
-    let separation = 20.0;
-    let mut egg_pos = parent_transform.translation;
-    let angle = parent_transform.rotation.z.asin() * 2.0;
-    let (s, c) = angle.sin_cos();
-
-    egg_pos.y -= separation * c;
-    egg_pos.x += separation * s;
-
-    egg_pos
-}
-
 #[derive(Component, Copy, Clone, Debug, Deref, Ord, PartialEq, Eq, PartialOrd)]
 pub struct EggsLaid(pub usize);
 
@@ -135,7 +50,7 @@ type Parent<'a> = (
     &'a attributes::MutationProbability,
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
-    &'a Generation,
+    &'a lifecycle::Generation,
     &'a mut EggsLaid,
     &'a mut ancestors::Relations,
 );
@@ -181,6 +96,18 @@ pub fn lay_egg_system(
     }
 }
 
+fn egg_position(parent_transform: &Transform) -> Vec3 {
+    let separation = 20.0;
+    let mut egg_pos = parent_transform.translation;
+    let angle = parent_transform.rotation.z.asin() * 2.0;
+    let (s, c) = angle.sin_cos();
+
+    egg_pos.y -= separation * c;
+    egg_pos.x += separation * s;
+
+    egg_pos
+}
+
 type BugParts<'a> = (
     body::BugBody,
     mind::Mind,
@@ -221,7 +148,7 @@ fn spawn_bug(
         .insert(sprite)
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(vitality.size().collider())
-        .insert(Juvenile)
+        .insert(lifecycle::Juvenile)
         .insert(original_color)
         .insert(bug_body)
         .insert(vitality)
@@ -241,43 +168,10 @@ fn spawn_bug(
     leftover_energy
 }
 
-pub fn kill_bug_system(
-    mut commands: Commands,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut family_tree: ResMut<ancestors::FamilyTree>,
-    mut query: Query<(
-        Entity,
-        &mut body::Vitality,
-        &attributes::DeathAge,
-        &timers::Age,
-        &ancestors::Relations,
-    )>,
-) {
-    for (entity, mut vitality, death_age, age, relations) in query.iter_mut() {
-        if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
-            ecosystem.return_energy(vitality.take_all_energy());
-            if relations.is_interesting() {
-                family_tree.dead_relations.push(relations.clone());
-            }
-            commands.entity(entity).despawn_recursive();
-        }
-    }
-}
-
-#[derive(Component)]
-pub struct EggEnergy(ecosystem::Energy);
-
-impl EggEnergy {
-    #[must_use]
-    pub fn move_all_energy(&mut self) -> ecosystem::Energy {
-        self.0.take_energy(self.0.amount())
-    }
-}
-
 #[derive(Bundle)]
 struct EggBundle {
-    pub egg: Egg,
-    pub egg_energy: EggEnergy,
+    pub egg: lifecycle::Egg,
+    pub egg_energy: ecosystem::EggEnergy,
     pub sprite: Sprite,
     pub handle: Handle<Image>,
     pub original_color: body::OriginalColor,
@@ -292,7 +186,7 @@ fn spawn_egg(
     location: Vec3,
     bug_body: body::BugBody,
     mind: mind::Mind,
-    generation: Generation,
+    generation: lifecycle::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
     let size = 16.0;
@@ -321,9 +215,9 @@ fn spawn_egg(
         })
         .insert(Velocity::zero())
         .insert(Collider::ball(size / 2.0))
-        .insert(Egg)
+        .insert(lifecycle::Egg)
         .insert(attribute_bundle)
-        .insert(EggEnergy(energy))
+        .insert(ecosystem::EggEnergy(energy))
         .insert(original_color)
         .insert(bug_body)
         .insert(ancestors::Relations::new((entity, mind.color()), parent_id))
@@ -365,8 +259,44 @@ pub fn spawn_egg_system(
             location,
             bug_body,
             mind,
-            Generation(0),
+            lifecycle::Generation(0),
             None,
         );
+    }
+}
+
+type EggQuery<'a> = (
+    Entity,
+    &'a mut ecosystem::EggEnergy,
+    &'a mind::Mind,
+    &'a body::BugBody,
+    &'a Sprite,
+    &'a attributes::HatchSize,
+    &'a attributes::MaxSize,
+);
+
+pub fn hatch_egg_system(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    mut hatch_query: Query<EggQuery, With<lifecycle::Hatching>>,
+) {
+    for (entity, mut egg_energy, mind, body, sprite, hatch_size, max_size) in hatch_query.iter_mut()
+    {
+        commands.entity(entity).remove::<EggBundle>();
+        let hatching_entity = commands.entity(entity);
+        let leftover_energy = spawn_bug(
+            &asset_server,
+            egg_energy.move_all_energy(),
+            (
+                body.clone(),
+                mind.clone(),
+                &sprite.color,
+                hatch_size,
+                max_size,
+            ),
+            hatching_entity,
+        );
+        ecosystem.return_energy(leftover_energy);
     }
 }

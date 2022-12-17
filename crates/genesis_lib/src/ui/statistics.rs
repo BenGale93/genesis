@@ -5,8 +5,8 @@ use serde_derive::Serialize;
 
 use crate::{
     attributes,
-    behaviour::{eating, lifecycle, timers},
-    ecosystem,
+    behaviour::{eating, laying, timers},
+    ecosystem, lifecycle,
 };
 
 fn last_element<T>(vector: &[T]) -> T
@@ -110,7 +110,7 @@ pub fn count_system(
     mut stats: ResMut<CountStats>,
     adult_query: Query<&lifecycle::Adult>,
     juvenile_query: Query<&lifecycle::Juvenile>,
-    egg_query: Query<&lifecycle::EggEnergy>,
+    egg_query: Query<&ecosystem::EggEnergy>,
 ) {
     let adults = adult_query.into_iter().len();
     let juveniles = juvenile_query.into_iter().len();
@@ -137,13 +137,13 @@ pub fn performance_stats_system(
     mut stats: ResMut<BugPerformance>,
     performance_query: Query<(
         &eating::EnergyConsumed,
-        &lifecycle::EggsLaid,
+        &laying::EggsLaid,
         &lifecycle::Generation,
         &timers::Age,
     )>,
 ) {
     let mut max_consumption = eating::EnergyConsumed(0);
-    let mut max_eggs = lifecycle::EggsLaid(0);
+    let mut max_eggs = laying::EggsLaid(0);
     let mut max_generation = lifecycle::Generation(0);
     let mut oldest_bug: f32 = 0.0;
 

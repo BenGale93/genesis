@@ -11,7 +11,6 @@
 #![allow(clippy::too_many_arguments)]
 use std::time::Duration;
 
-use behaviour::lifecycle;
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
 use genesis_attributes as attributes;
 use genesis_body as body;
@@ -22,6 +21,7 @@ use iyes_loopless::prelude::*;
 
 mod ancestors;
 mod behaviour;
+mod lifecycle;
 mod mind;
 mod setup;
 mod spawning;
@@ -39,8 +39,17 @@ pub fn despawn_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(ui::is_paused)
         .with_system(lifecycle::kill_bug_system)
-        .with_system(lifecycle::hatch_egg_system)
+        .with_system(behaviour::laying::hatch_egg_system)
         .with_system(spawning::despawn_plants_system)
+        .into()
+}
+
+pub fn lifecycle_system_set() -> SystemSet {
+    ConditionSet::new()
+        .label("lifecycle")
+        .run_if_not(ui::is_paused)
+        .with_system(lifecycle::transition_to_adult_system)
+        .with_system(lifecycle::transition_to_hatching_system)
         .into()
 }
 
@@ -82,6 +91,7 @@ impl Plugin for GenesisPlugin {
                 "spawner_stats",
                 0,
                 spawning::nearest_spawner_system.run_if_not(ui::is_paused),
-            );
+            )
+            .add_fixed_timestep_system_set("standard", 0, lifecycle_system_set());
     }
 }

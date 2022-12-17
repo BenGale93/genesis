@@ -69,6 +69,16 @@ impl Plant {
     }
 }
 
+#[derive(Component)]
+pub struct EggEnergy(pub Energy);
+
+impl EggEnergy {
+    #[must_use]
+    pub fn move_all_energy(&mut self) -> Energy {
+        self.0.take_energy(self.0.amount())
+    }
+}
+
 #[derive(Debug, Resource)]
 pub struct Ecosystem {
     energy: Energy,

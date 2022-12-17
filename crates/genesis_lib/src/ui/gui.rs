@@ -12,8 +12,8 @@ use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use super::{brain_panel, interaction, statistics};
 use crate::{
     attributes,
-    behaviour::{eating, lifecycle, sight, timers},
-    body, ecosystem,
+    behaviour::{eating, laying, sight, timers},
+    body, ecosystem, lifecycle,
 };
 
 #[derive(Debug, Default, Resource)]
@@ -276,7 +276,7 @@ pub fn bug_brain_info_system(
     }
 }
 
-type BugStatsInfo<'a> = (&'a eating::EnergyConsumed, &'a lifecycle::EggsLaid);
+type BugStatsInfo<'a> = (&'a eating::EnergyConsumed, &'a laying::EggsLaid);
 
 pub fn bug_stats_info_system(
     bug_query: Query<BugStatsInfo, With<Selected>>,
@@ -316,7 +316,7 @@ fn egg_panel_buttons(ui: &mut egui::Ui, egg_info_panel_state: &mut EggInfoPanel)
 type EggLiveInfo<'a> = (&'a timers::Age, &'a lifecycle::Generation);
 
 pub fn egg_live_info_panel_system(
-    egg_query: Query<EggLiveInfo, (With<Selected>, With<lifecycle::EggEnergy>)>,
+    egg_query: Query<EggLiveInfo, (With<Selected>, With<ecosystem::EggEnergy>)>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {

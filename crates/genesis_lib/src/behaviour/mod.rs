@@ -7,7 +7,7 @@ use crate::ui;
 
 pub mod eating;
 pub mod growth;
-pub mod lifecycle;
+pub mod laying;
 pub mod metabolism;
 pub mod movement;
 pub mod sight;
@@ -40,7 +40,7 @@ pub fn after_thinking_system_set() -> SystemSet {
         .with_system(timers::reset_internal_timer_system)
         .with_system(movement::movement_system)
         .with_system(eating::process_eaters_system)
-        .with_system(lifecycle::process_layers_system)
+        .with_system(laying::process_layers_system)
         .with_system(growth::process_growers_system)
         .into()
 }
@@ -59,8 +59,6 @@ pub fn other_behaviour_system_set() -> SystemSet {
     ConditionSet::new()
         .label("other")
         .run_if_not(ui::is_paused)
-        .with_system(lifecycle::transition_to_adult_system)
-        .with_system(lifecycle::transition_to_hatching_system)
         .with_system(growth::existence_system)
         .with_system(eating::eating_system)
         .into()
@@ -69,7 +67,7 @@ pub fn other_behaviour_system_set() -> SystemSet {
 pub fn slow_behaviour_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(ui::is_paused)
-        .with_system(lifecycle::lay_egg_system)
+        .with_system(laying::lay_egg_system)
         .with_system(growth::grow_bug_system)
         .into()
 }
@@ -78,7 +76,7 @@ pub fn very_slow_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(ui::is_paused)
         .with_system(metabolism::energy_return_system)
-        .with_system(lifecycle::spawn_egg_system)
+        .with_system(laying::spawn_egg_system)
         .into()
 }
 

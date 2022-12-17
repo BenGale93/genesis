@@ -5,8 +5,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::Collider;
 
-use super::lifecycle::Egg;
-use crate::{attributes, body, config, mind};
+use crate::{attributes, body, config, lifecycle::Egg, mind};
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct TryingToGrow(pub Stopwatch);

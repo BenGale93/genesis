@@ -6,8 +6,10 @@ use bevy_rapier2d::prelude::RapierContext;
 use derive_more::{Deref, DerefMut};
 use genesis_maths::{angle_to_point, rebased_angle};
 
-use super::{lifecycle::Egg, metabolism::BurntEnergy};
-use crate::{attributes, body::Vitality, config, ecosystem::Plant, mind::MindOutput};
+use super::metabolism::BurntEnergy;
+use crate::{
+    attributes, body::Vitality, config, ecosystem::Plant, lifecycle::Egg, mind::MindOutput,
+};
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct TryingToEat(pub Stopwatch);
