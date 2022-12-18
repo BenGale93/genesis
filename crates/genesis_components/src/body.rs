@@ -174,6 +174,11 @@ impl Vitality {
         returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
         returning_energy
     }
+
+    #[must_use]
+    pub fn metabolism_rate(&self) -> f32 {
+        self.size.current_size * config::WorldConfig::global().unit_size_cost
+    }
 }
 
 #[derive(Debug)]

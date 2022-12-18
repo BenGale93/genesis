@@ -32,16 +32,24 @@ impl Vision {
         self.food_dist_score = 0.0;
     }
 
-    pub fn set_visible_bugs(&mut self, visible_bugs: u32) {
-        self.visible_bugs = visible_bugs;
+    pub fn increment_bugs(&mut self) {
+        self.visible_bugs += 1;
+    }
+
+    pub fn increment_food(&mut self) {
+        self.visible_food += 1;
     }
 
     pub fn set_bug_angle_score(&mut self, bug_angle_score: f32) {
-        self.bug_angle_score = bug_angle_score;
+        if self.bug_angle_score < bug_angle_score {
+            self.bug_angle_score = bug_angle_score;
+        }
     }
 
     pub fn set_bug_dist_score(&mut self, bug_dist_score: f32) {
-        self.bug_dist_score = bug_dist_score;
+        if self.bug_dist_score < bug_dist_score {
+            self.bug_dist_score = bug_dist_score;
+        }
     }
 
     pub fn set_visible_food(&mut self, visible_food: u32) {
@@ -49,11 +57,15 @@ impl Vision {
     }
 
     pub fn set_food_angle_score(&mut self, food_angle_score: f32) {
-        self.food_angle_score = food_angle_score;
+        if self.food_angle_score < food_angle_score {
+            self.food_angle_score = food_angle_score;
+        }
     }
 
     pub fn set_food_dist_score(&mut self, food_dist_score: f32) {
-        self.food_dist_score = food_dist_score;
+        if self.food_dist_score < food_dist_score {
+            self.food_dist_score = food_dist_score;
+        }
     }
 }
 

@@ -71,7 +71,6 @@ pub fn grow_bug_system(
 
 pub fn existence_system(time: Res<Time>, mut bug_query: Query<(&body::Vitality, &mut SizeSum)>) {
     for (vitality, mut size_sum) in bug_query.iter_mut() {
-        let rate = vitality.size().current_size() * config::WorldConfig::global().unit_size_cost;
-        size_sum.add_existence_time(time.delta_seconds(), rate);
+        size_sum.add_existence_time(time.delta_seconds(), vitality.metabolism_rate());
     }
 }

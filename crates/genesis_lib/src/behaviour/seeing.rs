@@ -38,31 +38,21 @@ pub fn process_sight_system(
                 continue;
             }
             if cone.is_within_cone(bug_transform.translation) {
-                let visible_bugs = vision.visible_bugs() + 1;
-                vision.set_visible_bugs(visible_bugs);
+                vision.increment_bugs();
 
                 let (dist_score, angle_score) = dist_angle_score(transform, bug_transform);
-                if vision.bug_dist_score() < &dist_score {
-                    vision.set_bug_dist_score(dist_score);
-                }
-                if vision.bug_angle_score() < &angle_score {
-                    vision.set_bug_angle_score(angle_score);
-                }
+                vision.set_bug_dist_score(dist_score);
+                vision.set_bug_angle_score(angle_score);
             }
         }
 
         for food_transform in food_query.iter() {
             if cone.is_within_cone(food_transform.translation) {
-                let visible_food = vision.visible_food() + 1;
-                vision.set_visible_food(visible_food);
+                vision.increment_food();
 
                 let (dist_score, angle_score) = dist_angle_score(transform, food_transform);
-                if vision.food_dist_score() < &dist_score {
-                    vision.set_food_dist_score(dist_score);
-                }
-                if vision.food_angle_score() < &angle_score {
-                    vision.set_food_angle_score(angle_score);
-                }
+                vision.set_food_dist_score(dist_score);
+                vision.set_food_angle_score(angle_score);
             }
         }
     }
