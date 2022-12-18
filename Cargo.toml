@@ -1,44 +1,45 @@
-[package]
-authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
-name = "genesis"
-version = "0.1.0"
-edition = "2021"
-license = "MIT"
-repository = "https://github.com/BenGale93/genesis"
-readme = "./README.md"
+[workspace]
+resolver = "2"
+members = [
+    "crates/*",
+    "genesis_game"
+]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.htm
-
-[[bin]]
-name = "genesis"
-path = "src/bin/genesis/main.rs"
-
-[lib]
-name = "genesis"
-path = "src/lib.rs"
-
-[dependencies]
-genesis-brain = { path = "crates/genesis-brain" }
-genesis-genome = { path = "crates/genesis-genome" }
-genesis-util = { path = "crates/genesis-util/"}
-bevy = { version = "0.9.1", features = [] }
-rand = "0.8.5"
-thiserror = "1.0.37"
-derive_more = "0.99.17"
+[workspace.dependencies]
+genesis_attributes = { path = "./crates/genesis_attributes" }
+genesis_brain = { path = "./crates/genesis_brain" }
+genesis_color = { path = "./crates/genesis_color/"}
+genesis_components = { path = "./crates/genesis_components/"}
+genesis_config = { path = "./crates/genesis_config" }
+genesis_ecosystem = { path = "./crates/genesis_ecosystem" }
+genesis_genome = { path = "./crates/genesis_genome" }
+genesis_lib = { path = "./crates/genesis_lib" }
+genesis_maths = {path = "./crates/genesis_maths/"}
+genesis_newtype = { path = "./crates/genesis_newtype/"}
+genesis_spawners = { path = "./crates/genesis_spawners" }
+bevy = "0.9.1"
+bevy_ecs = "0.9.1"
+bevy_render = "0.9.1"
+bevy_time = "0.9.1"
+bevy_core_pipeline = "0.9.1"
+bevy_egui = "0.17.1"
 bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
+iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}
+derive_more = "0.99.17"
+derive-getters = "0.2.0"
 anyhow = "1.0.66"
-once_cell = "1.16.0"
-confy = "0.5.1"
+thiserror = "1.0.37"
 serde_derive = "1.0.147"
 serde = "1.0.149"
-bevy_egui = "0.17.1"
-derive-getters = "0.2.0"
 serde_json = "1.0.89"
+rand = "0.8.5"
 rand_distr = "0.4.3"
-iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}
+nalgebra = "0.31.4"
+ndarray = "0.15.6"
+num = "0.4.0"
+glam = "0.22.0"
+once_cell = "1.16.0"
+confy = "0.5.1"
 itertools = "0.10.5"
-
-[dev-dependencies]
-
-[workspace]
-members = ["crates/*"]
+bitvec = "1.0.1"
+cached = "0.40.0"

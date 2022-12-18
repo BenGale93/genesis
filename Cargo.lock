@@ -1785,22 +1785,130 @@ dependencies = [
 ]
 
 [[package]]
-name = "genesis"
+name = "genesis_attributes"
+version = "0.1.0"
+dependencies = [
+ "bevy_ecs",
+ "derive_more",
+ "genesis_config",
+ "genesis_genome",
+ "genesis_maths",
+ "genesis_newtype",
+]
+
+[[package]]
+name = "genesis_brain"
+version = "0.1.0"
+dependencies = [
+ "cached",
+ "genesis_maths",
+ "genesis_newtype",
+ "rand",
+ "rand_distr",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis_color"
+version = "0.1.0"
+dependencies = [
+ "genesis_newtype",
+ "ndarray",
+]
+
+[[package]]
+name = "genesis_components"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy_ecs",
+ "bevy_egui",
+ "bevy_rapier2d",
+ "bevy_render",
+ "bevy_time",
+ "derive-getters",
+ "derive_more",
+ "genesis_brain",
+ "genesis_color",
+ "genesis_config",
+ "genesis_ecosystem",
+ "genesis_genome",
+ "genesis_maths",
+ "genesis_newtype",
+ "glam",
+ "itertools",
+ "rand",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "genesis_config"
+version = "0.1.0"
+dependencies = [
+ "bevy_core_pipeline",
+ "bevy_render",
+ "confy",
+ "once_cell",
+ "serde",
+ "serde_derive",
+]
+
+[[package]]
+name = "genesis_ecosystem"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy_ecs",
+ "bevy_rapier2d",
+ "derive_more",
+ "genesis_config",
+ "glam",
+]
+
+[[package]]
+name = "genesis_game"
+version = "0.1.0"
+dependencies = [
+ "bevy",
+ "bevy_egui",
+ "bevy_rapier2d",
+ "genesis_lib",
+]
+
+[[package]]
+name = "genesis_genome"
+version = "0.1.0"
+dependencies = [
+ "bitvec",
+ "genesis_newtype",
+ "ndarray",
+ "rand",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis_lib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
  "bevy_egui",
  "bevy_rapier2d",
- "confy",
  "derive-getters",
  "derive_more",
- "genesis-brain",
- "genesis-genome",
- "genesis-util",
+ "genesis_attributes",
+ "genesis_brain",
+ "genesis_color",
+ "genesis_components",
+ "genesis_config",
+ "genesis_ecosystem",
+ "genesis_genome",
+ "genesis_maths",
+ "genesis_newtype",
+ "genesis_spawners",
  "itertools",
  "iyes_loopless",
- "once_cell",
  "rand",
  "rand_distr",
  "serde",
@@ -1810,37 +1918,35 @@ dependencies = [
 ]
 
 [[package]]
-name = "genesis-brain"
-version = "0.1.0"
-dependencies = [
- "cached",
- "genesis-util",
- "rand",
- "rand_distr",
- "thiserror",
-]
-
-[[package]]
-name = "genesis-genome"
-version = "0.1.0"
-dependencies = [
- "bitvec",
- "genesis-util",
- "ndarray",
- "rand",
- "thiserror",
-]
-
-[[package]]
-name = "genesis-util"
+name = "genesis_maths"
 version = "0.1.0"
 dependencies = [
  "glam",
  "nalgebra",
- "ndarray",
  "num",
+ "thiserror",
+]
+
+[[package]]
+name = "genesis_newtype"
+version = "0.1.0"
+dependencies = [
  "rand",
  "thiserror",
+]
+
+[[package]]
+name = "genesis_spawners"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "bevy_ecs",
+ "derive_more",
+ "genesis_config",
+ "genesis_maths",
+ "glam",
+ "rand",
+ "rand_distr",
 ]
 
 [[package]]

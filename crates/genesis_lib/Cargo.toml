@@ -1,0 +1,34 @@
+[package]
+name = "genesis_lib"
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+genesis_brain = { workspace = true }
+genesis_genome = { workspace = true }
+genesis_newtype = { workspace = true }
+genesis_color = { workspace = true }
+genesis_components = { workspace = true }
+genesis_maths = { workspace = true }
+genesis_spawners = { workspace = true }
+genesis_config = { workspace = true }
+genesis_ecosystem = { workspace = true }
+genesis_attributes = { workspace = true }
+bevy = { workspace = true }
+rand = { workspace = true }
+thiserror = { workspace = true }
+derive_more = { workspace = true }
+bevy_rapier2d = { workspace = true }
+anyhow = { workspace = true }
+serde_derive = { workspace = true}
+serde = { workspace = true}
+bevy_egui = { workspace = true}
+derive-getters = { workspace = true}
+serde_json = { workspace = true}
+rand_distr = { workspace = true}
+iyes_loopless = { workspace = true}
+itertools = { workspace = true }
+
+[dev-dependencies]

@@ -11,4 +11,7 @@ test PACKAGE:
     @cargo nextest run -p {{PACKAGE}}
 
 clean:
-    @rm assets/config/genesis.toml
+    @rm config/genesis.toml
+
+udeps:
+    @cargo +nightly udeps

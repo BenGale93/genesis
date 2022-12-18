@@ -1,0 +1,16 @@
+[package]
+name = "genesis_spawners"
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+genesis_maths = {workspace= true}
+genesis_config = {workspace= true}
+bevy_ecs = { workspace = true }
+derive_more = {workspace= true}
+anyhow = {workspace= true}
+rand = {workspace= true}
+rand_distr = {workspace= true}
+glam = {workspace = true}
