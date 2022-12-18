@@ -2,7 +2,8 @@
 mod attr_config;
 mod validators;
 
-use bevy::prelude::{ClearColor, Color};
+use bevy_core_pipeline::clear_color::ClearColor;
+use bevy_render::color::Color;
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 extern crate serde;

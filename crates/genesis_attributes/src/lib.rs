@@ -12,7 +12,7 @@
 //! Size related attributes are on chromosome 10.
 //! Offspring energy and hatch age are on chromosome 10.
 #![warn(clippy::all, clippy::nursery)]
-use bevy::prelude::{Bundle, Component};
+use bevy_ecs::prelude::{Bundle, Component};
 use derive_more::Deref;
 use genesis_config as config;
 use genesis_genome::Genome;

@@ -13,7 +13,9 @@ genesis_maths = { workspace = true }
 genesis_config = { workspace = true }
 genesis_color = { workspace = true }
 genesis_ecosystem = { workspace = true }
-bevy = { workspace = true }
+bevy_ecs = { workspace = true }
+bevy_time = { workspace = true }
+bevy_render = { workspace = true }
 bevy_rapier2d = {workspace = true}
 bevy_egui = { workspace = true }
 anyhow = {workspace = true}
@@ -23,3 +25,4 @@ itertools = { workspace = true }
 serde_derive = { workspace = true}
 serde = { workspace = true}
 rand = {workspace = true}
+glam = {workspace = true}

@@ -3,10 +3,11 @@ extern crate derive_more;
 use std::fmt;
 
 use anyhow::{anyhow, Result};
-use bevy::prelude::{Component, Resource, Vec2};
+use bevy_ecs::prelude::{Component, Resource};
 use bevy_rapier2d::prelude::Collider;
 use derive_more::{Add, Constructor, Display, Sub};
 use genesis_config as config;
+use glam::Vec2;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
 pub struct Energy(usize);

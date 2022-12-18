@@ -1,11 +1,13 @@
 use anyhow::{anyhow, Result};
-use bevy::prelude::{Color, Component, Vec2};
+use bevy_ecs::prelude::Component;
 use bevy_rapier2d::prelude::Collider;
+use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_genome::Genome;
 use genesis_newtype::Probability;
+use glam::Vec2;
 use rand::RngCore;
 
 #[derive(Component, Debug, Deref, DerefMut)]

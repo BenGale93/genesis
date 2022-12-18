@@ -2,10 +2,11 @@
 use std::f32::consts::PI;
 
 use anyhow::anyhow;
-use bevy::prelude::{Resource, Vec3};
+use bevy_ecs::prelude::Resource;
 use derive_more::{Deref, DerefMut};
 use genesis_config::{DistributionConfig, SpawnerConfig};
 use genesis_maths::polars_to_cart;
+use glam::Vec3;
 use rand::{rngs::ThreadRng, Rng};
 use rand_distr::{Distribution, Gamma, InverseGaussian, LogNormal, Normal, Uniform};
 

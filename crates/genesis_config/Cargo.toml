@@ -6,7 +6,8 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
-bevy = { workspace = true }
+bevy_render = { workspace = true }
+bevy_core_pipeline = { workspace = true }
 once_cell = { workspace = true}
 serde_derive = { workspace = true}
 confy = { workspace = true}

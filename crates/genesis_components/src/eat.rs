@@ -1,4 +1,5 @@
-use bevy::{prelude::Component, time::Stopwatch};
+use bevy_ecs::prelude::Component;
+use bevy_time::Stopwatch;
 use derive_more::{Deref, DerefMut};
 
 #[derive(Component, Debug, Deref, DerefMut)]

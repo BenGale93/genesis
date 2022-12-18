@@ -1788,7 +1788,7 @@ dependencies = [
 name = "genesis_attributes"
 version = "0.1.0"
 dependencies = [
- "bevy",
+ "bevy_ecs",
  "derive_more",
  "genesis_config",
  "genesis_genome",
@@ -1821,9 +1821,11 @@ name = "genesis_components"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bevy",
+ "bevy_ecs",
  "bevy_egui",
  "bevy_rapier2d",
+ "bevy_render",
+ "bevy_time",
  "derive-getters",
  "derive_more",
  "genesis_brain",
@@ -1833,6 +1835,7 @@ dependencies = [
  "genesis_genome",
  "genesis_maths",
  "genesis_newtype",
+ "glam",
  "itertools",
  "rand",
  "serde",
@@ -1843,7 +1846,8 @@ dependencies = [
 name = "genesis_config"
 version = "0.1.0"
 dependencies = [
- "bevy",
+ "bevy_core_pipeline",
+ "bevy_render",
  "confy",
  "once_cell",
  "serde",
@@ -1855,10 +1859,11 @@ name = "genesis_ecosystem"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bevy",
+ "bevy_ecs",
  "bevy_rapier2d",
  "derive_more",
  "genesis_config",
+ "glam",
 ]
 
 [[package]]
@@ -1935,10 +1940,11 @@ name = "genesis_spawners"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "bevy",
+ "bevy_ecs",
  "derive_more",
  "genesis_config",
  "genesis_maths",
+ "glam",
  "rand",
  "rand_distr",
 ]

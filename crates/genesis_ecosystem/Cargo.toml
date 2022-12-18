@@ -7,7 +7,8 @@ license = "MIT"
 
 [dependencies]
 genesis_config = { workspace = true }
-bevy = { workspace = true }
+bevy_ecs = { workspace = true }
 bevy_rapier2d = { workspace = true }
 derive_more = { workspace = true}
 anyhow = { workspace = true }
+glam = {workspace = true}

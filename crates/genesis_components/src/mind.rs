@@ -1,5 +1,6 @@
-use bevy::prelude::{Bundle, Color, Component};
+use bevy_ecs::prelude::{Bundle, Component};
 use bevy_egui::egui;
+use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::{feed_forward_layers, Brain, NeuronKind, Neurons, Synapses};
 use genesis_color as color;

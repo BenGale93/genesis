@@ -18,6 +18,10 @@ genesis_maths = {path = "./crates/genesis_maths/"}
 genesis_newtype = { path = "./crates/genesis_newtype/"}
 genesis_spawners = { path = "./crates/genesis_spawners" }
 bevy = "0.9.1"
+bevy_ecs = "0.9.1"
+bevy_render = "0.9.1"
+bevy_time = "0.9.1"
+bevy_core_pipeline = "0.9.1"
 bevy_egui = "0.17.1"
 bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
 iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}

@@ -1,9 +1,7 @@
 use std::fmt;
 
-use bevy::{
-    prelude::{Component, Resource},
-    time::Stopwatch,
-};
+use bevy_ecs::prelude::{Component, Resource};
+use bevy_time::Stopwatch;
 use derive_more::{Deref, DerefMut};
 
 #[derive(Resource, Debug, Deref, DerefMut)]

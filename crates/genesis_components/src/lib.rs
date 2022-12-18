@@ -1,4 +1,5 @@
-use bevy::prelude::{Color, Component, Entity};
+use bevy_ecs::prelude::{Component, Entity};
+use bevy_render::color::Color;
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_ecosystem::Energy;

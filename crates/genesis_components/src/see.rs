@@ -1,4 +1,4 @@
-use bevy::prelude::Component;
+use bevy_ecs::prelude::Component;
 use derive_getters::Getters;
 
 #[derive(Component, Debug, Getters)]
