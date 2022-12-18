@@ -2,12 +2,9 @@ use bevy::{
     prelude::{Query, Res, ResMut},
     time::Time,
 };
-
-use crate::{
-    attributes,
-    components::{mind::MindOutput, time::*},
-    config,
-};
+use genesis_attributes as attributes;
+use genesis_components::{mind::MindOutput, time::*};
+use genesis_config as config;
 
 pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
     for mut age in query.iter_mut() {

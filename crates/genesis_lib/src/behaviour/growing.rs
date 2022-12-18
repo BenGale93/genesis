@@ -4,12 +4,9 @@ use bevy::{
     time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::Collider;
-
-use crate::{
-    attributes, body,
-    components::{grow::*, mind, Egg},
-    config,
-};
+use genesis_attributes as attributes;
+use genesis_components::{body, grow::*, mind, Egg};
+use genesis_config as config;
 
 type GrowerTest<'a> = (
     Entity,

@@ -12,9 +12,6 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
-use genesis_attributes as attributes;
-use genesis_body as body;
-use genesis_components as components;
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;

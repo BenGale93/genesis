@@ -11,9 +11,8 @@ use bevy::{
     window::Windows,
 };
 use bevy_rapier2d::prelude::{RapierConfiguration, TimestepMode};
+use genesis_config as config;
 use iyes_loopless::prelude::*;
-
-use crate::config;
 
 pub fn move_camera_system(
     kb_input: Res<Input<KeyCode>>,

@@ -1,10 +1,8 @@
 use bevy::prelude::{Query, ResMut};
-
-use crate::{
-    body,
-    components::{eat::EatingSum, grow::SizeSum, BurntEnergy, MovementSum, ThinkingSum},
-    ecosystem,
+use genesis_components::{
+    body, eat::EatingSum, grow::SizeSum, BurntEnergy, MovementSum, ThinkingSum,
 };
+use genesis_ecosystem as ecosystem;
 
 pub fn energy_return_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,

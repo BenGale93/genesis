@@ -1,6 +1,9 @@
 use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, ResMut, With, Without};
+use genesis_attributes as attributes;
+use genesis_components::*;
+use genesis_ecosystem as ecosystem;
 
-use crate::{attributes, body, components::*, ecosystem, statistics};
+use crate::statistics;
 
 pub fn transition_to_adult_system(
     mut commands: Commands,

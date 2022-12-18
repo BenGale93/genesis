@@ -7,7 +7,6 @@ members = [
 
 [workspace.dependencies]
 genesis_attributes = { path = "./crates/genesis_attributes" }
-genesis_body = { path = "./crates/genesis_body" }
 genesis_brain = { path = "./crates/genesis_brain" }
 genesis_color = { path = "./crates/genesis_color/"}
 genesis_components = { path = "./crates/genesis_components/"}

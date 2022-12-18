@@ -8,14 +8,12 @@ use bevy::{
 };
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
+use genesis_attributes as attributes;
+use genesis_components as components;
+use genesis_components::{body, eat, lay, see, time};
+use genesis_ecosystem as ecosystem;
 
 use super::{brain_panel, interaction, statistics};
-use crate::{
-    attributes, body,
-    components::{self, eat, lay, see, time},
-    ecosystem,
-};
-
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
 

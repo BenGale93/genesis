@@ -1,14 +1,11 @@
 use bevy::prelude::{Query, Res, ResMut, Resource};
-use components::Relations;
+use components::{eat, lay, time};
 use derive_getters::Getters;
+use genesis_attributes as attributes;
+use genesis_components as components;
+use genesis_ecosystem as ecosystem;
 use genesis_maths::mean;
 use serde_derive::Serialize;
-
-use crate::{
-    attributes,
-    components::{self, eat, lay, time},
-    ecosystem,
-};
 
 fn last_element<T>(vector: &[T]) -> T
 where
@@ -256,11 +253,14 @@ pub fn attribute_stats_system(
 
 #[derive(Resource, Serialize, Debug, Default)]
 pub struct FamilyTree {
-    pub dead_relations: Vec<Relations>,
-    pub active_relations: Vec<Relations>,
+    pub dead_relations: Vec<components::Relations>,
+    pub active_relations: Vec<components::Relations>,
 }
 
-pub fn family_tree_update(mut family_tree: ResMut<FamilyTree>, relations_query: Query<&Relations>) {
+pub fn family_tree_update(
+    mut family_tree: ResMut<FamilyTree>,
+    relations_query: Query<&components::Relations>,
+) {
     let interesting_relations = relations_query
         .into_iter()
         .cloned()

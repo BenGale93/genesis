@@ -1,13 +1,10 @@
 use std::f32::consts::PI;
 
 use bevy::prelude::{Quat, Query, Transform, With};
+use genesis_attributes::{EyeAngle, EyeRange};
+use genesis_components::{mind::Mind, see::Vision};
+use genesis_ecosystem::Plant;
 use genesis_maths::{angle_to_point, Cone};
-
-use crate::{
-    attributes::{EyeAngle, EyeRange},
-    components::{mind::Mind, see::Vision},
-    ecosystem::Plant,
-};
 
 fn dist_angle_score(transform: &Transform, target_transform: &Transform) -> (f32, f32) {
     let dist = target_transform.translation - transform.translation;

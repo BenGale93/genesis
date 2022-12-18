@@ -1,10 +1,7 @@
 use bevy::prelude::Query;
-
-use crate::{
-    attributes, body,
-    components::{mind, see::Vision, time, ThinkingSum},
-    config,
-};
+use genesis_attributes as attributes;
+use genesis_components::{body, mind, see::Vision, time, ThinkingSum};
+use genesis_config as config;
 
 const CONST: f32 = 1.0;
 
@@ -56,10 +53,11 @@ pub fn thinking_system(
 #[cfg(test)]
 mod tests {
     use bevy::prelude::*;
+    use genesis_components::mind::*;
+    use genesis_config as config;
     use genesis_genome::Genome;
 
     use super::*;
-    use crate::{components::mind::*, config};
 
     #[test]
     fn mind_thinks() {

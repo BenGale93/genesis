@@ -3,15 +3,11 @@ use bevy::{
     time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::RapierContext;
+use genesis_attributes as attributes;
+use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg};
+use genesis_config as config;
+use genesis_ecosystem::Plant;
 use genesis_maths::{angle_to_point, rebased_angle};
-
-use crate::{
-    attributes,
-    body::Vitality,
-    components::{eat::*, mind::MindOutput, BurntEnergy, Egg},
-    config,
-    ecosystem::Plant,
-};
 
 pub fn process_eaters_system(
     mut commands: Commands,

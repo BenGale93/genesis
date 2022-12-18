@@ -1,11 +1,8 @@
 use bevy::prelude::{Query, Transform};
 use bevy_rapier2d::prelude::Velocity;
-
-use crate::{
-    attributes,
-    components::{mind, MovementSum},
-    config,
-};
+use genesis_attributes as attributes;
+use genesis_components::{mind, MovementSum};
+use genesis_config as config;
 
 pub fn movement_system(
     mut query: Query<(

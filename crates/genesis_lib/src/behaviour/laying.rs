@@ -7,14 +7,15 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
+use genesis_attributes as attributes;
+use genesis_components as components;
+use genesis_components::{body, eat, grow, lay::*, mind, see, time, BurntEnergy};
+use genesis_config as config;
+use genesis_ecosystem as ecosystem;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 
-use crate::{
-    attributes, body,
-    components::{self, eat, grow, lay::*, mind, see, time, BurntEnergy},
-    config, ecosystem, statistics,
-};
+use crate::statistics;
 
 type LayerTest<'a> = (Entity, &'a mind::MindOutput, &'a attributes::LayEggBoundary);
 

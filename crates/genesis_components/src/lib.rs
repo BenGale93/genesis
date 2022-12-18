@@ -5,6 +5,7 @@ use genesis_ecosystem::Energy;
 use genesis_maths::cantor_pairing;
 use serde_derive::Serialize;
 
+pub mod body;
 pub mod eat;
 pub mod grow;
 pub mod lay;

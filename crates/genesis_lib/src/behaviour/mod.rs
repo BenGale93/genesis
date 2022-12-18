@@ -1,9 +1,10 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, Plugin, SystemSet};
+use genesis_components::time;
 use iyes_loopless::prelude::*;
 
-use crate::{components::time, ui};
+use crate::ui;
 
 pub mod eating;
 pub mod growing;

@@ -9,12 +9,13 @@ use bevy::{
     prelude::{App, CoreStage, EventReader, Plugin, Res, SystemSet},
     time::Time,
 };
+use genesis_config::WorldConfig;
 pub use gui::{EntityPanelState, GlobalPanelState};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
 
-use crate::{config::WorldConfig, statistics};
+use crate::statistics;
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
