@@ -37,13 +37,13 @@ pub fn sensory_system(
 pub fn thinking_system(
     mut query: Query<(
         &mind::MindInput,
-        &mind::Mind,
+        &mut mind::Mind,
         &mut mind::MindOutput,
         &mut ThinkingSum,
         &attributes::CostOfThought,
     )>,
 ) {
-    for (input, bug_brain, mut output, mut thoughts, cost) in query.iter_mut() {
+    for (input, mut bug_brain, mut output, mut thoughts, cost) in query.iter_mut() {
         let x = bug_brain.activate(input).expect("Wrong length vector");
         output.0 = x;
         thoughts.add_thought(bug_brain.synapses().len(), **cost);

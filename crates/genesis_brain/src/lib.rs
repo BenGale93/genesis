@@ -66,7 +66,7 @@ impl Brain {
         self.synapses.as_ref()
     }
 
-    pub fn activate(&self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
+    pub fn activate(&mut self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
         if input_values.len() != self.inputs {
             return Err(BrainError::InputArrayError);
         }
@@ -79,7 +79,7 @@ impl Brain {
 
         for layer in layers {
             for neuron_index in layer {
-                let neuron = &self.neurons[neuron_index];
+                let mut neuron = self.neurons[neuron_index];
                 let incoming_values: Vec<f32> = self
                     .synapses
                     .iter()
@@ -689,7 +689,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "value: InputArrayError")]
     fn activate_with_wrong_length_input() {
-        let test_brain = super::Brain::new(2, 2);
+        let mut test_brain = super::Brain::new(2, 2);
         test_brain.activate(&[10.0]).unwrap();
     }
 

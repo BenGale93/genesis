@@ -13,6 +13,7 @@ pub enum ActivationFunctionKind {
     Gaussian,
     BentIdentity,
     Selu,
+    Latch(u8),
 }
 
 impl Distribution<ActivationFunctionKind> for Standard {
@@ -27,6 +28,7 @@ impl Distribution<ActivationFunctionKind> for Standard {
             6 => ActivationFunctionKind::Gaussian,
             8 => ActivationFunctionKind::BentIdentity,
             9 => ActivationFunctionKind::Selu,
+            10 => ActivationFunctionKind::Latch(0),
             _ => ActivationFunctionKind::Identity,
         }
     }
@@ -85,7 +87,17 @@ fn selu(x: f32) -> f32 {
     fx * scale
 }
 
-pub fn activate(x: f32, kind: &ActivationFunctionKind) -> f32 {
+fn latch(x: f32, s: u8) -> (f32, u8) {
+    if x <= 0.0 {
+        (0.0, 0)
+    } else if x >= 1.0 {
+        (1.0, 1)
+    } else {
+        (s as f32, s)
+    }
+}
+
+pub fn activate(x: f32, kind: &mut ActivationFunctionKind) -> f32 {
     match kind {
         ActivationFunctionKind::Identity => identity(x),
         ActivationFunctionKind::Sigmoid => sigmoid(x),
@@ -97,6 +109,11 @@ pub fn activate(x: f32, kind: &ActivationFunctionKind) -> f32 {
         ActivationFunctionKind::Gaussian => gaussian(x),
         ActivationFunctionKind::BentIdentity => bent_iden(x),
         ActivationFunctionKind::Selu => selu(x),
+        ActivationFunctionKind::Latch(s) => {
+            let (out, new_s) = latch(x, *s);
+            *s = new_s;
+            out
+        }
     }
 }
 
@@ -109,7 +126,7 @@ mod tests {
     #[test]
     fn identity_returns_input() {
         assert_eq!(
-            activation::activate(1.5, &activation::ActivationFunctionKind::Identity),
+            activation::activate(1.5, &mut activation::ActivationFunctionKind::Identity),
             1.5
         );
     }
@@ -117,7 +134,7 @@ mod tests {
     #[test]
     fn sigmoid_test() {
         assert_eq!(
-            activation::activate(0.0, &activation::ActivationFunctionKind::Sigmoid),
+            activation::activate(0.0, &mut activation::ActivationFunctionKind::Sigmoid),
             0.5
         );
     }
@@ -125,7 +142,7 @@ mod tests {
     #[test]
     fn tanh_test() {
         assert_eq!(
-            activation::activate(0.0, &activation::ActivationFunctionKind::Tanh),
+            activation::activate(0.0, &mut activation::ActivationFunctionKind::Tanh),
             0.0
         );
     }
@@ -133,11 +150,11 @@ mod tests {
     #[test]
     fn relu_test() {
         assert_eq!(
-            activation::activate(0.5, &activation::ActivationFunctionKind::Relu),
+            activation::activate(0.5, &mut activation::ActivationFunctionKind::Relu),
             0.5
         );
         assert_eq!(
-            activation::activate(-0.5, &activation::ActivationFunctionKind::Relu),
+            activation::activate(-0.5, &mut activation::ActivationFunctionKind::Relu),
             -0.005
         );
     }
@@ -145,11 +162,11 @@ mod tests {
     #[test]
     fn step_test() {
         assert_eq!(
-            activation::activate(0.5, &activation::ActivationFunctionKind::Step),
+            activation::activate(0.5, &mut activation::ActivationFunctionKind::Step),
             1.0
         );
         assert_eq!(
-            activation::activate(-0.5, &activation::ActivationFunctionKind::Step),
+            activation::activate(-0.5, &mut activation::ActivationFunctionKind::Step),
             0.0
         );
     }
@@ -157,7 +174,7 @@ mod tests {
     #[test]
     fn softsign_test() {
         assert_eq!(
-            activation::activate(-1.0, &activation::ActivationFunctionKind::Softsign),
+            activation::activate(-1.0, &mut activation::ActivationFunctionKind::Softsign),
             -0.5
         );
     }
@@ -165,7 +182,7 @@ mod tests {
     #[test]
     fn sin_test() {
         assert_eq!(
-            activation::activate(0.0, &activation::ActivationFunctionKind::Sin),
+            activation::activate(0.0, &mut activation::ActivationFunctionKind::Sin),
             0.0
         );
     }
@@ -173,7 +190,7 @@ mod tests {
     #[test]
     fn gaussian_test() {
         assert_eq!(
-            activation::activate(0.0, &activation::ActivationFunctionKind::Gaussian),
+            activation::activate(0.0, &mut activation::ActivationFunctionKind::Gaussian),
             1.0
         );
     }
@@ -181,7 +198,7 @@ mod tests {
     #[test]
     fn bent_iden_test() {
         assert_eq!(
-            activation::activate(1.0, &activation::ActivationFunctionKind::BentIdentity),
+            activation::activate(1.0, &mut activation::ActivationFunctionKind::BentIdentity),
             1.207_106_8
         );
     }
@@ -189,13 +206,27 @@ mod tests {
     #[test]
     fn selu_test() {
         assert_eq!(
-            activation::activate(1.0, &activation::ActivationFunctionKind::Selu),
+            activation::activate(1.0, &mut activation::ActivationFunctionKind::Selu),
             1.050_701
         );
         assert_eq!(
-            activation::activate(-1.0, &activation::ActivationFunctionKind::Selu),
+            activation::activate(-1.0, &mut activation::ActivationFunctionKind::Selu),
             -1.111_330_7
         );
+    }
+
+    #[test]
+    fn latch_test_change() {
+        let mut function = activation::ActivationFunctionKind::Latch(0);
+        assert_eq!(activation::activate(1.0, &mut function), 1.0);
+        assert_eq!(function, activation::ActivationFunctionKind::Latch(1));
+    }
+
+    #[test]
+    fn latch_test_no_change() {
+        let mut function = activation::ActivationFunctionKind::Latch(0);
+        assert_eq!(activation::activate(0.5, &mut function), 0.0);
+        assert_eq!(function, activation::ActivationFunctionKind::Latch(0));
     }
 
     #[test]
@@ -205,7 +236,7 @@ mod tests {
         assert_eq!(act_func, activation::ActivationFunctionKind::Step);
 
         let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
-        assert_eq!(act_func, activation::ActivationFunctionKind::Identity);
+        assert_eq!(act_func, activation::ActivationFunctionKind::Latch(0));
 
         let act_func: activation::ActivationFunctionKind = rng.sample(Standard);
         assert_eq!(act_func, activation::ActivationFunctionKind::Sigmoid);
