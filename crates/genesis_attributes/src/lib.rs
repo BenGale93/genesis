@@ -1,108 +1,164 @@
-//! Attributes are values that are read from Chromosomes comprised of 0 or 1.
-//!
-//! Adult age and death age are found on chromosome 0.
-//! Mutation probability is found on chromosome 1.
-//! Max speed and max rotation rate are found on chromosome 2.
-//! Translation and rotation costs are linear interpolations of max speed
-//! and max rotation.
-//! Eye range and angle are on chromosome 3 and can either be exactly correlated
-//! inversely correlated.
-//! Internal timer, lay egg and eating boundaries can be found on chromosome 4.
-//! Cost of thought, growth rate, cost of eating, and mouth width can be found on chromosome 5.
-//! Size related attributes are on chromosome 10.
-//! Offspring energy and hatch age are on chromosome 10.
 #![warn(clippy::all, clippy::nursery)]
 use bevy_ecs::prelude::{Bundle, Component};
+use bevy_reflect::{Reflect, Struct};
 use derive_more::Deref;
 use genesis_config as config;
-use genesis_genome::Genome;
 use genesis_maths::linear_interpolate;
 use genesis_newtype::Probability;
+use ndarray::Array;
+use rand::{seq::IteratorRandom, Rng, RngCore};
 
-#[derive(Debug)]
-struct AttributeConfig {
-    lower: f32,
-    upper: f32,
-    chromosome: usize,
-    start: usize,
-    length: usize,
+#[derive(Debug, Reflect, Clone)]
+pub struct Chromosome {
+    array: Vec<f32>,
+    value: f32,
 }
 
-impl AttributeConfig {
-    const fn new(lower: f32, upper: f32, chromosome: usize, start: usize, length: usize) -> Self {
+impl Chromosome {
+    pub fn new(lower: f32, upper: f32, steps: usize, rng: &mut dyn RngCore) -> Self {
+        let array = Array::linspace(lower, upper, steps);
+        let value = array.iter().copied().choose(rng).unwrap();
         Self {
-            lower,
-            upper,
-            chromosome,
-            start,
-            length,
+            array: array.to_vec(),
+            value,
         }
     }
 
-    fn read_genome(&self, genome: &Genome) -> f32 {
-        genome
-            .read_float(
-                self.lower,
-                self.upper,
-                self.chromosome,
-                self.start,
-                self.length,
-            )
-            .unwrap_or_else(|_| {
-                panic!(
-                    "Expected to be able to read from chromosome {} at {} for {}",
-                    self.chromosome, self.start, self.length
-                )
-            })
+    pub fn mutate(&mut self, rng: &mut dyn RngCore) {
+        let max = self.array.len() - 1;
+        let position = self.array.iter().position(|&x| x == self.value).unwrap();
+        let new_position = if rng.gen_bool(0.5) {
+            position.saturating_sub(1)
+        } else {
+            (position + 1).clamp(0, max)
+        };
+        self.value = self.array[new_position];
     }
 }
 
-macro_rules! impl_from_genome {
-    () => {
-        pub fn from_genome(genome: &Genome) -> Self {
-            let attribute_config = Self::default_config();
-            let value = attribute_config.read_genome(genome);
-            Self(value.into())
-        }
-    };
+#[derive(Debug, Component, Reflect, Clone)]
+pub struct Genome {
+    pub adult_age: Chromosome,
+    pub death_age: Chromosome,
+    pub mutation_probability: Chromosome,
+    pub max_speed: Chromosome,
+    pub max_rotation: Chromosome,
+    pub eye_range: Chromosome,
+    pub eye_angle: Chromosome,
+    pub internal_timer_boundary: Chromosome,
+    pub lay_egg_boundary: Chromosome,
+    pub want_to_grow_boundary: Chromosome,
+    pub eating_boundary: Chromosome,
+    pub cost_of_thought: Chromosome,
+    pub cost_of_eating: Chromosome,
+    pub offspring_energy: Chromosome,
+    pub mouth_width: Chromosome,
+    pub hatch_size: Chromosome,
+    pub max_size: Chromosome,
+    pub growth_rate: Chromosome,
+    pub hatch_age: Chromosome,
 }
 
-macro_rules! impl_default_config {
-    ($attr:ident, $chromosome:literal, $start:literal) => {
-        fn default_config() -> AttributeConfig {
-            let (min, max, length) = config::WorldConfig::global().attributes.$attr;
-            AttributeConfig::new(min, max, $chromosome, $start, length)
+impl Genome {
+    pub fn new(rng: &mut dyn RngCore) -> Self {
+        let attributes = &config::WorldConfig::global().attributes;
+        macro_rules! get_value {
+            ($attr:ident) => {
+                let (min, max, steps) = attributes.$attr;
+                let $attr = Chromosome::new(min, max, steps, rng);
+            };
+            ($attr:ident, $($attrs:ident), +) => {
+                get_value!($attr);
+               get_value!($($attrs), +)
+            }
         }
-    };
+        let (min, max, steps) = attributes.eye_angle;
+        let eye_angle = Chromosome::new(f32::to_radians(min), f32::to_radians(max), steps, rng);
+        get_value!(
+            adult_age,
+            death_age,
+            mutation_probability,
+            max_speed,
+            max_rotation,
+            eye_range,
+            internal_timer_boundary,
+            lay_egg_boundary,
+            want_to_grow_boundary,
+            eating_boundary,
+            cost_of_thought,
+            cost_of_eating,
+            offspring_energy,
+            mouth_width,
+            hatch_size,
+            max_size,
+            growth_rate,
+            hatch_age
+        );
+        Self {
+            adult_age,
+            death_age,
+            mutation_probability,
+            max_speed,
+            max_rotation,
+            eye_range,
+            eye_angle,
+            internal_timer_boundary,
+            lay_egg_boundary,
+            want_to_grow_boundary,
+            eating_boundary,
+            cost_of_thought,
+            cost_of_eating,
+            offspring_energy,
+            mouth_width,
+            hatch_size,
+            max_size,
+            growth_rate,
+            hatch_age,
+        }
+    }
+
+    pub fn mutate(&self, rng: &mut dyn RngCore, probability: &Probability) -> Self {
+        let mut output = self.clone();
+        for (i, _) in self.iter_fields().enumerate() {
+            if probability.as_float() >= rng.gen_range(0.0..=1.0) {
+                let attribute = output
+                    .field_at_mut(i)
+                    .unwrap()
+                    .downcast_mut::<Chromosome>()
+                    .unwrap();
+                attribute.mutate(rng);
+            }
+        }
+        output
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct AdultAge(f32);
 
 impl AdultAge {
-    impl_default_config!(adult_age, 0, 0);
-    impl_from_genome!();
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct DeathAge(f32);
 
 impl DeathAge {
-    impl_default_config!(death_age, 0, 4);
-    impl_from_genome!();
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct MutationProbability(Probability);
 
 impl MutationProbability {
-    pub fn from_genome(genome: &Genome) -> Self {
-        let attribute_config = Self::default_config();
-        let value = Probability::new(attribute_config.read_genome(genome))
-            .expect("Expected to be between 0.0 and 1.0.");
+    pub fn new(value: f32) -> Self {
+        let value = Probability::new(value).expect("Expected to be between 0.0 and 1.0.");
         Self(value)
     }
-    impl_default_config!(mutation_probability, 1, 0);
 }
 
 #[derive(Component, Debug)]
@@ -120,25 +176,18 @@ impl MaxSpeed {
         self.cost
     }
 
-    pub fn from_genome(genome: &Genome) -> Self {
-        let attribute_config = Self::default_config();
-        let value = attribute_config.read_genome(genome);
-        let cost = Self::compute_cost(value, &attribute_config);
+    pub fn new(value: f32) -> Self {
+        let cost = Self::compute_cost(value);
         Self { value, cost }
     }
 
-    fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
-        let cost_bounds = config::WorldConfig::global().translation_cost;
-        linear_interpolate(
-            value,
-            config.lower,
-            config.upper,
-            cost_bounds.0,
-            cost_bounds.1,
-        )
-    }
+    fn compute_cost(value: f32) -> f32 {
+        let config = config::WorldConfig::global();
+        let cost_bounds = config.translation_cost;
+        let (lower, upper, _) = config.attributes.max_speed;
 
-    impl_default_config!(max_speed, 2, 0);
+        linear_interpolate(value, lower, upper, cost_bounds.0, cost_bounds.1)
+    }
 }
 
 #[derive(Component, Debug)]
@@ -156,140 +205,144 @@ impl MaxRotationRate {
         self.cost
     }
 
-    pub fn from_genome(genome: &Genome) -> Self {
-        let attribute_config = Self::default_config();
-        let value = attribute_config.read_genome(genome);
-        let cost = Self::compute_cost(value, &attribute_config);
+    pub fn new(value: f32) -> Self {
+        let cost = Self::compute_cost(value);
         Self { value, cost }
     }
 
-    fn compute_cost(value: f32, config: &AttributeConfig) -> f32 {
-        let cost_bounds = config::WorldConfig::global().rotation_cost;
-        linear_interpolate(
-            value,
-            config.lower,
-            config.upper,
-            cost_bounds.0,
-            cost_bounds.1,
-        )
-    }
+    fn compute_cost(value: f32) -> f32 {
+        let config = config::WorldConfig::global();
+        let cost_bounds = config.rotation_cost;
+        let (lower, upper, _) = config.attributes.max_rotation;
 
-    impl_default_config!(max_rotation, 2, 20);
+        linear_interpolate(value, lower, upper, cost_bounds.0, cost_bounds.1)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct EyeRange(f32);
 
 impl EyeRange {
-    impl_from_genome!();
-    impl_default_config!(eye_range, 3, 0);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct EyeAngle(f32);
 
 impl EyeAngle {
-    fn default_config() -> AttributeConfig {
-        let (min, max, length) = config::WorldConfig::global().attributes.eye_angle;
-        AttributeConfig::new(f32::to_radians(min), f32::to_radians(max), 3, 0, length)
+    pub const fn new(value: f32) -> Self {
+        Self(value)
     }
-    impl_from_genome!();
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct InternalTimerBoundary(f32);
 
 impl InternalTimerBoundary {
-    impl_from_genome!();
-    impl_default_config!(internal_timer_boundary, 4, 0);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct LayEggBoundary(f32);
 
 impl LayEggBoundary {
-    impl_from_genome!();
-    impl_default_config!(lay_egg_boundary, 4, 30);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct WantToGrowBoundary(f32);
 
 impl WantToGrowBoundary {
-    impl_from_genome!();
-    impl_default_config!(want_to_grow_boundary, 4, 60);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct EatingBoundary(f32);
 
 impl EatingBoundary {
-    impl_from_genome!();
-    impl_default_config!(eating_boundary, 4, 50);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct CostOfThought(f32);
 
 impl CostOfThought {
-    impl_from_genome!();
-    impl_default_config!(cost_of_thought, 5, 0);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct CostOfEating(f32);
 
 impl CostOfEating {
-    impl_from_genome!();
-    impl_default_config!(cost_of_eating, 5, 5);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct MouthWidth(f32);
 
 impl MouthWidth {
-    impl_from_genome!();
-    impl_default_config!(mouth_width, 5, 5);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
-    impl_from_genome!();
-    impl_default_config!(offspring_energy, 10, 0);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct HatchSize(f32);
 
 impl HatchSize {
-    impl_from_genome!();
-    impl_default_config!(hatch_size, 10, 3);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct MaxSize(f32);
 
 impl MaxSize {
-    impl_from_genome!();
-    impl_default_config!(max_size, 10, 8);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct GrowthRate(f32);
 
 impl GrowthRate {
-    impl_from_genome!();
-    impl_default_config!(growth_rate, 0, 5);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Component, Debug, Deref)]
 pub struct HatchAge(f32);
 
 impl HatchAge {
-    impl_from_genome!();
-    impl_default_config!(hatch_age, 10, 5);
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
 }
 
 #[derive(Bundle, Debug)]
@@ -316,27 +369,29 @@ pub struct AttributeBundle {
 }
 
 impl AttributeBundle {
-    pub fn new(genome: &Genome) -> Self {
+    pub fn new(values: &Genome) -> Self {
         Self {
-            adult_age: AdultAge::from_genome(genome),
-            death_age: DeathAge::from_genome(genome),
-            mutation_probability: MutationProbability::from_genome(genome),
-            translation_speed: MaxSpeed::from_genome(genome),
-            rotation_speed: MaxRotationRate::from_genome(genome),
-            eye_range: EyeRange::from_genome(genome),
-            eye_angle: EyeAngle::from_genome(genome),
-            internal_timer_boundary: InternalTimerBoundary::from_genome(genome),
-            lay_egg_boundary: LayEggBoundary::from_genome(genome),
-            want_to_grow_boundary: WantToGrowBoundary::from_genome(genome),
-            eating_boundary: EatingBoundary::from_genome(genome),
-            cost_of_thought: CostOfThought::from_genome(genome),
-            cost_of_eating: CostOfEating::from_genome(genome),
-            mouth_width: MouthWidth::from_genome(genome),
-            offspring_energy: OffspringEnergy::from_genome(genome),
-            hatch_size: HatchSize::from_genome(genome),
-            max_size: MaxSize::from_genome(genome),
-            growth_rate: GrowthRate::from_genome(genome),
-            hatch_age: HatchAge::from_genome(genome),
+            adult_age: AdultAge::new(values.adult_age.value),
+            death_age: DeathAge::new(values.death_age.value),
+            mutation_probability: MutationProbability::new(values.mutation_probability.value),
+            translation_speed: MaxSpeed::new(values.max_speed.value),
+            rotation_speed: MaxRotationRate::new(values.max_rotation.value),
+            eye_range: EyeRange::new(values.eye_range.value),
+            eye_angle: EyeAngle::new(values.eye_angle.value),
+            internal_timer_boundary: InternalTimerBoundary::new(
+                values.internal_timer_boundary.value,
+            ),
+            lay_egg_boundary: LayEggBoundary::new(values.lay_egg_boundary.value),
+            want_to_grow_boundary: WantToGrowBoundary::new(values.want_to_grow_boundary.value),
+            eating_boundary: EatingBoundary::new(values.eating_boundary.value),
+            cost_of_thought: CostOfThought::new(values.cost_of_thought.value),
+            cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
+            mouth_width: MouthWidth::new(values.mouth_width.value),
+            offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
+            hatch_size: HatchSize::new(values.hatch_size.value),
+            max_size: MaxSize::new(values.max_size.value),
+            growth_rate: GrowthRate::new(values.growth_rate.value),
+            hatch_age: HatchAge::new(values.hatch_age.value),
         }
     }
 }

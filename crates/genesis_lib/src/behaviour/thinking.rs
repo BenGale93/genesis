@@ -58,7 +58,6 @@ mod tests {
     use bevy::prelude::*;
     use genesis_components::mind::*;
     use genesis_config as config;
-    use genesis_genome::Genome;
 
     use super::*;
 
@@ -70,7 +69,6 @@ mod tests {
         app.add_system(thinking_system);
 
         let mut test_mind: Mind = genesis_brain::Brain::new(1, 1).into();
-        let genome = Genome::new(10, 100);
 
         test_mind.add_random_synapse();
 
@@ -80,7 +78,7 @@ mod tests {
             .insert(MindInput(vec![1.0]))
             .insert(MindOutput(vec![0.0]))
             .insert(ThinkingSum::new())
-            .insert(attributes::CostOfThought::from_genome(&genome))
+            .insert(attributes::CostOfThought::new(0.01))
             .id();
 
         app.update();

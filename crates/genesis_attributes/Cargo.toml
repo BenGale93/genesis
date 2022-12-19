@@ -7,8 +7,10 @@ license = "MIT"
 
 [dependencies]
 genesis_newtype = {workspace = true}
-genesis_genome = {workspace = true}
 genesis_maths = {workspace = true}
 genesis_config = {workspace = true}
 bevy_ecs = {workspace = true}
+bevy_reflect = {workspace = true}
 derive_more = {workspace = true}
+rand = { workspace = true }
+ndarray = { workspace = true}
