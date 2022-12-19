@@ -98,10 +98,10 @@ pub struct AverageAttributes {
     pub cost_of_thought: Vec<f32>,
     pub cost_of_eating: Vec<f32>,
     pub offspring_energy: Vec<f32>,
+    pub mouth_width: Vec<f32>,
     pub hatch_size: Vec<f32>,
     pub max_size: Vec<f32>,
     pub growth_rate: Vec<f32>,
-    pub mouth_width: Vec<f32>,
 }
 
 pub fn count_system(
@@ -176,47 +176,47 @@ pub fn attribute_stats_system(
         hatch_age,
         adult_age,
         death_age,
-        eye_angle,
-        eye_range,
-        rotation_speed,
-        translation_speed,
         mutation_probability,
-        offspring_energy,
-        lay_egg_boundary,
+        translation_speed,
+        rotation_speed,
+        eye_range,
+        eye_angle,
         internal_timer_boundary,
+        lay_egg_boundary,
         want_to_grow_boundary,
         eating_boundary,
         cost_of_thought,
         cost_of_eating,
+        offspring_energy,
+        mouth_width,
         hatch_size,
         max_size,
-        growth_rate,
-        mouth_width
+        growth_rate
     );
 
-    for (aa, da, ea, er, mrr, ms, mp, oe, le, it, wtg, e, cot, coe, hs) in attribute_query_1.iter()
+    for (ha, aa, da, mp, ms, mrr, er, ea, it, le, wtg, e, cot, coe, oe) in attribute_query_1.iter()
     {
+        hatch_age.push(**ha);
         adult_age.push(**aa);
         death_age.push(**da);
-        eye_angle.push(**ea);
-        eye_range.push(**er);
-        rotation_speed.push(mrr.value());
-        translation_speed.push(ms.value());
         mutation_probability.push(mp.as_float());
-        offspring_energy.push(**oe);
-        lay_egg_boundary.push(**le);
+        translation_speed.push(ms.value());
+        rotation_speed.push(mrr.value());
+        eye_range.push(**er);
+        eye_angle.push(**ea);
         internal_timer_boundary.push(**it);
+        lay_egg_boundary.push(**le);
         want_to_grow_boundary.push(**wtg);
         eating_boundary.push(**e);
         cost_of_thought.push(**cot);
         cost_of_eating.push(**coe);
-        hatch_size.push(**hs);
+        offspring_energy.push(**oe);
     }
-    for (ms, gr, mw, ha) in attribute_query_2.iter() {
+    for (mw, hs, ms, gr) in attribute_query_2.iter() {
+        mouth_width.push(**mw);
+        hatch_size.push(**hs);
         max_size.push(**ms);
         growth_rate.push(**gr);
-        mouth_width.push(**mw);
-        hatch_age.push(**ha);
     }
 
     macro_rules! push_attr {
@@ -232,22 +232,22 @@ pub fn attribute_stats_system(
         hatch_age,
         adult_age,
         death_age,
-        eye_angle,
-        eye_range,
-        rotation_speed,
-        translation_speed,
         mutation_probability,
-        offspring_energy,
-        lay_egg_boundary,
+        translation_speed,
+        rotation_speed,
+        eye_range,
+        eye_angle,
         internal_timer_boundary,
+        lay_egg_boundary,
         want_to_grow_boundary,
         eating_boundary,
         cost_of_thought,
         cost_of_eating,
+        offspring_energy,
+        mouth_width,
         hatch_size,
         max_size,
-        growth_rate,
-        mouth_width
+        growth_rate
     );
 }
 

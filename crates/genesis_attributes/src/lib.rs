@@ -38,6 +38,7 @@ impl Chromosome {
 
 #[derive(Debug, Component, Reflect, Clone)]
 pub struct Genome {
+    pub hatch_age: Chromosome,
     pub adult_age: Chromosome,
     pub death_age: Chromosome,
     pub mutation_probability: Chromosome,
@@ -56,7 +57,6 @@ pub struct Genome {
     pub hatch_size: Chromosome,
     pub max_size: Chromosome,
     pub growth_rate: Chromosome,
-    pub hatch_age: Chromosome,
 }
 
 impl Genome {
@@ -75,6 +75,7 @@ impl Genome {
         let (min, max, steps) = attributes.eye_angle;
         let eye_angle = Chromosome::new(f32::to_radians(min), f32::to_radians(max), steps, rng);
         get_value!(
+            hatch_age,
             adult_age,
             death_age,
             mutation_probability,
@@ -91,10 +92,10 @@ impl Genome {
             mouth_width,
             hatch_size,
             max_size,
-            growth_rate,
-            hatch_age
+            growth_rate
         );
         Self {
+            hatch_age,
             adult_age,
             death_age,
             mutation_probability,
@@ -113,7 +114,6 @@ impl Genome {
             hatch_size,
             max_size,
             growth_rate,
-            hatch_age,
         }
     }
 
@@ -130,6 +130,15 @@ impl Genome {
             }
         }
         output
+    }
+}
+
+#[derive(Component, Debug, Deref)]
+pub struct HatchAge(f32);
+
+impl HatchAge {
+    pub const fn new(value: f32) -> Self {
+        Self(value)
     }
 }
 
@@ -292,18 +301,18 @@ impl CostOfEating {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct MouthWidth(f32);
+pub struct OffspringEnergy(f32);
 
-impl MouthWidth {
+impl OffspringEnergy {
     pub const fn new(value: f32) -> Self {
         Self(value)
     }
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct OffspringEnergy(f32);
+pub struct MouthWidth(f32);
 
-impl OffspringEnergy {
+impl MouthWidth {
     pub const fn new(value: f32) -> Self {
         Self(value)
     }
@@ -336,17 +345,9 @@ impl GrowthRate {
     }
 }
 
-#[derive(Component, Debug, Deref)]
-pub struct HatchAge(f32);
-
-impl HatchAge {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
+    pub hatch_age: HatchAge,
     pub adult_age: AdultAge,
     pub death_age: DeathAge,
     pub mutation_probability: MutationProbability,
@@ -365,12 +366,12 @@ pub struct AttributeBundle {
     pub hatch_size: HatchSize,
     pub max_size: MaxSize,
     pub growth_rate: GrowthRate,
-    pub hatch_age: HatchAge,
 }
 
 impl AttributeBundle {
     pub fn new(values: &Genome) -> Self {
         Self {
+            hatch_age: HatchAge::new(values.hatch_age.value),
             adult_age: AdultAge::new(values.adult_age.value),
             death_age: DeathAge::new(values.death_age.value),
             mutation_probability: MutationProbability::new(values.mutation_probability.value),
@@ -386,32 +387,31 @@ impl AttributeBundle {
             eating_boundary: EatingBoundary::new(values.eating_boundary.value),
             cost_of_thought: CostOfThought::new(values.cost_of_thought.value),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
-            mouth_width: MouthWidth::new(values.mouth_width.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
+            mouth_width: MouthWidth::new(values.mouth_width.value),
             hatch_size: HatchSize::new(values.hatch_size.value),
             max_size: MaxSize::new(values.max_size.value),
             growth_rate: GrowthRate::new(values.growth_rate.value),
-            hatch_age: HatchAge::new(values.hatch_age.value),
         }
     }
 }
 
 pub type BugAttributesPart1<'a> = (
+    &'a HatchAge,
     &'a AdultAge,
     &'a DeathAge,
-    &'a EyeAngle,
-    &'a EyeRange,
-    &'a MaxRotationRate,
-    &'a MaxSpeed,
     &'a MutationProbability,
-    &'a OffspringEnergy,
-    &'a LayEggBoundary,
+    &'a MaxSpeed,
+    &'a MaxRotationRate,
+    &'a EyeRange,
+    &'a EyeAngle,
     &'a InternalTimerBoundary,
+    &'a LayEggBoundary,
     &'a WantToGrowBoundary,
     &'a EatingBoundary,
     &'a CostOfThought,
     &'a CostOfEating,
-    &'a HatchSize,
+    &'a OffspringEnergy,
 );
 
-pub type BugAttributesPart2<'a> = (&'a MaxSize, &'a GrowthRate, &'a MouthWidth, &'a HatchAge);
+pub type BugAttributesPart2<'a> = (&'a MouthWidth, &'a HatchSize, &'a MaxSize, &'a GrowthRate);
