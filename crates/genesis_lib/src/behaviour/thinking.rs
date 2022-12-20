@@ -1,5 +1,4 @@
 use bevy::prelude::{Query, Without};
-use genesis_attributes as attributes;
 use genesis_components::{body, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
 
@@ -43,13 +42,13 @@ pub fn thinking_system(
         &mut mind::Mind,
         &mut mind::MindOutput,
         &mut ThinkingSum,
-        &attributes::CostOfThought,
     )>,
 ) {
-    for (input, mut bug_brain, mut output, mut thoughts, cost) in query.iter_mut() {
+    let cost = config::WorldConfig::global().cost_of_thought;
+    for (input, mut bug_brain, mut output, mut thoughts) in query.iter_mut() {
         let x = bug_brain.activate(input).expect("Wrong length vector");
         output.0 = x;
-        thoughts.add_thought(bug_brain.synapses().len(), **cost);
+        thoughts.add_thought(bug_brain.synapses().len(), cost);
     }
 }
 
@@ -78,7 +77,6 @@ mod tests {
             .insert(MindInput(vec![1.0]))
             .insert(MindOutput(vec![0.0]))
             .insert(ThinkingSum::new())
-            .insert(attributes::CostOfThought::new(0.01))
             .id();
 
         app.update();

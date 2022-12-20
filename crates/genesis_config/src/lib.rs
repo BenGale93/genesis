@@ -95,6 +95,7 @@ pub struct WorldConfig {
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
     pub mutation_probability: f32,
+    pub cost_of_thought: f32,
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
 }
@@ -117,6 +118,7 @@ impl WorldConfig {
             validators::min_value(0.0, self.unit_size_cost, "unit_size_cost"),
             validators::min_value(1, self.plant_energy_per_unit, "plant_energy_per_unit"),
             validators::between(self.mutation_probability, 0.0, 1.0, "mutation_probability"),
+            validators::between(self.cost_of_thought, 0.0, 0.1, "cost_of_thoughts"),
             validators::low_high(
                 self.minimum_number,
                 self.start_num,
@@ -160,6 +162,7 @@ impl Default for WorldConfig {
             plant_energy_per_unit: 2,
             plant_size_range: (10.0, 30.0),
             mutation_probability: 0.02,
+            cost_of_thought: 0.002,
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
         }

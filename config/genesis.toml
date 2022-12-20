@@ -20,6 +20,7 @@ plant_size_range = [
     30.0,
 ]
 mutation_probability = 0.02
+cost_of_thought = 0.002
 
 [[spawners]]
 centre = [
@@ -68,11 +69,6 @@ eye_angle = [
     360.0,
     30.0,
     100,
-]
-cost_of_thought = [
-    0.001,
-    0.003,
-    10,
 ]
 cost_of_eating = [
     0.3,

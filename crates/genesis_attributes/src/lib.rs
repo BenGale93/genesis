@@ -45,7 +45,6 @@ pub struct Genome {
     pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
     pub eye_angle: Chromosome,
-    pub cost_of_thought: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
     pub mouth_width: Chromosome,
@@ -76,7 +75,6 @@ impl Genome {
             max_speed,
             max_rotation,
             eye_range,
-            cost_of_thought,
             cost_of_eating,
             offspring_energy,
             mouth_width,
@@ -92,7 +90,6 @@ impl Genome {
             max_rotation,
             eye_range,
             eye_angle,
-            cost_of_thought,
             cost_of_eating,
             offspring_energy,
             mouth_width,
@@ -222,15 +219,6 @@ impl EyeAngle {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct CostOfThought(f32);
-
-impl CostOfThought {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
 pub struct CostOfEating(f32);
 
 impl CostOfEating {
@@ -293,7 +281,6 @@ pub struct AttributeBundle {
     pub rotation_speed: MaxRotationRate,
     pub eye_range: EyeRange,
     pub eye_angle: EyeAngle,
-    pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
     pub mouth_width: MouthWidth,
@@ -312,7 +299,6 @@ impl AttributeBundle {
             rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),
             eye_angle: EyeAngle::new(values.eye_angle.value),
-            cost_of_thought: CostOfThought::new(values.cost_of_thought.value),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
             mouth_width: MouthWidth::new(values.mouth_width.value),
@@ -331,7 +317,6 @@ pub type BugAttributes<'a> = (
     &'a MaxRotationRate,
     &'a EyeRange,
     &'a EyeAngle,
-    &'a CostOfThought,
     &'a CostOfEating,
     &'a OffspringEnergy,
     &'a MouthWidth,

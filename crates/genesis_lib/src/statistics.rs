@@ -94,7 +94,6 @@ pub struct AverageAttributes {
     pub lay_egg_boundary: Vec<f32>,
     pub want_to_grow_boundary: Vec<f32>,
     pub eating_boundary: Vec<f32>,
-    pub cost_of_thought: Vec<f32>,
     pub cost_of_eating: Vec<f32>,
     pub offspring_energy: Vec<f32>,
     pub mouth_width: Vec<f32>,
@@ -178,7 +177,6 @@ pub fn attribute_stats_system(
         rotation_speed,
         eye_range,
         eye_angle,
-        cost_of_thought,
         cost_of_eating,
         offspring_energy,
         mouth_width,
@@ -187,7 +185,7 @@ pub fn attribute_stats_system(
         growth_rate
     );
 
-    for (ha, aa, da, ts, mrr, er, ea, cot, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
+    for (ha, aa, da, ts, mrr, er, ea, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
         hatch_age.push(**ha);
         adult_age.push(**aa);
         death_age.push(**da);
@@ -195,7 +193,6 @@ pub fn attribute_stats_system(
         rotation_speed.push(mrr.value());
         eye_range.push(**er);
         eye_angle.push(**ea);
-        cost_of_thought.push(**cot);
         cost_of_eating.push(**coe);
         offspring_energy.push(**oe);
         mouth_width.push(**mw);
@@ -221,7 +218,6 @@ pub fn attribute_stats_system(
         rotation_speed,
         eye_range,
         eye_angle,
-        cost_of_thought,
         cost_of_eating,
         offspring_energy,
         mouth_width,
