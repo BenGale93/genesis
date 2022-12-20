@@ -41,7 +41,15 @@ pub fn angle_to_point(diff: Vec3) -> f32 {
 
 #[must_use]
 pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
-    (angle_from_x - (PI / 2.0) - angle_from_y).abs()
+    angle_from_x - (PI / 2.0) - angle_from_y
+}
+
+#[must_use]
+pub fn angle_between(rotation: &Quat, translation: Vec3) -> f32 {
+    let angle_to_target = angle_to_point(translation);
+    let angle_to_self = rotation.z.asin() * 2.0;
+    let angle = rebased_angle(angle_to_target, angle_to_self);
+    wrap(angle, -PI, PI)
 }
 
 #[must_use]
@@ -108,11 +116,7 @@ impl Cone {
         if distance.length() > self.fov_length {
             return false;
         }
-        let x_angle = angle_to_point(distance);
-
-        let angle = rebased_angle(x_angle, self.rotation.z.asin() * 2.0);
-
-        let angle = wrap(angle, -PI, PI);
+        let angle = angle_between(&self.rotation, distance);
 
         if angle < -self.fov_angle / 2.0 || angle > self.fov_angle / 2.0 {
             return false;
@@ -244,7 +248,7 @@ mod tests {
 
         let rebased_angle = rebased_angle(angle, f32::to_radians(90.0));
 
-        assert_eq!(rebased_angle, f32::to_radians(90.0));
+        assert_eq!(rebased_angle, f32::to_radians(-90.0));
     }
 
     #[test]
@@ -268,6 +272,6 @@ mod tests {
 
         let rebased_angle = rebased_angle(angle, 1.0_f32.asin() * 2.0);
 
-        assert_eq!(rebased_angle, f32::to_radians(180.0));
+        assert_eq!(rebased_angle, f32::to_radians(-180.0));
     }
 }

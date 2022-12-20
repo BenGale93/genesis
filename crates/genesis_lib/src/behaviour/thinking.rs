@@ -1,20 +1,23 @@
-use bevy::prelude::Query;
+use bevy::prelude::{Query, Without};
 use genesis_attributes as attributes;
-use genesis_components::{body, mind, see::Vision, time, ThinkingSum};
+use genesis_components::{body, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
 
 const CONST: f32 = 1.0;
 
 pub fn sensory_system(
-    mut query: Query<(
-        &mut mind::MindInput,
-        &mind::MindOutput,
-        &body::Vitality,
-        &time::Age,
-        &Vision,
-        &time::Heart,
-        &time::InternalTimer,
-    )>,
+    mut query: Query<
+        (
+            &mut mind::MindInput,
+            &mind::MindOutput,
+            &body::Vitality,
+            &time::Age,
+            &Vision,
+            &time::Heart,
+            &time::InternalTimer,
+        ),
+        Without<Egg>,
+    >,
 ) {
     for (mut input, output, vitality, age, vision, heart, internal_timer) in query.iter_mut() {
         input[config::CONSTANT_INDEX] = CONST;
