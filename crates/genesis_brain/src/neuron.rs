@@ -53,6 +53,11 @@ impl Neuron {
         &self.activation
     }
 
+    #[must_use]
+    pub fn activation_mut(&mut self) -> &mut activation::ActivationFunctionKind {
+        &mut self.activation
+    }
+
     pub fn set_activation(&mut self, activation: activation::ActivationFunctionKind) {
         self.activation = activation;
     }
@@ -67,8 +72,8 @@ impl Neuron {
     }
 
     #[must_use]
-    pub fn activate(&self, input: f32) -> f32 {
-        activation::activate(input, self.activation()) + self.bias().as_float()
+    pub fn activate(&mut self, input: f32) -> f32 {
+        activation::activate(input, self.activation_mut()) + self.bias().as_float()
     }
 }
 
@@ -113,7 +118,7 @@ mod tests {
 
     #[test]
     fn test_activate_input() {
-        let neuron = Neuron::new(NeuronKind::Input);
+        let mut neuron = Neuron::new(NeuronKind::Input);
         let input = 1.0;
         assert_eq!(input, neuron.activate(input));
     }
