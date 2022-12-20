@@ -81,7 +81,7 @@ pub fn eating_system(
                     let angle =
                         angle_to_point(plant_transform.translation - bug_transform.translation);
                     let rebased_angle = rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
-                    if rebased_angle < **mouth_width {
+                    if rebased_angle.abs() < **mouth_width {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
