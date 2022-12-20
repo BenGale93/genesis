@@ -16,7 +16,11 @@ pub struct Chromosome {
 
 impl Chromosome {
     pub fn new(lower: f32, upper: f32, steps: usize, rng: &mut dyn RngCore) -> Self {
-        let array = Array::linspace(lower, upper, steps);
+        let array = if lower < upper {
+            Array::linspace(lower, upper, steps)
+        } else {
+            Array::linspace(upper, lower, steps)
+        };
         let value = array.iter().copied().choose(rng).unwrap();
         Self {
             array: array.to_vec(),
@@ -34,13 +38,27 @@ impl Chromosome {
         };
         self.value = self.array[new_position];
     }
+
+    pub fn range(&self) -> f32 {
+        (self.highest() - self.lowest()).abs()
+    }
+
+    pub fn lowest(&self) -> f32 {
+        *self.array.first().unwrap()
+    }
+
+    pub fn highest(&self) -> f32 {
+        *self.array.last().unwrap()
+    }
+
+    pub fn normalise(&self) -> f32 {
+        (self.value - self.lowest()) / self.range()
+    }
 }
 
 #[derive(Debug, Component, Reflect, Clone)]
 pub struct Genome {
     pub hatch_age: Chromosome,
-    pub adult_age: Chromosome,
-    pub death_age: Chromosome,
     pub max_speed: Chromosome,
     pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
@@ -70,8 +88,6 @@ impl Genome {
         let eye_angle = Chromosome::new(f32::to_radians(min), f32::to_radians(max), steps, rng);
         get_value!(
             hatch_age,
-            adult_age,
-            death_age,
             max_speed,
             max_rotation,
             eye_range,
@@ -84,8 +100,6 @@ impl Genome {
         );
         Self {
             hatch_age,
-            adult_age,
-            death_age,
             max_speed,
             max_rotation,
             eye_range,
@@ -128,7 +142,8 @@ impl HatchAge {
 pub struct AdultAge(f32);
 
 impl AdultAge {
-    pub const fn new(value: f32) -> Self {
+    pub fn new(hatch_age: &Chromosome) -> Self {
+        let value = hatch_age.normalise().mul_add(-30.0, 60.0);
         Self(value)
     }
 }
@@ -137,7 +152,8 @@ impl AdultAge {
 pub struct DeathAge(f32);
 
 impl DeathAge {
-    pub const fn new(value: f32) -> Self {
+    pub fn new(max_size: &Chromosome) -> Self {
+        let value = max_size.normalise().mul_add(100.0, 400.0);
         Self(value)
     }
 }
@@ -293,8 +309,8 @@ impl AttributeBundle {
     pub fn new(values: &Genome) -> Self {
         Self {
             hatch_age: HatchAge::new(values.hatch_age.value),
-            adult_age: AdultAge::new(values.adult_age.value),
-            death_age: DeathAge::new(values.death_age.value),
+            adult_age: AdultAge::new(&values.hatch_age),
+            death_age: DeathAge::new(&values.max_size),
             translation_speed: MaxSpeed::new(values.max_speed.value),
             rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),

@@ -40,16 +40,6 @@ hatch_age = [
     30.0,
     15,
 ]
-adult_age = [
-    50.0,
-    70.0,
-    20,
-]
-death_age = [
-    600.0,
-    700.0,
-    50,
-]
 max_speed = [
     100.0,
     500.0,
@@ -66,13 +56,13 @@ eye_range = [
     100,
 ]
 eye_angle = [
-    360.0,
     30.0,
+    360.0,
     100,
 ]
 cost_of_eating = [
-    0.3,
     0.2,
+    0.3,
     10,
 ]
 offspring_energy = [
