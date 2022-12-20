@@ -1,19 +1,20 @@
 use std::f32::consts::PI;
 
-use bevy::prelude::{Quat, Query, Transform, With};
+use bevy::prelude::{Query, Transform, With};
 use genesis_attributes::{EyeAngle, EyeRange};
 use genesis_components::{mind::Mind, see::Vision};
 use genesis_ecosystem::Plant;
-use genesis_maths::{angle_to_point, Cone};
+use genesis_maths::{angle_between, Cone};
 
-fn dist_angle_score(transform: &Transform, target_transform: &Transform) -> (f32, f32) {
+fn dist_angle_score(
+    transform: &Transform,
+    target_transform: &Transform,
+    eye_range: f32,
+) -> (f32, f32) {
     let dist = target_transform.translation - transform.translation;
-    let dist_score = 1.0 / dist.length();
-    let angle_to_target = angle_to_point(dist) - PI / 2.0;
-    let angle_diff = transform
-        .rotation
-        .angle_between(Quat::from_rotation_z(angle_to_target));
-    let angle_score = (PI - angle_diff.abs()) / PI;
+    let dist_score = dist.length() / eye_range;
+    let angle = angle_between(&transform.rotation, dist);
+    let angle_score = angle / PI;
     (dist_score, angle_score)
 }
 
@@ -40,9 +41,8 @@ pub fn process_sight_system(
             if cone.is_within_cone(bug_transform.translation) {
                 vision.increment_bugs();
 
-                let (dist_score, angle_score) = dist_angle_score(transform, bug_transform);
-                vision.set_bug_dist_score(dist_score);
-                vision.set_bug_angle_score(angle_score);
+                let scores = dist_angle_score(transform, bug_transform, **eye_range);
+                vision.set_bug_score(scores);
             }
         }
 
@@ -50,10 +50,66 @@ pub fn process_sight_system(
             if cone.is_within_cone(food_transform.translation) {
                 vision.increment_food();
 
-                let (dist_score, angle_score) = dist_angle_score(transform, food_transform);
-                vision.set_food_dist_score(dist_score);
-                vision.set_food_angle_score(angle_score);
+                let scores = dist_angle_score(transform, food_transform, **eye_range);
+                vision.set_food_score(scores);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bevy::prelude::{Quat, Transform};
+
+    use super::dist_angle_score;
+
+    #[test]
+    fn angle_score_straight_ahead() {
+        let bug = Transform::from_xyz(0.0, 0.0, 0.0);
+        let target = Transform::from_xyz(0.0, 1.0, 0.0);
+
+        let (_, angle_score) = dist_angle_score(&bug, &target, 20.0);
+
+        assert_eq!(angle_score, 0.0);
+    }
+
+    #[test]
+    fn angle_score_straight_behind() {
+        let bug = Transform::from_xyz(0.0, 0.0, 0.0);
+        let target = Transform::from_xyz(0.0, -1.0, 0.0);
+
+        let (_, angle_score) = dist_angle_score(&bug, &target, 20.0);
+
+        assert!((-1.0 - angle_score).abs() < 0.0001);
+    }
+
+    #[test]
+    fn angle_score_to_the_left() {
+        let bug = Transform::from_xyz(0.0, 0.0, 0.0);
+        let target = Transform::from_xyz(-1.0, 0.0, 0.0);
+
+        let (_, angle_score) = dist_angle_score(&bug, &target, 20.0);
+
+        assert!((0.5 - angle_score).abs() < 0.0001);
+    }
+
+    #[test]
+    fn angle_score_to_the_right() {
+        let bug = Transform::from_xyz(0.0, 0.0, 0.0);
+        let target = Transform::from_xyz(1.0, 0.0, 0.0);
+
+        let (_, angle_score) = dist_angle_score(&bug, &target, 20.0);
+
+        assert!(((-0.5) - angle_score).abs() < 0.0001);
+    }
+
+    #[test]
+    fn angle_score_offset_bug() {
+        let bug = Transform::from_rotation(Quat::from_rotation_z(f32::to_radians(-45.0)));
+        let target = Transform::from_xyz(-1.0, 1.0, 0.0);
+
+        let (_, angle_score) = dist_angle_score(&bug, &target, 20.0);
+
+        assert!(((0.5) - angle_score).abs() < 0.0001);
     }
 }
