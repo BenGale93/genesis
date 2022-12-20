@@ -17,21 +17,21 @@ use genesis_spawners::Spawners;
 
 use crate::statistics;
 
-type LayerTest<'a> = (Entity, &'a mind::MindOutput, &'a attributes::LayEggBoundary);
+type LayerTest<'a> = (Entity, &'a mind::MindOutput);
 
 pub fn process_layers_system(
     mut commands: Commands,
     not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<components::Adult>)>,
     laying_query: Query<LayerTest, (With<TryingToLay>, With<components::Adult>)>,
 ) {
-    for (entity, mind_out, boundary) in not_laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] > **boundary {
+    for (entity, mind_out) in not_laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] >= 0.0 {
             commands.entity(entity).insert(TryingToLay);
         }
     }
 
-    for (entity, mind_out, boundary) in laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] <= **boundary {
+    for (entity, mind_out) in laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] < 0.0 {
             commands.entity(entity).remove::<TryingToLay>();
         }
     }

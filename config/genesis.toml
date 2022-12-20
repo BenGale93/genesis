@@ -73,26 +73,6 @@ eye_angle = [
     30.0,
     100,
 ]
-internal_timer_boundary = [
-    -0.5,
-    0.5,
-    20,
-]
-lay_egg_boundary = [
-    0.0,
-    0.8,
-    30,
-]
-want_to_grow_boundary = [
-    -0.5,
-    0.5,
-    20,
-]
-eating_boundary = [
-    -0.5,
-    0.5,
-    20,
-]
 cost_of_thought = [
     0.001,
     0.003,

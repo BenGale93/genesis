@@ -8,27 +8,23 @@ use genesis_attributes as attributes;
 use genesis_components::{body, grow::*, mind, Egg};
 use genesis_config as config;
 
-type GrowerTest<'a> = (
-    Entity,
-    &'a mind::MindOutput,
-    &'a attributes::WantToGrowBoundary,
-);
+type GrowerTest<'a> = (Entity, &'a mind::MindOutput);
 
 pub fn process_growers_system(
     mut commands: Commands,
     not_growing_query: Query<GrowerTest, (Without<Egg>, Without<TryingToGrow>)>,
     growing_query: Query<GrowerTest, With<TryingToGrow>>,
 ) {
-    for (entity, mind_out, boundary) in not_growing_query.iter() {
-        if mind_out[config::WANT_TO_GROWN_INDEX] > **boundary {
+    for (entity, mind_out) in not_growing_query.iter() {
+        if mind_out[config::WANT_TO_GROWN_INDEX] >= 0.0 {
             commands
                 .entity(entity)
                 .insert(TryingToGrow(Stopwatch::new()));
         }
     }
 
-    for (entity, mind_out, boundary) in growing_query.iter() {
-        if mind_out[config::WANT_TO_GROWN_INDEX] <= **boundary {
+    for (entity, mind_out) in growing_query.iter() {
+        if mind_out[config::WANT_TO_GROWN_INDEX] < 0.0 {
             commands.entity(entity).remove::<TryingToGrow>();
         }
     }

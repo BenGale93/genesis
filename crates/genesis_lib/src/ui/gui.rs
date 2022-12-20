@@ -201,65 +201,51 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
 
 pub fn attribute_info_system(
     is_egg_query: Query<&components::Egg, With<Selected>>,
-    attr_query_part1: Query<attributes::BugAttributesPart1, With<Selected>>,
-    attr_query_part2: Query<attributes::BugAttributesPart2, With<Selected>>,
+    attr_query_part: Query<attributes::BugAttributes, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let (Ok(attr_info_part1), Ok(attr_info_part2)) =
-        (attr_query_part1.get_single(), attr_query_part2.get_single())
-    {
+    if let Ok(attr_info_part) = attr_query_part.get_single() {
         if is_egg_query.get_single().is_err() {
             if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
                 top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
                     bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                    attribute_sub_panel(ui, &attr_info_part1, &attr_info_part2);
+                    attribute_sub_panel(ui, &attr_info_part);
                 });
             }
         } else if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
             top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
                 egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
-                attribute_sub_panel(ui, &attr_info_part1, &attr_info_part2);
+                attribute_sub_panel(ui, &attr_info_part);
             });
         }
     }
 }
 
-fn attribute_sub_panel(
-    ui: &mut egui::Ui,
-    bug_info_part1: &attributes::BugAttributesPart1,
-    bug_info_part2: &attributes::BugAttributesPart2,
-) {
-    ui.label(format!("Hatch age: {:.3}", **bug_info_part1.0));
-    ui.label(format!("Adult Age: {}", **bug_info_part1.1));
-    ui.label(format!("Death Age: {}", **bug_info_part1.2));
+fn attribute_sub_panel(ui: &mut egui::Ui, bug_info_part: &attributes::BugAttributes) {
+    ui.label(format!("Hatch age: {:.3}", **bug_info_part.0));
+    ui.label(format!("Adult Age: {}", **bug_info_part.1));
+    ui.label(format!("Death Age: {}", **bug_info_part.2));
     ui.label(format!(
         "Mutation Probability: {:.3}",
-        &bug_info_part1.3.as_float()
+        &bug_info_part.3.as_float()
     ));
-    ui.label(format!("Max speed: {}", &bug_info_part1.4.value()));
-    ui.label(format!("Movement cost: {:.3}", &bug_info_part1.4.cost()));
-    ui.label(format!("Max rotation: {}", &bug_info_part1.5.value()));
-    ui.label(format!("Rotation cost: {:.3}", &bug_info_part1.5.cost()));
-    ui.label(format!("Eye range: {}", **bug_info_part1.6));
+    ui.label(format!("Max speed: {}", &bug_info_part.4.value()));
+    ui.label(format!("Movement cost: {:.3}", &bug_info_part.4.cost()));
+    ui.label(format!("Max rotation: {}", &bug_info_part.5.value()));
+    ui.label(format!("Rotation cost: {:.3}", &bug_info_part.5.cost()));
+    ui.label(format!("Eye range: {}", **bug_info_part.6));
     ui.label(format!(
         "Eye angle: {:.3}",
-        f32::to_degrees(**bug_info_part1.7)
+        f32::to_degrees(**bug_info_part.7)
     ));
-    ui.label(format!(
-        "Internal timer boundary: {:.3}",
-        **bug_info_part1.8
-    ));
-    ui.label(format!("Lay egg boundary: {:.3}", **bug_info_part1.9));
-    ui.label(format!("Growing boundary: {:.3}", **bug_info_part1.10));
-    ui.label(format!("Eating boundary: {:.3}", **bug_info_part1.11));
-    ui.label(format!("Cost of thought: {:.3}", **bug_info_part1.12));
-    ui.label(format!("Cost of eating: {:.3}", **bug_info_part1.13));
-    ui.label(format!("Offspring energy: {}", **bug_info_part1.14));
-    ui.label(format!("Mouth width: {:.3}", **bug_info_part2.0));
-    ui.label(format!("Hatch size: {:.3}", **bug_info_part2.1));
-    ui.label(format!("Maximum size: {:.3}", **bug_info_part2.2));
-    ui.label(format!("Growth rate: {:.3}", **bug_info_part2.3));
+    ui.label(format!("Cost of thought: {:.3}", **bug_info_part.8));
+    ui.label(format!("Cost of eating: {:.3}", **bug_info_part.9));
+    ui.label(format!("Offspring energy: {}", **bug_info_part.10));
+    ui.label(format!("Mouth width: {:.3}", **bug_info_part.11));
+    ui.label(format!("Hatch size: {:.3}", **bug_info_part.12));
+    ui.label(format!("Maximum size: {:.3}", **bug_info_part.13));
+    ui.label(format!("Growth rate: {:.3}", **bug_info_part.14));
 }
 
 pub fn bug_brain_info_system(

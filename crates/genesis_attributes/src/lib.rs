@@ -46,10 +46,6 @@ pub struct Genome {
     pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
     pub eye_angle: Chromosome,
-    pub internal_timer_boundary: Chromosome,
-    pub lay_egg_boundary: Chromosome,
-    pub want_to_grow_boundary: Chromosome,
-    pub eating_boundary: Chromosome,
     pub cost_of_thought: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
@@ -82,10 +78,6 @@ impl Genome {
             max_speed,
             max_rotation,
             eye_range,
-            internal_timer_boundary,
-            lay_egg_boundary,
-            want_to_grow_boundary,
-            eating_boundary,
             cost_of_thought,
             cost_of_eating,
             offspring_energy,
@@ -103,10 +95,6 @@ impl Genome {
             max_rotation,
             eye_range,
             eye_angle,
-            internal_timer_boundary,
-            lay_egg_boundary,
-            want_to_grow_boundary,
-            eating_boundary,
             cost_of_thought,
             cost_of_eating,
             offspring_energy,
@@ -247,42 +235,6 @@ impl EyeAngle {
 }
 
 #[derive(Component, Debug, Deref)]
-pub struct InternalTimerBoundary(f32);
-
-impl InternalTimerBoundary {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
-pub struct LayEggBoundary(f32);
-
-impl LayEggBoundary {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
-pub struct WantToGrowBoundary(f32);
-
-impl WantToGrowBoundary {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
-pub struct EatingBoundary(f32);
-
-impl EatingBoundary {
-    pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
 pub struct CostOfThought(f32);
 
 impl CostOfThought {
@@ -355,10 +307,6 @@ pub struct AttributeBundle {
     pub rotation_speed: MaxRotationRate,
     pub eye_range: EyeRange,
     pub eye_angle: EyeAngle,
-    pub internal_timer_boundary: InternalTimerBoundary,
-    pub lay_egg_boundary: LayEggBoundary,
-    pub want_to_grow_boundary: WantToGrowBoundary,
-    pub eating_boundary: EatingBoundary,
     pub cost_of_thought: CostOfThought,
     pub cost_of_eating: CostOfEating,
     pub offspring_energy: OffspringEnergy,
@@ -379,12 +327,6 @@ impl AttributeBundle {
             rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),
             eye_angle: EyeAngle::new(values.eye_angle.value),
-            internal_timer_boundary: InternalTimerBoundary::new(
-                values.internal_timer_boundary.value,
-            ),
-            lay_egg_boundary: LayEggBoundary::new(values.lay_egg_boundary.value),
-            want_to_grow_boundary: WantToGrowBoundary::new(values.want_to_grow_boundary.value),
-            eating_boundary: EatingBoundary::new(values.eating_boundary.value),
             cost_of_thought: CostOfThought::new(values.cost_of_thought.value),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
@@ -396,7 +338,7 @@ impl AttributeBundle {
     }
 }
 
-pub type BugAttributesPart1<'a> = (
+pub type BugAttributes<'a> = (
     &'a HatchAge,
     &'a AdultAge,
     &'a DeathAge,
@@ -405,13 +347,11 @@ pub type BugAttributesPart1<'a> = (
     &'a MaxRotationRate,
     &'a EyeRange,
     &'a EyeAngle,
-    &'a InternalTimerBoundary,
-    &'a LayEggBoundary,
-    &'a WantToGrowBoundary,
-    &'a EatingBoundary,
     &'a CostOfThought,
     &'a CostOfEating,
     &'a OffspringEnergy,
+    &'a MouthWidth,
+    &'a HatchSize,
+    &'a MaxSize,
+    &'a GrowthRate,
 );
-
-pub type BugAttributesPart2<'a> = (&'a MouthWidth, &'a HatchSize, &'a MaxSize, &'a GrowthRate);

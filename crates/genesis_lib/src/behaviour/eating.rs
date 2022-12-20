@@ -11,22 +11,19 @@ use genesis_maths::{angle_to_point, rebased_angle};
 
 pub fn process_eaters_system(
     mut commands: Commands,
-    not_eating_query: Query<
-        (Entity, &MindOutput, &attributes::EatingBoundary),
-        (Without<Egg>, Without<TryingToEat>),
-    >,
-    eating_query: Query<(Entity, &MindOutput, &attributes::EatingBoundary), With<TryingToEat>>,
+    not_eating_query: Query<(Entity, &MindOutput), (Without<Egg>, Without<TryingToEat>)>,
+    eating_query: Query<(Entity, &MindOutput), With<TryingToEat>>,
 ) {
-    for (entity, mind_out, eating_boundary) in not_eating_query.iter() {
-        if mind_out[config::EAT_INDEX] > **eating_boundary {
+    for (entity, mind_out) in not_eating_query.iter() {
+        if mind_out[config::EAT_INDEX] >= 0.0 {
             commands
                 .entity(entity)
                 .insert(TryingToEat(Stopwatch::new()));
         }
     }
 
-    for (entity, mind_out, eating_boundary) in eating_query.iter() {
-        if mind_out[config::EAT_INDEX] <= **eating_boundary {
+    for (entity, mind_out) in eating_query.iter() {
+        if mind_out[config::EAT_INDEX] < 0.0 {
             commands.entity(entity).remove::<TryingToEat>();
         }
     }

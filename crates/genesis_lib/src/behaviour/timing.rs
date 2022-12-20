@@ -2,7 +2,6 @@ use bevy::{
     prelude::{Query, Res, ResMut},
     time::Time,
 };
-use genesis_attributes as attributes;
 use genesis_components::{mind::MindOutput, time::*};
 use genesis_config as config;
 
@@ -23,15 +22,9 @@ pub fn progress_simulation_timer(time: Res<Time>, mut simulation_timer: ResMut<S
     simulation_timer.tick(time.delta());
 }
 
-pub fn reset_internal_timer_system(
-    mut query: Query<(
-        &mut InternalTimer,
-        &MindOutput,
-        &attributes::InternalTimerBoundary,
-    )>,
-) {
-    for (mut internal_timer, mind_out, boundary) in query.iter_mut() {
-        if mind_out[config::RESET_TIMER_INDEX] > **boundary {
+pub fn reset_internal_timer_system(mut query: Query<(&mut InternalTimer, &MindOutput)>) {
+    for (mut internal_timer, mind_out) in query.iter_mut() {
+        if mind_out[config::RESET_TIMER_INDEX] >= 0.0 {
             internal_timer.reset();
         }
     }

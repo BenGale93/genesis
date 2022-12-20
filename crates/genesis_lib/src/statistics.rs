@@ -160,8 +160,7 @@ pub fn performance_stats_system(
 
 pub fn attribute_stats_system(
     mut stats: ResMut<AverageAttributes>,
-    attribute_query_1: Query<attributes::BugAttributesPart1>,
-    attribute_query_2: Query<attributes::BugAttributesPart2>,
+    attribute_query: Query<attributes::BugAttributes>,
 ) {
     macro_rules! attr_vecs {
         ($attr:ident) => {
@@ -181,10 +180,6 @@ pub fn attribute_stats_system(
         rotation_speed,
         eye_range,
         eye_angle,
-        internal_timer_boundary,
-        lay_egg_boundary,
-        want_to_grow_boundary,
-        eating_boundary,
         cost_of_thought,
         cost_of_eating,
         offspring_energy,
@@ -194,25 +189,18 @@ pub fn attribute_stats_system(
         growth_rate
     );
 
-    for (ha, aa, da, mp, ms, mrr, er, ea, it, le, wtg, e, cot, coe, oe) in attribute_query_1.iter()
-    {
+    for (ha, aa, da, mp, ts, mrr, er, ea, cot, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
         hatch_age.push(**ha);
         adult_age.push(**aa);
         death_age.push(**da);
         mutation_probability.push(mp.as_float());
-        translation_speed.push(ms.value());
+        translation_speed.push(ts.value());
         rotation_speed.push(mrr.value());
         eye_range.push(**er);
         eye_angle.push(**ea);
-        internal_timer_boundary.push(**it);
-        lay_egg_boundary.push(**le);
-        want_to_grow_boundary.push(**wtg);
-        eating_boundary.push(**e);
         cost_of_thought.push(**cot);
         cost_of_eating.push(**coe);
         offspring_energy.push(**oe);
-    }
-    for (mw, hs, ms, gr) in attribute_query_2.iter() {
         mouth_width.push(**mw);
         hatch_size.push(**hs);
         max_size.push(**ms);
@@ -237,10 +225,6 @@ pub fn attribute_stats_system(
         rotation_speed,
         eye_range,
         eye_angle,
-        internal_timer_boundary,
-        lay_egg_boundary,
-        want_to_grow_boundary,
-        eating_boundary,
         cost_of_thought,
         cost_of_eating,
         offspring_energy,
