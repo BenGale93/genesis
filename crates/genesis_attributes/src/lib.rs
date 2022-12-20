@@ -41,7 +41,6 @@ pub struct Genome {
     pub hatch_age: Chromosome,
     pub adult_age: Chromosome,
     pub death_age: Chromosome,
-    pub mutation_probability: Chromosome,
     pub max_speed: Chromosome,
     pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
@@ -74,7 +73,6 @@ impl Genome {
             hatch_age,
             adult_age,
             death_age,
-            mutation_probability,
             max_speed,
             max_rotation,
             eye_range,
@@ -90,7 +88,6 @@ impl Genome {
             hatch_age,
             adult_age,
             death_age,
-            mutation_probability,
             max_speed,
             max_rotation,
             eye_range,
@@ -144,16 +141,6 @@ pub struct DeathAge(f32);
 
 impl DeathAge {
     pub const fn new(value: f32) -> Self {
-        Self(value)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
-pub struct MutationProbability(Probability);
-
-impl MutationProbability {
-    pub fn new(value: f32) -> Self {
-        let value = Probability::new(value).expect("Expected to be between 0.0 and 1.0.");
         Self(value)
     }
 }
@@ -302,7 +289,6 @@ pub struct AttributeBundle {
     pub hatch_age: HatchAge,
     pub adult_age: AdultAge,
     pub death_age: DeathAge,
-    pub mutation_probability: MutationProbability,
     pub translation_speed: MaxSpeed,
     pub rotation_speed: MaxRotationRate,
     pub eye_range: EyeRange,
@@ -322,7 +308,6 @@ impl AttributeBundle {
             hatch_age: HatchAge::new(values.hatch_age.value),
             adult_age: AdultAge::new(values.adult_age.value),
             death_age: DeathAge::new(values.death_age.value),
-            mutation_probability: MutationProbability::new(values.mutation_probability.value),
             translation_speed: MaxSpeed::new(values.max_speed.value),
             rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),
@@ -342,7 +327,6 @@ pub type BugAttributes<'a> = (
     &'a HatchAge,
     &'a AdultAge,
     &'a DeathAge,
-    &'a MutationProbability,
     &'a MaxSpeed,
     &'a MaxRotationRate,
     &'a EyeRange,

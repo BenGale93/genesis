@@ -42,7 +42,6 @@ type Parent<'a> = (
     &'a Transform,
     &'a attributes::Genome,
     &'a mind::Mind,
-    &'a attributes::MutationProbability,
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
     &'a components::Generation,
@@ -55,13 +54,13 @@ pub fn lay_egg_system(
     asset_server: Res<AssetServer>,
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
+    let prob = Probability::new(config::WorldConfig::global().mutation_probability).unwrap();
     let mut rng = rand::thread_rng();
     for (
         entity,
         transform,
         genome,
         mind,
-        prob,
         mut vitality,
         offspring_energy,
         generation,
@@ -82,8 +81,8 @@ pub fn lay_egg_system(
             &asset_server,
             energy,
             location,
-            genome.mutate(&mut rng, prob),
-            mind.mutate(&mut rng, **prob).into(),
+            genome.mutate(&mut rng, &prob),
+            mind.mutate(&mut rng, &prob).into(),
             *generation + 1.into(),
             Some(entity),
         );
@@ -248,7 +247,9 @@ pub fn spawn_egg_system(
         let genome = attributes::Genome::new(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
-            mind = mind.mutate(&mut rng, Probability::new(1.0).unwrap()).into();
+            mind = mind
+                .mutate(&mut rng, &Probability::new(1.0).unwrap())
+                .into();
         }
         spawn_egg(
             &mut commands,

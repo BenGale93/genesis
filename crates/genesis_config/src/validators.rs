@@ -35,6 +35,21 @@ pub fn low_high<T: PartialOrd + Clone>(
     }
 }
 
+pub fn between<T: PartialOrd + Clone + std::fmt::Display>(
+    value: T,
+    min: T,
+    max: T,
+    name: &str,
+) -> Option<String> {
+    if value < min || value > max {
+        Some(format!(
+            "The value '{name}' must be larger than {min} and smaller then {max}."
+        ))
+    } else {
+        None
+    }
+}
+
 pub fn attribute_overlap(
     lower: (f32, f32, usize),
     higher: (f32, f32, usize),
