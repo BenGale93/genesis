@@ -94,12 +94,20 @@ impl AttributeConfig {
 }
 
 struct DependentAttributeConfigValidator {
+    adult_age_bounds: MinMax,
+    death_age_bounds: MinMax,
+    eye_angle_bounds: MinMax,
+    mouth_width_bounds: MinMax,
     hatch_size_bounds: MinMax,
 }
 
 impl Default for DependentAttributeConfigValidator {
     fn default() -> Self {
         Self {
+            adult_age_bounds: (Some(20.0), Some(100.0)),
+            death_age_bounds: (Some(350.0), Some(1000.0)),
+            eye_angle_bounds: (Some(40.0), Some(360.0)),
+            mouth_width_bounds: (Some(20.0), Some(180.0)),
             hatch_size_bounds: (Some(10.0), Some(49.0)),
         }
     }
@@ -107,12 +115,20 @@ impl Default for DependentAttributeConfigValidator {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DependentAttributeConfig {
+    pub adult_age_bounds: (f32, f32),
+    pub death_age_bounds: (f32, f32),
+    pub eye_angle_bounds: (f32, f32),
+    pub mouth_width_bounds: (f32, f32),
     pub hatch_size_bounds: (f32, f32),
 }
 
 impl Default for DependentAttributeConfig {
     fn default() -> Self {
         Self {
+            adult_age_bounds: (30.0, 60.0),
+            death_age_bounds: (400.0, 600.0),
+            eye_angle_bounds: (60.0, 330.0),
+            mouth_width_bounds: (30.0, 90.0),
             hatch_size_bounds: (20.0, 35.0),
         }
     }
@@ -138,7 +154,13 @@ impl DependentAttributeConfig {
                 attrs_limit!($($attrs), +)
             }
         }
-        attrs_limit!(hatch_size_bounds);
+        attrs_limit!(
+            adult_age_bounds,
+            death_age_bounds,
+            eye_angle_bounds,
+            mouth_width_bounds,
+            hatch_size_bounds
+        );
         messages
     }
 }

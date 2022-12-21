@@ -77,6 +77,22 @@ growth_rate = [
 ]
 
 [dependent_attributes]
+adult_age_bounds = [
+    30.0,
+    60.0,
+]
+death_age_bounds = [
+    400.0,
+    600.0,
+]
+eye_angle_bounds = [
+    60.0,
+    330.0,
+]
+mouth_width_bounds = [
+    30.0,
+    90.0,
+]
 hatch_size_bounds = [
     20.0,
     35.0,

@@ -129,7 +129,11 @@ pub struct AdultAge(f32);
 
 impl AdultAge {
     pub fn new(hatch_age: &Chromosome) -> Self {
-        let value = hatch_age.normalise().mul_add(-30.0, 60.0);
+        let (aa_min, aa_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .adult_age_bounds;
+        let aa_range = aa_max - aa_min;
+        let value = hatch_age.normalise().mul_add(-aa_range, aa_max);
         Self(value)
     }
 }
@@ -139,7 +143,11 @@ pub struct DeathAge(f32);
 
 impl DeathAge {
     pub fn new(max_size: &Chromosome) -> Self {
-        let value = max_size.normalise().mul_add(100.0, 400.0);
+        let (da_min, da_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .death_age_bounds;
+        let da_range = da_max - da_min;
+        let value = max_size.normalise().mul_add(da_range, da_min);
         Self(value)
     }
 }
@@ -216,7 +224,11 @@ pub struct EyeAngle(f32);
 
 impl EyeAngle {
     pub fn new(eye_range: &Chromosome) -> Self {
-        let value = f32::to_radians(eye_range.normalise().mul_add(-270.0, 330.0));
+        let (ea_min, ea_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .eye_angle_bounds;
+        let ea_range = ea_max - ea_min;
+        let value = f32::to_radians(eye_range.normalise().mul_add(-ea_range, ea_max));
         Self(value)
     }
 }
@@ -244,7 +256,11 @@ pub struct MouthWidth(f32);
 
 impl MouthWidth {
     pub fn new(cost_of_eating: &Chromosome) -> Self {
-        let value = f32::to_radians(cost_of_eating.normalise().mul_add(60.0, 30.0));
+        let (mw_min, mw_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .mouth_width_bounds;
+        let mw_range = mw_max - mw_min;
+        let value = f32::to_radians(cost_of_eating.normalise().mul_add(mw_range, mw_min));
         Self(value)
     }
 }
