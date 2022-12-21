@@ -4,14 +4,10 @@ initial_synapse_count = 3
 mutations = 3
 start_energy = 800
 lowest_energy_limit = 600
-rotation_cost = [
-    0.02,
-    0.1,
-]
-translation_cost = [
-    0.02,
-    0.1,
-]
+max_rotation = 15.0
+rotation_cost = 0.015
+max_translation = 400.0
+translation_cost = 0.015
 unit_size_cost = 0.02
 world_energy = 30000
 plant_energy_per_unit = 2
@@ -39,16 +35,6 @@ hatch_age = [
     10.0,
     30.0,
     15,
-]
-max_speed = [
-    100.0,
-    500.0,
-    100,
-]
-max_rotation = [
-    10.0,
-    30.0,
-    20,
 ]
 eye_range = [
     200.0,

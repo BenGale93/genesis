@@ -171,6 +171,7 @@ type BugLiveInfo<'a> = (
     &'a see::Vision,
     &'a time::InternalTimer,
     &'a components::Generation,
+    &'a components::SizeMultiplier,
 );
 
 pub fn bug_live_info_system(
@@ -197,6 +198,7 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
     ui.label(format!("Internal timer: {:.2}", &bug_info.3.elapsed_secs()));
     ui.label(format!("Generation: {}", &bug_info.4 .0));
+    ui.label(format!("Size Multiplier: {:.2}", &bug_info.5.as_float()));
 }
 
 pub fn attribute_info_system(
@@ -224,26 +226,22 @@ pub fn attribute_info_system(
 
 fn attribute_sub_panel(ui: &mut egui::Ui, bug_info_part: &attributes::BugAttributes) {
     ui.label(format!("Hatch age: {:.3}", **bug_info_part.0));
-    ui.label(format!("Adult Age: {}", **bug_info_part.1));
-    ui.label(format!("Death Age: {}", **bug_info_part.2));
-    ui.label(format!("Max speed: {}", &bug_info_part.3.value()));
-    ui.label(format!("Movement cost: {:.3}", &bug_info_part.3.cost()));
-    ui.label(format!("Max rotation: {}", &bug_info_part.4.value()));
-    ui.label(format!("Rotation cost: {:.3}", &bug_info_part.4.cost()));
-    ui.label(format!("Eye range: {}", **bug_info_part.5));
+    ui.label(format!("Adult Age: {:.3}", **bug_info_part.1));
+    ui.label(format!("Death Age: {:.3}", **bug_info_part.2));
+    ui.label(format!("Eye range: {:.3}", **bug_info_part.3));
     ui.label(format!(
         "Eye angle: {:.3}",
-        f32::to_degrees(**bug_info_part.6)
+        f32::to_degrees(**bug_info_part.4)
     ));
-    ui.label(format!("Cost of eating: {:.3}", **bug_info_part.7));
-    ui.label(format!("Offspring energy: {}", **bug_info_part.8));
+    ui.label(format!("Cost of eating: {:.3}", **bug_info_part.5));
+    ui.label(format!("Offspring energy: {:.3}", **bug_info_part.6));
     ui.label(format!(
         "Mouth width: {:.3}",
-        f32::to_degrees(**bug_info_part.9)
+        f32::to_degrees(**bug_info_part.7)
     ));
-    ui.label(format!("Hatch size: {:.3}", **bug_info_part.10));
-    ui.label(format!("Maximum size: {:.3}", **bug_info_part.11));
-    ui.label(format!("Growth rate: {:.3}", **bug_info_part.12));
+    ui.label(format!("Hatch size: {:.3}", **bug_info_part.8));
+    ui.label(format!("Maximum size: {:.3}", **bug_info_part.9));
+    ui.label(format!("Growth rate: {:.3}", **bug_info_part.10));
 }
 
 pub fn bug_brain_info_system(

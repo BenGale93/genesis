@@ -88,8 +88,10 @@ pub struct WorldConfig {
     pub mutations: usize,
     pub start_energy: usize,
     pub lowest_energy_limit: usize,
-    pub rotation_cost: (f32, f32),
-    pub translation_cost: (f32, f32),
+    pub max_rotation: f32,
+    pub rotation_cost: f32,
+    pub max_translation: f32,
+    pub translation_cost: f32,
     pub unit_size_cost: f32,
     pub world_energy: usize,
     pub plant_energy_per_unit: usize,
@@ -119,6 +121,10 @@ impl WorldConfig {
             validators::min_value(0.0, self.unit_size_cost, "unit_size_cost"),
             validators::min_value(1, self.plant_energy_per_unit, "plant_energy_per_unit"),
             validators::between(self.mutation_probability, 0.0, 1.0, "mutation_probability"),
+            validators::between(self.max_rotation, 5.0, 40.0, "max_rotation"),
+            validators::between(self.rotation_cost, 0.0, 1.0, "rotation_cost"),
+            validators::between(self.max_translation, 100.0, 1000.0, "max_translation"),
+            validators::between(self.translation_cost, 0.0, 1.0, "translation_cost"),
             validators::between(self.cost_of_thought, 0.0, 0.1, "cost_of_thoughts"),
             validators::low_high(
                 self.minimum_number,
@@ -127,14 +133,10 @@ impl WorldConfig {
                 "start_num",
             ),
         ];
-        let low_high_tuples = vec![
-            (self.rotation_cost, "rotation_cost"),
-            (self.translation_cost, "translation_cost"),
-            (self.plant_size_range, "plant_size_range"),
-        ];
-        for (tuple, name) in low_high_tuples {
-            messages.push(validators::low_high_tuple(tuple, name));
-        }
+        messages.push(validators::low_high_tuple(
+            self.plant_size_range,
+            "plant_size_range",
+        ));
         messages.extend(self.attributes.validate());
         messages.extend(self.dependent_attributes.validate());
 
@@ -157,8 +159,10 @@ impl Default for WorldConfig {
             mutations: 3,
             start_energy: 800,
             lowest_energy_limit: 600,
-            rotation_cost: (0.02, 0.1),
-            translation_cost: (0.02, 0.1),
+            max_rotation: 15.0,
+            rotation_cost: 0.015,
+            max_translation: 400.0,
+            translation_cost: 0.015,
             unit_size_cost: 0.02,
             world_energy: 30000,
             plant_energy_per_unit: 2,

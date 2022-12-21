@@ -86,8 +86,6 @@ pub struct AverageAttributes {
     pub hatch_age: Vec<f32>,
     pub adult_age: Vec<f32>,
     pub death_age: Vec<f32>,
-    pub translation_speed: Vec<f32>,
-    pub rotation_speed: Vec<f32>,
     pub eye_range: Vec<f32>,
     pub eye_angle: Vec<f32>,
     pub internal_timer_boundary: Vec<f32>,
@@ -173,8 +171,6 @@ pub fn attribute_stats_system(
         hatch_age,
         adult_age,
         death_age,
-        translation_speed,
-        rotation_speed,
         eye_range,
         eye_angle,
         cost_of_eating,
@@ -185,12 +181,10 @@ pub fn attribute_stats_system(
         growth_rate
     );
 
-    for (ha, aa, da, ts, mrr, er, ea, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
+    for (ha, aa, da, er, ea, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
         hatch_age.push(**ha);
         adult_age.push(**aa);
         death_age.push(**da);
-        translation_speed.push(ts.value());
-        rotation_speed.push(mrr.value());
         eye_range.push(**er);
         eye_angle.push(**ea);
         cost_of_eating.push(**coe);
@@ -214,8 +208,6 @@ pub fn attribute_stats_system(
         hatch_age,
         adult_age,
         death_age,
-        translation_speed,
-        rotation_speed,
         eye_range,
         eye_angle,
         cost_of_eating,

@@ -2,8 +2,10 @@ use bevy_ecs::prelude::{Component, Entity};
 use bevy_render::color::Color;
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
+use genesis_config as config;
 use genesis_ecosystem::Energy;
 use genesis_maths::cantor_pairing;
+use genesis_newtype::Weight;
 use serde_derive::Serialize;
 
 pub mod body;
@@ -131,5 +133,31 @@ impl Relations {
             cantor_pairing(e.generation(), e.index()),
             rgb_to_hex(c.r(), c.g(), c.b()),
         )
+    }
+}
+
+#[derive(Component, Debug, Deref)]
+pub struct SizeMultiplier(Weight);
+
+impl SizeMultiplier {
+    pub fn new(size: f32) -> Self {
+        Self(Self::compute_multiplier(size))
+    }
+
+    pub fn update(&mut self, size: f32) {
+        self.0 = Self::compute_multiplier(size);
+    }
+
+    fn compute_multiplier(size: f32) -> Weight {
+        let world_config = config::WorldConfig::global();
+        let min_size = world_config.dependent_attributes.hatch_size_bounds.0;
+        let max_size = world_config.attributes.max_size.1;
+        let range = max_size - min_size;
+        Weight::new(((max_size - size) / range).powi(2))
+            .expect("Expected size multiplier to be a valid weight.")
+    }
+
+    pub fn as_float(&self) -> f32 {
+        self.0.as_float()
     }
 }

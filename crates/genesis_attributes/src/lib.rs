@@ -3,7 +3,6 @@ use bevy_ecs::prelude::{Bundle, Component};
 use bevy_reflect::{Reflect, Struct};
 use derive_more::Deref;
 use genesis_config as config;
-use genesis_maths::linear_interpolate;
 use genesis_newtype::Probability;
 use ndarray::Array;
 use rand::{seq::IteratorRandom, Rng, RngCore};
@@ -55,8 +54,6 @@ impl Chromosome {
 #[derive(Debug, Component, Reflect, Clone)]
 pub struct Genome {
     pub hatch_age: Chromosome,
-    pub max_speed: Chromosome,
-    pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
@@ -79,8 +76,6 @@ impl Genome {
         }
         get_value!(
             hatch_age,
-            max_speed,
-            max_rotation,
             eye_range,
             cost_of_eating,
             offspring_energy,
@@ -89,8 +84,6 @@ impl Genome {
         );
         Self {
             hatch_age,
-            max_speed,
-            max_rotation,
             eye_range,
             cost_of_eating,
             offspring_energy,
@@ -149,64 +142,6 @@ impl DeathAge {
         let da_range = da_max - da_min;
         let value = max_size.normalise().mul_add(da_range, da_min);
         Self(value)
-    }
-}
-
-#[derive(Component, Debug)]
-pub struct MaxSpeed {
-    value: f32,
-    cost: f32,
-}
-
-impl MaxSpeed {
-    pub const fn value(&self) -> f32 {
-        self.value
-    }
-
-    pub const fn cost(&self) -> f32 {
-        self.cost
-    }
-
-    pub fn new(value: f32) -> Self {
-        let cost = Self::compute_cost(value);
-        Self { value, cost }
-    }
-
-    fn compute_cost(value: f32) -> f32 {
-        let config = config::WorldConfig::global();
-        let cost_bounds = config.translation_cost;
-        let (lower, upper, _) = config.attributes.max_speed;
-
-        linear_interpolate(value, lower, upper, cost_bounds.0, cost_bounds.1)
-    }
-}
-
-#[derive(Component, Debug)]
-pub struct MaxRotationRate {
-    value: f32,
-    cost: f32,
-}
-
-impl MaxRotationRate {
-    pub const fn value(&self) -> f32 {
-        self.value
-    }
-
-    pub const fn cost(&self) -> f32 {
-        self.cost
-    }
-
-    pub fn new(value: f32) -> Self {
-        let cost = Self::compute_cost(value);
-        Self { value, cost }
-    }
-
-    fn compute_cost(value: f32) -> f32 {
-        let config = config::WorldConfig::global();
-        let cost_bounds = config.rotation_cost;
-        let (lower, upper, _) = config.attributes.max_rotation;
-
-        linear_interpolate(value, lower, upper, cost_bounds.0, cost_bounds.1)
     }
 }
 
@@ -302,8 +237,6 @@ pub struct AttributeBundle {
     pub hatch_age: HatchAge,
     pub adult_age: AdultAge,
     pub death_age: DeathAge,
-    pub translation_speed: MaxSpeed,
-    pub rotation_speed: MaxRotationRate,
     pub eye_range: EyeRange,
     pub eye_angle: EyeAngle,
     pub cost_of_eating: CostOfEating,
@@ -320,8 +253,6 @@ impl AttributeBundle {
             hatch_age: HatchAge::new(values.hatch_age.value),
             adult_age: AdultAge::new(&values.hatch_age),
             death_age: DeathAge::new(&values.max_size),
-            translation_speed: MaxSpeed::new(values.max_speed.value),
-            rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),
             eye_angle: EyeAngle::new(&values.eye_range),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
@@ -338,8 +269,6 @@ pub type BugAttributes<'a> = (
     &'a HatchAge,
     &'a AdultAge,
     &'a DeathAge,
-    &'a MaxSpeed,
-    &'a MaxRotationRate,
     &'a EyeRange,
     &'a EyeAngle,
     &'a CostOfEating,

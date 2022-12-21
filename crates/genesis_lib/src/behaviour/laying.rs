@@ -7,6 +7,7 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
+use components::SizeMultiplier;
 use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{body, eat, grow, lay::*, mind, see, time, BurntEnergy};
@@ -142,6 +143,7 @@ fn spawn_bug(
         .insert(sprite)
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(vitality.size().collider())
+        .insert(SizeMultiplier::new(vitality.size().current_size()))
         .insert(components::Juvenile)
         .insert(original_color)
         .insert(bug_body)

@@ -1774,7 +1774,6 @@ dependencies = [
  "bevy_reflect",
  "derive_more",
  "genesis_config",
- "genesis_maths",
  "genesis_newtype",
  "ndarray",
  "rand",
