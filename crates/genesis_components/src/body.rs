@@ -5,48 +5,10 @@ use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
-use genesis_genome::Genome;
-use genesis_newtype::Probability;
 use glam::Vec2;
-use rand::RngCore;
 
 #[derive(Component, Debug, Deref, DerefMut)]
 pub struct OriginalColor(pub Color);
-
-#[derive(Component, Debug, PartialEq, Eq, Clone)]
-pub struct BugBody {
-    genome: Genome,
-}
-
-impl BugBody {
-    fn new() -> Self {
-        let genome = Genome::new(config::CHROMOSOME_COUNT, config::CHROMOSOME_LEN);
-
-        Self { genome }
-    }
-
-    pub fn random(rng: &mut dyn RngCore) -> Self {
-        let genome = Genome::random(rng, config::CHROMOSOME_COUNT, config::CHROMOSOME_LEN);
-
-        Self { genome }
-    }
-
-    pub fn mutate(&self, rng: &mut dyn RngCore, probability: Probability) -> Self {
-        Self {
-            genome: self.genome.mutate(rng, probability),
-        }
-    }
-
-    pub const fn genome(&self) -> &Genome {
-        &self.genome
-    }
-}
-
-impl Default for BugBody {
-    fn default() -> Self {
-        Self::new()
-    }
-}
 
 #[derive(Debug, Deref, DerefMut)]
 struct EnergyStore(ecosystem::EnergyReserve);

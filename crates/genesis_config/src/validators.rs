@@ -35,30 +35,34 @@ pub fn low_high<T: PartialOrd + Clone>(
     }
 }
 
-pub fn attribute_overlap(
-    lower: (f32, f32, usize),
-    higher: (f32, f32, usize),
-    low_name: &str,
-    high_name: &str,
+pub fn between<T: PartialOrd + Clone + std::fmt::Display>(
+    value: T,
+    min: T,
+    max: T,
+    name: &str,
 ) -> Option<String> {
-    let ceil_lower = lower.0.max(lower.1);
-    let floor_higher = higher.0.min(higher.1);
-
-    if floor_higher <= ceil_lower {
-        Some(format!("The highest value of '{low_name}' should be lower than the lowest value of '{high_name}'."))
+    if value < min || value > max {
+        Some(format!(
+            "The value '{name}' must be larger than {min} and smaller then {max}."
+        ))
     } else {
         None
     }
 }
 
 pub fn attribute_limit(
-    attr: (f32, f32, usize),
+    floor: f32,
+    ceil: f32,
     validator: (Option<f32>, Option<f32>),
     name: &str,
 ) -> Vec<Option<String>> {
     let mut messages = vec![];
-    let floor = attr.0.min(attr.1);
-    let ceil = attr.0.max(attr.1);
+    if ceil <= floor {
+        messages.push(Some(format!(
+            "The values of '{name}' are in the wrong order."
+        )));
+        return messages;
+    }
     let (lower, upper) = validator;
 
     if let Some(v) = lower {

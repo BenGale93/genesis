@@ -88,14 +88,19 @@ pub struct WorldConfig {
     pub mutations: usize,
     pub start_energy: usize,
     pub lowest_energy_limit: usize,
-    pub rotation_cost: (f32, f32),
-    pub translation_cost: (f32, f32),
+    pub max_rotation: f32,
+    pub rotation_cost: f32,
+    pub max_translation: f32,
+    pub translation_cost: f32,
     pub unit_size_cost: f32,
     pub world_energy: usize,
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
+    pub mutation_probability: f32,
+    pub cost_of_thought: f32,
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
+    pub dependent_attributes: attr_config::DependentAttributeConfig,
 }
 
 impl WorldConfig {
@@ -115,6 +120,12 @@ impl WorldConfig {
         let mut messages = vec![
             validators::min_value(0.0, self.unit_size_cost, "unit_size_cost"),
             validators::min_value(1, self.plant_energy_per_unit, "plant_energy_per_unit"),
+            validators::between(self.mutation_probability, 0.0, 1.0, "mutation_probability"),
+            validators::between(self.max_rotation, 5.0, 40.0, "max_rotation"),
+            validators::between(self.rotation_cost, 0.0, 1.0, "rotation_cost"),
+            validators::between(self.max_translation, 100.0, 1000.0, "max_translation"),
+            validators::between(self.translation_cost, 0.0, 1.0, "translation_cost"),
+            validators::between(self.cost_of_thought, 0.0, 0.1, "cost_of_thoughts"),
             validators::low_high(
                 self.minimum_number,
                 self.start_num,
@@ -122,15 +133,12 @@ impl WorldConfig {
                 "start_num",
             ),
         ];
-        let low_high_tuples = vec![
-            (self.rotation_cost, "rotation_cost"),
-            (self.translation_cost, "translation_cost"),
-            (self.plant_size_range, "plant_size_range"),
-        ];
-        for (tuple, name) in low_high_tuples {
-            messages.push(validators::low_high_tuple(tuple, name));
-        }
+        messages.push(validators::low_high_tuple(
+            self.plant_size_range,
+            "plant_size_range",
+        ));
         messages.extend(self.attributes.validate());
+        messages.extend(self.dependent_attributes.validate());
 
         let failures: Vec<String> = messages.into_iter().flatten().collect();
         if !failures.is_empty() {
@@ -151,14 +159,19 @@ impl Default for WorldConfig {
             mutations: 3,
             start_energy: 800,
             lowest_energy_limit: 600,
-            rotation_cost: (0.02, 0.1),
-            translation_cost: (0.02, 0.1),
+            max_rotation: 15.0,
+            rotation_cost: 0.015,
+            max_translation: 400.0,
+            translation_cost: 0.015,
             unit_size_cost: 0.02,
             world_energy: 30000,
             plant_energy_per_unit: 2,
             plant_size_range: (10.0, 30.0),
+            mutation_probability: 0.02,
+            cost_of_thought: 0.002,
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
+            dependent_attributes: attr_config::DependentAttributeConfig::default(),
         }
     }
 }
@@ -173,16 +186,8 @@ pub struct EnergyLimitConfig {
 impl EnergyLimitConfig {
     pub fn new(config: &WorldConfig) -> Self {
         let e = config.lowest_energy_limit as f32;
-        let h = config
-            .attributes
-            .hatch_size
-            .0
-            .min(config.attributes.hatch_size.1);
-        let m = config
-            .attributes
-            .max_size
-            .0
-            .max(config.attributes.max_size.1);
+        let h = config.dependent_attributes.hatch_size_bounds.0;
+        let m = config.attributes.max_size.1;
 
         let a = (e / h) * (10.0 * (m - h) / m);
         let b = 5.0f32.mul_add(m, -10.0 * h) / (h * m);

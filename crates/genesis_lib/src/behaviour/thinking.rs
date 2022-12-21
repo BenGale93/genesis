@@ -1,5 +1,4 @@
 use bevy::prelude::{Query, Without};
-use genesis_attributes as attributes;
 use genesis_components::{body, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
 
@@ -43,13 +42,15 @@ pub fn thinking_system(
         &mut mind::Mind,
         &mut mind::MindOutput,
         &mut ThinkingSum,
-        &attributes::CostOfThought,
     )>,
 ) {
-    for (input, mut bug_brain, mut output, mut thoughts, cost) in query.iter_mut() {
-        let x = bug_brain.activate(input).expect("Wrong length vector");
-        output.0 = x;
-        thoughts.add_thought(bug_brain.synapses().len(), **cost);
+    let cost = config::WorldConfig::global().cost_of_thought;
+    for (input, mut bug_brain, mut output, mut thoughts) in query.iter_mut() {
+        let mut result = bug_brain.activate(input).expect("Wrong length vector");
+        result[config::MOVEMENT_INDEX] = result[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
+        result[config::ROTATE_INDEX] = result[config::ROTATE_INDEX].clamp(-1.0, 1.0);
+        output.0 = result;
+        thoughts.add_thought(bug_brain.synapses().len(), cost);
     }
 }
 
@@ -58,7 +59,7 @@ mod tests {
     use bevy::prelude::*;
     use genesis_components::mind::*;
     use genesis_config as config;
-    use genesis_genome::Genome;
+    use genesis_newtype::Weight;
 
     use super::*;
 
@@ -69,18 +70,17 @@ mod tests {
 
         app.add_system(thinking_system);
 
-        let mut test_mind: Mind = genesis_brain::Brain::new(1, 1).into();
-        let genome = Genome::new(10, 100);
+        let mut test_mind: Mind = genesis_brain::Brain::new(10, 10).into();
+        let w = Weight::new(1.0).unwrap();
 
-        test_mind.add_random_synapse();
+        test_mind.add_synapse(0, 10, w).unwrap();
 
         let bug_id = app
             .world
             .spawn(test_mind)
-            .insert(MindInput(vec![1.0]))
-            .insert(MindOutput(vec![0.0]))
+            .insert(MindInput(vec![1.0; 10]))
+            .insert(MindOutput(vec![0.0; 10]))
             .insert(ThinkingSum::new())
-            .insert(attributes::CostOfThought::from_genome(&genome))
             .id();
 
         app.update();

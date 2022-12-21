@@ -99,7 +99,7 @@ impl Brain {
     }
 
     #[must_use]
-    pub fn mutate(&self, rng: &mut dyn RngCore, chance: Probability) -> Self {
+    pub fn mutate(&self, rng: &mut dyn RngCore, chance: &Probability) -> Self {
         let mut new_brain = self.clone();
         if rng.gen_bool(f64::from(chance.as_float())) {
             match rng.gen_range(0..=16) {

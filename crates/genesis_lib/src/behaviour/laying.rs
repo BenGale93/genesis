@@ -7,6 +7,7 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
 };
 use bevy_rapier2d::prelude::{ActiveEvents, Collider, Damping, RigidBody, Velocity};
+use components::SizeMultiplier;
 use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{body, eat, grow, lay::*, mind, see, time, BurntEnergy};
@@ -17,21 +18,21 @@ use genesis_spawners::Spawners;
 
 use crate::statistics;
 
-type LayerTest<'a> = (Entity, &'a mind::MindOutput, &'a attributes::LayEggBoundary);
+type LayerTest<'a> = (Entity, &'a mind::MindOutput);
 
 pub fn process_layers_system(
     mut commands: Commands,
     not_laying_query: Query<LayerTest, (Without<TryingToLay>, With<components::Adult>)>,
     laying_query: Query<LayerTest, (With<TryingToLay>, With<components::Adult>)>,
 ) {
-    for (entity, mind_out, boundary) in not_laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] > **boundary {
+    for (entity, mind_out) in not_laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] >= 0.0 {
             commands.entity(entity).insert(TryingToLay);
         }
     }
 
-    for (entity, mind_out, boundary) in laying_query.iter() {
-        if mind_out[config::REPRODUCE_INDEX] <= **boundary {
+    for (entity, mind_out) in laying_query.iter() {
+        if mind_out[config::REPRODUCE_INDEX] < 0.0 {
             commands.entity(entity).remove::<TryingToLay>();
         }
     }
@@ -40,9 +41,8 @@ pub fn process_layers_system(
 type Parent<'a> = (
     Entity,
     &'a Transform,
-    &'a body::BugBody,
+    &'a attributes::Genome,
     &'a mind::Mind,
-    &'a attributes::MutationProbability,
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
     &'a components::Generation,
@@ -55,13 +55,13 @@ pub fn lay_egg_system(
     asset_server: Res<AssetServer>,
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
+    let prob = Probability::new(config::WorldConfig::global().mutation_probability).unwrap();
     let mut rng = rand::thread_rng();
     for (
         entity,
         transform,
-        bug_body,
+        genome,
         mind,
-        prob,
         mut vitality,
         offspring_energy,
         generation,
@@ -82,8 +82,8 @@ pub fn lay_egg_system(
             &asset_server,
             energy,
             location,
-            bug_body.mutate(&mut rng, **prob),
-            mind.mutate(&mut rng, **prob).into(),
+            genome.mutate(&mut rng, &prob),
+            mind.mutate(&mut rng, &prob).into(),
             *generation + 1.into(),
             Some(entity),
         );
@@ -104,7 +104,7 @@ fn egg_position(parent_transform: &Transform) -> Vec3 {
 }
 
 type BugParts<'a> = (
-    body::BugBody,
+    attributes::Genome,
     mind::Mind,
     &'a Color,
     &'a attributes::HatchSize,
@@ -143,6 +143,7 @@ fn spawn_bug(
         .insert(sprite)
         .insert(ActiveEvents::COLLISION_EVENTS)
         .insert(vitality.size().collider())
+        .insert(SizeMultiplier::new(vitality.size().current_size()))
         .insert(components::Juvenile)
         .insert(original_color)
         .insert(bug_body)
@@ -179,14 +180,14 @@ fn spawn_egg(
     asset_server: &Res<AssetServer>,
     energy: ecosystem::Energy,
     location: Vec3,
-    bug_body: body::BugBody,
+    genome: attributes::Genome,
     mind: mind::Mind,
     generation: components::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
     let size = 16.0;
 
-    let attribute_bundle = attributes::AttributeBundle::new(bug_body.genome());
+    let attribute_bundle = attributes::AttributeBundle::new(&genome);
     let original_color = body::OriginalColor(Color::WHITE);
     let sprite = SpriteBundle {
         texture: asset_server.load("egg.png"),
@@ -214,7 +215,7 @@ fn spawn_egg(
         .insert(attribute_bundle)
         .insert(ecosystem::EggEnergy(energy))
         .insert(original_color)
-        .insert(bug_body)
+        .insert(genome)
         .insert(components::Relations::new(
             (entity, mind.color()),
             parent_id,
@@ -245,17 +246,19 @@ pub fn spawn_egg_system(
         let Some(energy) = ecosystem.request_energy(config_instance.start_energy) else { return };
         let mut rng = rand::thread_rng();
         let location = spawners.random_organism_position(&mut rng);
-        let bug_body = body::BugBody::random(&mut rng);
+        let genome = attributes::Genome::new(&mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
-            mind = mind.mutate(&mut rng, Probability::new(1.0).unwrap()).into();
+            mind = mind
+                .mutate(&mut rng, &Probability::new(1.0).unwrap())
+                .into();
         }
         spawn_egg(
             &mut commands,
             &asset_server,
             energy,
             location,
-            bug_body,
+            genome,
             mind,
             components::Generation(0),
             None,
@@ -267,7 +270,7 @@ type EggQuery<'a> = (
     Entity,
     &'a mut ecosystem::EggEnergy,
     &'a mind::Mind,
-    &'a body::BugBody,
+    &'a attributes::Genome,
     &'a Sprite,
     &'a attributes::HatchSize,
     &'a attributes::MaxSize,
@@ -279,7 +282,8 @@ pub fn hatch_egg_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     mut hatch_query: Query<EggQuery, With<components::Hatching>>,
 ) {
-    for (entity, mut egg_energy, mind, body, sprite, hatch_size, max_size) in hatch_query.iter_mut()
+    for (entity, mut egg_energy, mind, genome, sprite, hatch_size, max_size) in
+        hatch_query.iter_mut()
     {
         commands.entity(entity).remove::<EggBundle>();
         let hatching_entity = commands.entity(entity);
@@ -287,7 +291,7 @@ pub fn hatch_egg_system(
             &asset_server,
             egg_energy.move_all_energy(),
             (
-                body.clone(),
+                genome.clone(),
                 mind.clone(),
                 &sprite.color,
                 hatch_size,
