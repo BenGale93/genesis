@@ -65,11 +65,6 @@ offspring_energy = [
     1.0,
     100,
 ]
-hatch_size = [
-    20.0,
-    35.0,
-    15,
-]
 max_size = [
     80.0,
     100.0,
@@ -79,4 +74,10 @@ growth_rate = [
     0.05,
     0.1,
     20,
+]
+
+[dependent_attributes]
+hatch_size_bounds = [
+    20.0,
+    35.0,
 ]

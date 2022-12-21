@@ -98,6 +98,7 @@ pub struct WorldConfig {
     pub cost_of_thought: f32,
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
+    pub dependent_attributes: attr_config::DependentAttributeConfig,
 }
 
 impl WorldConfig {
@@ -135,6 +136,7 @@ impl WorldConfig {
             messages.push(validators::low_high_tuple(tuple, name));
         }
         messages.extend(self.attributes.validate());
+        messages.extend(self.dependent_attributes.validate());
 
         let failures: Vec<String> = messages.into_iter().flatten().collect();
         if !failures.is_empty() {
@@ -165,6 +167,7 @@ impl Default for WorldConfig {
             cost_of_thought: 0.002,
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
+            dependent_attributes: attr_config::DependentAttributeConfig::default(),
         }
     }
 }
@@ -179,16 +182,8 @@ pub struct EnergyLimitConfig {
 impl EnergyLimitConfig {
     pub fn new(config: &WorldConfig) -> Self {
         let e = config.lowest_energy_limit as f32;
-        let h = config
-            .attributes
-            .hatch_size
-            .0
-            .min(config.attributes.hatch_size.1);
-        let m = config
-            .attributes
-            .max_size
-            .0
-            .max(config.attributes.max_size.1);
+        let h = config.dependent_attributes.hatch_size_bounds.0;
+        let m = config.attributes.max_size.1;
 
         let a = (e / h) * (10.0 * (m - h) / m);
         let b = 5.0f32.mul_add(m, -10.0 * h) / (h * m);

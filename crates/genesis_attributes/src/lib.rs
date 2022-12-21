@@ -16,11 +16,7 @@ pub struct Chromosome {
 
 impl Chromosome {
     pub fn new(lower: f32, upper: f32, steps: usize, rng: &mut dyn RngCore) -> Self {
-        let array = if lower < upper {
-            Array::linspace(lower, upper, steps)
-        } else {
-            Array::linspace(upper, lower, steps)
-        };
+        let array = Array::linspace(lower, upper, steps);
         let value = array.iter().copied().choose(rng).unwrap();
         Self {
             array: array.to_vec(),
@@ -64,7 +60,6 @@ pub struct Genome {
     pub eye_range: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
-    pub hatch_size: Chromosome,
     pub max_size: Chromosome,
     pub growth_rate: Chromosome,
 }
@@ -89,7 +84,6 @@ impl Genome {
             eye_range,
             cost_of_eating,
             offspring_energy,
-            hatch_size,
             max_size,
             growth_rate
         );
@@ -100,7 +94,6 @@ impl Genome {
             eye_range,
             cost_of_eating,
             offspring_energy,
-            hatch_size,
             max_size,
             growth_rate,
         }
@@ -260,7 +253,12 @@ impl MouthWidth {
 pub struct HatchSize(f32);
 
 impl HatchSize {
-    pub const fn new(value: f32) -> Self {
+    pub fn new(hatch_age: &Chromosome) -> Self {
+        let (hs_min, hs_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .hatch_size_bounds;
+        let hs_range = hs_max - hs_min;
+        let value = hatch_age.normalise().mul_add(hs_range, hs_min);
         Self(value)
     }
 }
@@ -313,7 +311,7 @@ impl AttributeBundle {
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
             mouth_width: MouthWidth::new(&values.cost_of_eating),
-            hatch_size: HatchSize::new(values.hatch_size.value),
+            hatch_size: HatchSize::new(&values.hatch_age),
             max_size: MaxSize::new(values.max_size.value),
             growth_rate: GrowthRate::new(values.growth_rate.value),
         }
