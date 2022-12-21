@@ -64,7 +64,6 @@ pub struct Genome {
     pub eye_range: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
-    pub mouth_width: Chromosome,
     pub hatch_size: Chromosome,
     pub max_size: Chromosome,
     pub growth_rate: Chromosome,
@@ -90,7 +89,6 @@ impl Genome {
             eye_range,
             cost_of_eating,
             offspring_energy,
-            mouth_width,
             hatch_size,
             max_size,
             growth_rate
@@ -102,7 +100,6 @@ impl Genome {
             eye_range,
             cost_of_eating,
             offspring_energy,
-            mouth_width,
             hatch_size,
             max_size,
             growth_rate,
@@ -253,7 +250,8 @@ impl OffspringEnergy {
 pub struct MouthWidth(f32);
 
 impl MouthWidth {
-    pub const fn new(value: f32) -> Self {
+    pub fn new(cost_of_eating: &Chromosome) -> Self {
+        let value = f32::to_radians(cost_of_eating.normalise().mul_add(60.0, 30.0));
         Self(value)
     }
 }
@@ -314,7 +312,7 @@ impl AttributeBundle {
             eye_angle: EyeAngle::new(&values.eye_range),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
-            mouth_width: MouthWidth::new(values.mouth_width.value),
+            mouth_width: MouthWidth::new(&values.cost_of_eating),
             hatch_size: HatchSize::new(values.hatch_size.value),
             max_size: MaxSize::new(values.max_size.value),
             growth_rate: GrowthRate::new(values.growth_rate.value),

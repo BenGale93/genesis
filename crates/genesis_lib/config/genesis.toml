@@ -55,11 +55,6 @@ eye_range = [
     700.0,
     100,
 ]
-eye_angle = [
-    30.0,
-    360.0,
-    100,
-]
 cost_of_eating = [
     0.2,
     0.3,
@@ -69,11 +64,6 @@ offspring_energy = [
     0.5,
     1.0,
     100,
-]
-mouth_width = [
-    0.3,
-    0.6,
-    20,
 ]
 hatch_size = [
     20.0,

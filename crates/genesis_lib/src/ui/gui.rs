@@ -237,7 +237,10 @@ fn attribute_sub_panel(ui: &mut egui::Ui, bug_info_part: &attributes::BugAttribu
     ));
     ui.label(format!("Cost of eating: {:.3}", **bug_info_part.7));
     ui.label(format!("Offspring energy: {}", **bug_info_part.8));
-    ui.label(format!("Mouth width: {:.3}", **bug_info_part.9));
+    ui.label(format!(
+        "Mouth width: {:.3}",
+        f32::to_degrees(**bug_info_part.9)
+    ));
     ui.label(format!("Hatch size: {:.3}", **bug_info_part.10));
     ui.label(format!("Maximum size: {:.3}", **bug_info_part.11));
     ui.label(format!("Growth rate: {:.3}", **bug_info_part.12));
