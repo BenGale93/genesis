@@ -96,6 +96,7 @@ pub struct WorldConfig {
     pub world_energy: usize,
     pub plant_energy_per_unit: usize,
     pub plant_size_range: (f32, f32),
+    pub plant_density: f32,
     pub mutation_probability: f32,
     pub cost_of_thought: f32,
     pub spawners: Vec<SpawnerConfig>,
@@ -126,6 +127,7 @@ impl WorldConfig {
             validators::between(self.max_translation, 100.0, 1000.0, "max_translation"),
             validators::between(self.translation_cost, 0.0, 1.0, "translation_cost"),
             validators::between(self.cost_of_thought, 0.0, 0.1, "cost_of_thoughts"),
+            validators::between(self.plant_density, 1.0, 100.0, "plant_density"),
             validators::low_high(
                 self.minimum_number,
                 self.start_num,
@@ -167,6 +169,7 @@ impl Default for WorldConfig {
             world_energy: 30000,
             plant_energy_per_unit: 2,
             plant_size_range: (10.0, 30.0),
+            plant_density: 10.0,
             mutation_probability: 0.02,
             cost_of_thought: 0.002,
             spawners: vec![spawner],

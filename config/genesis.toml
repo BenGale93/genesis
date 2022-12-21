@@ -15,6 +15,7 @@ plant_size_range = [
     10.0,
     30.0,
 ]
+plant_density = 10.0
 mutation_probability = 0.02
 cost_of_thought = 0.002
 
