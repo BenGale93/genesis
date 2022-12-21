@@ -62,7 +62,6 @@ pub struct Genome {
     pub max_speed: Chromosome,
     pub max_rotation: Chromosome,
     pub eye_range: Chromosome,
-    pub eye_angle: Chromosome,
     pub cost_of_eating: Chromosome,
     pub offspring_energy: Chromosome,
     pub mouth_width: Chromosome,
@@ -84,8 +83,6 @@ impl Genome {
                get_value!($($attrs), +)
             }
         }
-        let (min, max, steps) = attributes.eye_angle;
-        let eye_angle = Chromosome::new(f32::to_radians(min), f32::to_radians(max), steps, rng);
         get_value!(
             hatch_age,
             max_speed,
@@ -103,7 +100,6 @@ impl Genome {
             max_speed,
             max_rotation,
             eye_range,
-            eye_angle,
             cost_of_eating,
             offspring_energy,
             mouth_width,
@@ -229,7 +225,8 @@ impl EyeRange {
 pub struct EyeAngle(f32);
 
 impl EyeAngle {
-    pub const fn new(value: f32) -> Self {
+    pub fn new(eye_range: &Chromosome) -> Self {
+        let value = f32::to_radians(eye_range.normalise().mul_add(-270.0, 330.0));
         Self(value)
     }
 }
@@ -314,7 +311,7 @@ impl AttributeBundle {
             translation_speed: MaxSpeed::new(values.max_speed.value),
             rotation_speed: MaxRotationRate::new(values.max_rotation.value),
             eye_range: EyeRange::new(values.eye_range.value),
-            eye_angle: EyeAngle::new(values.eye_angle.value),
+            eye_angle: EyeAngle::new(&values.eye_range),
             cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
             offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
             mouth_width: MouthWidth::new(values.mouth_width.value),
