@@ -16,7 +16,7 @@ use genesis_ecosystem as ecosystem;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 
-use crate::statistics;
+use crate::{setup::MindThresholds, statistics};
 
 type LayerTest<'a> = (Entity, &'a mind::MindOutput);
 
@@ -53,6 +53,7 @@ type Parent<'a> = (
 pub fn lay_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    mind_thresholds: Res<MindThresholds>,
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
     let prob = Probability::new(config::WorldConfig::global().mutation_probability).unwrap();
@@ -83,7 +84,7 @@ pub fn lay_egg_system(
             energy,
             location,
             genome.mutate(&mut rng, &prob),
-            mind.mutate(&mut rng, &prob).into(),
+            mind.mutate(&mut rng, &prob, &mind_thresholds).into(),
             *generation + 1.into(),
             Some(entity),
         );
@@ -235,6 +236,7 @@ pub fn spawn_egg_system(
     spawners: Res<Spawners>,
     count_stats: Res<statistics::CountStats>,
     performance_stats: Res<statistics::BugPerformance>,
+    mind_thresholds: Res<MindThresholds>,
 ) {
     let config_instance = config::WorldConfig::global();
     let bug_num = count_stats.current_organisms();
@@ -250,7 +252,7 @@ pub fn spawn_egg_system(
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
             mind = mind
-                .mutate(&mut rng, &Probability::new(1.0).unwrap())
+                .mutate(&mut rng, &Probability::new(1.0).unwrap(), &mind_thresholds)
                 .into();
         }
         spawn_egg(

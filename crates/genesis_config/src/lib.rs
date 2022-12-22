@@ -4,6 +4,7 @@ mod validators;
 
 use bevy_core_pipeline::clear_color::ClearColor;
 use bevy_render::color::Color;
+use derive_getters::Getters;
 use once_cell::sync::OnceCell;
 use serde_derive::{Deserialize, Serialize};
 extern crate serde;
@@ -102,6 +103,7 @@ pub struct WorldConfig {
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
     pub dependent_attributes: attr_config::DependentAttributeConfig,
+    pub brain_mutations: BrainMutationConfig,
 }
 
 impl WorldConfig {
@@ -141,6 +143,7 @@ impl WorldConfig {
         ));
         messages.extend(self.attributes.validate());
         messages.extend(self.dependent_attributes.validate());
+        messages.extend(self.brain_mutations.validate());
 
         let failures: Vec<String> = messages.into_iter().flatten().collect();
         if !failures.is_empty() {
@@ -175,6 +178,7 @@ impl Default for WorldConfig {
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
             dependent_attributes: attr_config::DependentAttributeConfig::default(),
+            brain_mutations: BrainMutationConfig::default(),
         }
     }
 }
@@ -220,4 +224,74 @@ pub fn initialize_configs() {
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);
     _ = ENERGY_LIMIT_INSTANCE.set(energy_limit_config);
+}
+
+#[derive(Debug, Serialize, Deserialize, Getters)]
+pub struct BrainMutationConfig {
+    deactivate_neuron: f32,
+    add_neuron: f32,
+    neuron_bias: f32,
+    activation_func: f32,
+    synapse_weight: f32,
+    deactivate_synapse: f32,
+    add_synapse: f32,
+}
+
+impl Default for BrainMutationConfig {
+    fn default() -> Self {
+        Self {
+            deactivate_neuron: 0.1,
+            add_neuron: 0.1,
+            neuron_bias: 0.05,
+            activation_func: 0.05,
+            synapse_weight: 0.5,
+            deactivate_synapse: 0.1,
+            add_synapse: 0.1,
+        }
+    }
+}
+
+impl BrainMutationConfig {
+    pub fn validate(&self) -> Vec<Option<String>> {
+        let mut messages = vec![];
+        macro_rules! probabilities {
+            ($attr:ident) => {
+                messages.push(validators::between(
+                    self.$attr,
+                    0.0,
+                    1.0,
+                    stringify!($attr),
+                ))
+            };
+            ($attr:ident, $($attrs:ident), +) => {
+                probabilities!($attr);
+                probabilities!($($attrs), +)
+            }
+        }
+        probabilities!(
+            deactivate_neuron,
+            add_neuron,
+            neuron_bias,
+            activation_func,
+            synapse_weight,
+            deactivate_synapse,
+            add_synapse
+        );
+        let total_probability = self.deactivate_neuron
+            + self.add_neuron
+            + self.neuron_bias
+            + self.activation_func
+            + self.synapse_weight
+            + self.deactivate_synapse
+            + self.add_synapse;
+
+        messages.push(validators::between(
+            total_probability,
+            1.0,
+            1.0,
+            "Total Brain Probabilities",
+        ));
+
+        messages
+    }
 }

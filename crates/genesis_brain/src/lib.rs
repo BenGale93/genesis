@@ -14,6 +14,8 @@ pub mod synapse;
 
 use activation::ActivationFunctionKind;
 pub use brain_error::BrainError;
+use derive_getters::Getters;
+use genesis_config as config;
 use genesis_newtype::{Bias, Probability, Weight};
 pub use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
@@ -21,6 +23,39 @@ use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
+
+#[derive(Debug, Getters)]
+pub struct BrainMutationThresholds {
+    deactivate_neuron: f32,
+    add_neuron: f32,
+    neuron_bias: f32,
+    activation_func: f32,
+    synapse_weight: f32,
+    deactivate_synapse: f32,
+    add_synapse: f32,
+}
+
+impl BrainMutationThresholds {
+    pub fn new(brain_config: &config::BrainMutationConfig) -> Self {
+        let deactivate_neuron = *brain_config.deactivate_neuron();
+        let add_neuron = deactivate_neuron + brain_config.add_neuron();
+        let neuron_bias = add_neuron + brain_config.neuron_bias();
+        let activation_func = neuron_bias + brain_config.activation_func();
+        let synapse_weight = activation_func + brain_config.synapse_weight();
+        let deactivate_synapse = synapse_weight + brain_config.deactivate_synapse();
+        let add_synapse = deactivate_synapse + brain_config.add_synapse();
+
+        Self {
+            deactivate_neuron,
+            add_neuron,
+            neuron_bias,
+            activation_func,
+            synapse_weight,
+            deactivate_synapse,
+            add_synapse,
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Brain {
@@ -99,16 +134,23 @@ impl Brain {
     }
 
     #[must_use]
-    pub fn mutate(&self, rng: &mut dyn RngCore, chance: &Probability) -> Self {
+    pub fn mutate(
+        &self,
+        rng: &mut dyn RngCore,
+        chance: &Probability,
+        brain_config: &BrainMutationThresholds,
+    ) -> Self {
         let mut new_brain = self.clone();
         if rng.gen_bool(f64::from(chance.as_float())) {
-            match rng.gen_range(0..=16) {
-                0 => new_brain.deactivate_random_synapse(),
-                1 => new_brain.deactivate_random_neuron(),
-                2..4 => new_brain.mutate_synapse_weight(),
-                4..6 => new_brain.mutate_neuron_bias(),
-                6..8 => new_brain.mutate_neuron_activation(),
-                8..10 => new_brain.add_random_neuron(),
+            match rng.gen_range(0.0..=1.0) {
+                x if x < *brain_config.deactivate_neuron() => new_brain.deactivate_random_neuron(),
+                x if x < *brain_config.add_neuron() => new_brain.add_random_neuron(),
+                x if x < *brain_config.neuron_bias() => new_brain.mutate_neuron_bias(),
+                x if x < *brain_config.activation_func() => new_brain.mutate_neuron_activation(),
+                x if x < *brain_config.synapse_weight() => new_brain.mutate_synapse_weight(),
+                x if x < *brain_config.deactivate_synapse() => {
+                    new_brain.deactivate_random_synapse()
+                }
                 _ => new_brain.add_random_synapse(),
             }
         }

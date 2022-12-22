@@ -79,6 +79,7 @@ impl Plugin for GenesisPlugin {
             .insert_resource(spawners)
             .insert_resource(plant_spawn_size)
             .insert_resource(ecosystem)
+            .insert_resource(setup::MindThresholds::new(&config_instance.brain_mutations))
             .add_startup_system_set(setup::setup_system_set())
             .add_system_set(plant_system_set())
             .add_fixed_timestep(Duration::from_secs(10), "family_tree")

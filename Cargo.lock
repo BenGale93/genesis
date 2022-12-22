@@ -1784,6 +1784,8 @@ name = "genesis_brain"
 version = "0.1.0"
 dependencies = [
  "cached",
+ "derive-getters",
+ "genesis_config",
  "genesis_maths",
  "genesis_newtype",
  "rand",
@@ -1831,6 +1833,7 @@ dependencies = [
  "bevy_core_pipeline",
  "bevy_render",
  "confy",
+ "derive-getters",
  "once_cell",
  "serde",
  "serde_derive",

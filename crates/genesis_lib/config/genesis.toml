@@ -84,3 +84,12 @@ hatch_size_bounds = [
     20.0,
     35.0,
 ]
+
+[brain_mutations]
+deactivate_neuron = 0.1
+add_neuron = 0.1
+neuron_bias = 0.05
+activation_func = 0.05
+synapse_weight = 0.5
+deactivate_synapse = 0.1
+add_synapse = 0.1
