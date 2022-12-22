@@ -153,7 +153,7 @@ impl SizeMultiplier {
         let min_size = world_config.dependent_attributes.hatch_size_bounds.0;
         let max_size = world_config.attributes.max_size.1;
         let range = max_size - min_size;
-        Weight::new(((max_size - size) / range).powi(2))
+        Weight::new(((max_size - size) / range).powf(1.4))
             .expect("Expected size multiplier to be a valid weight.")
     }
 

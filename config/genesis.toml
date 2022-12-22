@@ -1,7 +1,7 @@
 start_num = 10
 minimum_number = 5
 initial_synapse_count = 3
-mutations = 3
+mutations = 20
 start_energy = 800
 lowest_energy_limit = 600
 max_rotation = 15.0
@@ -15,7 +15,8 @@ plant_size_range = [
     10.0,
     30.0,
 ]
-mutation_probability = 0.02
+plant_density = 10.0
+mutation_probability = 0.10
 cost_of_thought = 0.002
 
 [[spawners]]
@@ -83,3 +84,12 @@ hatch_size_bounds = [
     20.0,
     35.0,
 ]
+
+[brain_mutations]
+deactivate_neuron = 0.15
+add_neuron = 0.15
+neuron_bias = 0.05
+activation_func = 0.05
+synapse_weight = 0.2
+deactivate_synapse = 0.2
+add_synapse = 0.2

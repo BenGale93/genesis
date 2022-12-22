@@ -8,7 +8,9 @@ license = "MIT"
 [dependencies]
 genesis_newtype = { workspace = true }
 genesis_maths = { workspace = true }
+genesis_config = { workspace = true }
 rand = { workspace = true }
 rand_distr = { workspace = true }
 thiserror = { workspace = true }
 cached = { workspace = true }
+derive-getters = { workspace = true}

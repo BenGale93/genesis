@@ -6,7 +6,7 @@ use bevy::{
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
 };
-use bevy_rapier2d::prelude::{Collider, Damping, RigidBody, Velocity};
+use bevy_rapier2d::prelude::{Collider, ColliderMassProperties, Damping, RigidBody, Velocity};
 use genesis_components::{body, eat::Eaten, Generation};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
@@ -81,6 +81,9 @@ fn spawn_plant(
         })
         .insert(TransformBundle::from(Transform::from_translation(location)))
         .insert(plant.collider())
+        .insert(ColliderMassProperties::Density(
+            config::WorldConfig::global().plant_density,
+        ))
         .insert(Velocity::zero())
         .insert(plant);
 }

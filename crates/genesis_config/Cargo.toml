@@ -12,3 +12,4 @@ once_cell = { workspace = true}
 serde_derive = { workspace = true}
 confy = { workspace = true}
 serde = { workspace = true}
+derive-getters = { workspace = true}
