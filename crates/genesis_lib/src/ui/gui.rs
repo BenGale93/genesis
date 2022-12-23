@@ -1,4 +1,7 @@
+use std::fs;
+
 use bevy::{
+    log::warn,
     prelude::{
         Camera, Color, Commands, Component, Entity, GlobalTransform, Input, MouseButton, Query,
         Res, ResMut, Resource, With,
@@ -10,8 +13,9 @@ use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use genesis_attributes as attributes;
 use genesis_components as components;
-use genesis_components::{body, eat, lay, see, time};
+use genesis_components::{body, eat, lay, mind, see, time};
 use genesis_ecosystem as ecosystem;
+use serde::{Deserialize, Serialize};
 
 use super::{brain_panel, interaction, statistics};
 #[derive(Debug, Default, Resource)]
@@ -344,6 +348,45 @@ pub fn game_speed_widget(
                     speed.paused = !speed.paused;
                 }
                 ui.add(egui::Slider::new(&mut speed.speed, 0.1..=3.0).text("Game Speed"))
+            })
+        });
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BugBlueprint {
+    mind: mind::Mind,
+    genome: attributes::Genome,
+}
+
+pub fn bug_serde_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    bug_query: Query<(&mind::Mind, &attributes::Genome), With<Selected>>,
+) {
+    let Ok(bug) = bug_query.get_single() else {
+        return;
+    };
+    egui::Window::new("Save")
+        .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Save bug").clicked() {
+                    let path = std::env::current_dir().unwrap();
+                    let Some(res) = rfd::FileDialog::new()
+                        .set_file_name("bug.json")
+                        .set_directory(path)
+                        .save_file() else
+                    {
+                        return;
+                    };
+                    let bug_info = BugBlueprint {
+                        mind: bug.0.to_owned(),
+                        genome: bug.1.to_owned(),
+                    };
+                    let bug_json = serde_json::to_string_pretty(&bug_info).unwrap();
+                    if let Err(e) = fs::write(res, bug_json) {
+                        warn!("Could not save bug. Please try again. {e}")
+                    };
+                }
             })
         });
 }

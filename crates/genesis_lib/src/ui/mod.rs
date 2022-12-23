@@ -126,6 +126,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(gui::global_ui_update_system)
         .with_system(gui::bug_brain_info_system)
         .with_system(gui::bug_stats_info_system)
+        .with_system(gui::bug_serde_widget)
 }
 
 pub fn selection_system_set() -> SystemSet {

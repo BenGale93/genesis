@@ -6,8 +6,9 @@ use genesis_config as config;
 use genesis_newtype::Probability;
 use ndarray::Array;
 use rand::{seq::IteratorRandom, Rng, RngCore};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Reflect, Clone)]
+#[derive(Debug, Reflect, Clone, Deserialize, Serialize)]
 pub struct Chromosome {
     array: Vec<f32>,
     value: f32,
@@ -51,7 +52,7 @@ impl Chromosome {
     }
 }
 
-#[derive(Debug, Component, Reflect, Clone)]
+#[derive(Debug, Component, Reflect, Clone, Serialize, Deserialize)]
 pub struct Genome {
     pub hatch_age: Chromosome,
     pub eye_range: Chromosome,

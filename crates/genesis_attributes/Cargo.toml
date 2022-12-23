@@ -13,3 +13,5 @@ bevy_reflect = {workspace = true}
 derive_more = {workspace = true}
 rand = { workspace = true }
 ndarray = { workspace = true}
+serde_derive = { workspace = true}
+serde = { workspace = true}

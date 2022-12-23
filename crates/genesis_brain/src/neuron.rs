@@ -5,17 +5,18 @@ use std::{
 
 use genesis_newtype::Bias;
 use rand::random;
+use serde::{Deserialize, Serialize};
 
 use crate::activation::{self, ActivationFunctionKind};
 
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
 pub enum NeuronKind {
     Input,
     Output,
     Hidden,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
 pub struct Neuron {
     kind: NeuronKind,
     activation: activation::ActivationFunctionKind,

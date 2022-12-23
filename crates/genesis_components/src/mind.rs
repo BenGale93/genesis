@@ -6,8 +6,9 @@ use genesis_brain::{feed_forward_layers, Brain, NeuronKind, Neurons, Synapses};
 use genesis_color as color;
 use genesis_config as config;
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
-#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From)]
+#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From, Deserialize, Serialize)]
 pub struct Mind(pub Brain);
 
 impl Mind {

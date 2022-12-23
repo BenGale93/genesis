@@ -2,10 +2,11 @@ use std::hash::{Hash, Hasher};
 
 use genesis_maths::cantor_pairing;
 use genesis_newtype::Weight;
+use serde::{Deserialize, Serialize};
 
 use crate::BrainError;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Synapse {
     from: usize,
     to: usize,

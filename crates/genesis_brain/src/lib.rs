@@ -21,6 +21,7 @@ pub use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
+use serde::{Deserialize, Serialize};
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
@@ -57,7 +58,7 @@ impl BrainMutationThresholds {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
 pub struct Brain {
     inputs: usize,
     outputs: usize,

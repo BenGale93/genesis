@@ -2,6 +2,7 @@
 use std::ops;
 
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -30,7 +31,7 @@ impl Probability {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Deserialize, Serialize)]
 pub struct Weight(f32);
 
 pub type Bias = Weight;
