@@ -127,12 +127,20 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(gui::bug_brain_info_system)
         .with_system(gui::bug_stats_info_system)
         .with_system(gui::bug_serde_widget)
+        .with_system(gui::bug_spawner_widget)
 }
 
 pub fn selection_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(gui::using_ui)
         .with_system(gui::select_sprite_system)
+        .into()
+}
+
+pub fn manual_spawn_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_if_not(gui::using_ui)
+        .with_system(gui::spawn_at_mouse)
         .into()
 }
 
@@ -156,6 +164,7 @@ impl Plugin for GenesisUiPlugin {
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
+            .add_system_set(manual_spawn_system_set())
             .insert_resource(statistics::AverageAttributes::default())
             .insert_resource(statistics::CountStats::default())
             .insert_resource(statistics::BugPerformance::default())

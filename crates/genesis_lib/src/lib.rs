@@ -18,6 +18,7 @@ use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
 mod behaviour;
+mod bug_serde;
 mod lifecycle;
 mod setup;
 mod spawning;
@@ -74,6 +75,7 @@ impl Plugin for GenesisPlugin {
                 GenesisStage::CleanUp,
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
+            .init_resource::<bug_serde::LoadedBlueprint>()
             .insert_resource(config::BACKGROUND)
             .insert_resource(statistics::FamilyTree::default())
             .insert_resource(spawners)
