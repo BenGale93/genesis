@@ -6,12 +6,34 @@ use serde::{Deserialize, Serialize};
 
 use crate::BrainError;
 
+#[derive(Deserialize)]
+struct DeserSynapse {
+    from: usize,
+    to: usize,
+    weight: Weight,
+    active: bool,
+}
+
+impl From<DeserSynapse> for Synapse {
+    fn from(tmp: DeserSynapse) -> Self {
+        Self {
+            from: tmp.from,
+            to: tmp.to,
+            weight: tmp.weight,
+            active: tmp.active,
+            innovation: cantor_pairing(tmp.from, tmp.to),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[serde(from = "DeserSynapse")]
 pub struct Synapse {
     from: usize,
     to: usize,
     weight: Weight,
     active: bool,
+    #[serde(skip_serializing)]
     innovation: usize,
 }
 
