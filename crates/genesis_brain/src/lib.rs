@@ -318,6 +318,10 @@ impl Brain {
         {
             return false;
         }
+        if matches!(to_kind, NeuronKind::Hidden) {
+            let num_outgoing_synapses: usize = self.synapses.num_outgoing_synapses(to);
+            return num_outgoing_synapses != 0;
+        }
         true
     }
 
@@ -903,5 +907,20 @@ mod tests {
             test_brain.synapses().to_vec(),
         );
         assert_eq!(layers.len(), 1);
+    }
+
+    #[test]
+    #[should_panic(expected = "value: SynapseError")]
+    fn add_synapse_fails_between_two_isolated_hidden_neurons() {
+        let mut test_brain = super::Brain::new(2, 2);
+        let w = Weight::new(1.0).unwrap();
+
+        test_brain.add_synapse(1, 2, w).unwrap();
+        test_brain.add_neuron(0).unwrap();
+        test_brain.add_synapse(0, 4, w).unwrap();
+        test_brain.add_neuron(3).unwrap();
+        test_brain.add_synapse(1, 2, w).unwrap();
+        test_brain.deactivate_synapse(2).unwrap();
+        test_brain.add_synapse(0, 5, w).unwrap();
     }
 }
