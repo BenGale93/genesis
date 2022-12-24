@@ -1,6 +1,6 @@
 use bevy::{
     prelude::{
-        AssetServer, Camera, Color, Commands, Component, Entity, GlobalTransform, Input,
+        warn, AssetServer, Camera, Color, Commands, Component, Entity, GlobalTransform, Input,
         MouseButton, Query, Res, ResMut, Resource, Vec3, With,
     },
     sprite::Sprite,
@@ -362,7 +362,10 @@ pub fn bug_serde_widget(
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Load bug").clicked() {
-                    loaded_blueprint.blueprint = bug_serde::load_bug_blueprint();
+                    match bug_serde::load_bug_blueprint() {
+                        Ok(x) => loaded_blueprint.blueprint = x,
+                        Err(e) => warn!("{e}"),
+                    };
                 };
                 if let Ok(bug) = bug_query.get_single() {
                     if ui.button("Save bug").clicked() {

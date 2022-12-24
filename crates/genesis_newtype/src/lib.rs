@@ -2,7 +2,7 @@
 use std::ops;
 
 use rand::Rng;
-use serde::{Deserialize, Serialize};
+use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -31,8 +31,18 @@ impl Probability {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Deserialize, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Serialize)]
 pub struct Weight(f32);
+
+impl<'de> Deserialize<'de> for Weight {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let w: f32 = Deserialize::deserialize(deserializer)?;
+        Self::new(w).map_err(Error::custom)
+    }
+}
 
 pub type Bias = Weight;
 

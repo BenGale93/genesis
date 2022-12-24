@@ -5,11 +5,29 @@ use derive_getters::Getters;
 use genesis_attributes as attributes;
 use genesis_components::mind;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
+
+#[derive(Debug, Error)]
+pub enum BugSerdeError {
+    #[error(transparent)]
+    MindValidation(#[from] mind::MindValidationError),
+    #[error(transparent)]
+    Serde(#[from] serde_json::error::Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+}
 
 #[derive(Debug, Serialize, Deserialize, Getters)]
 pub struct BugBlueprint {
     mind: mind::Mind,
     genome: attributes::Genome,
+}
+
+impl BugBlueprint {
+    fn validate(&self) -> Result<(), BugSerdeError> {
+        self.mind.validate()?;
+        Ok(())
+    }
 }
 
 #[derive(Debug, Resource, Default)]
@@ -36,12 +54,12 @@ pub fn save_bug(bug: &(&mind::Mind, &attributes::Genome)) {
     };
 }
 
-#[must_use]
-pub fn load_bug_blueprint() -> Option<BugBlueprint> {
+pub fn load_bug_blueprint() -> Result<Option<BugBlueprint>, BugSerdeError> {
     let Some(path) = rfd::FileDialog::new().pick_file() else {
-        return None;
+        return Ok(None);
     };
-    let content = fs::read(path).unwrap();
-    let blueprint: BugBlueprint = serde_json::from_slice(&content).unwrap();
-    Some(blueprint)
+    let content = fs::read(path)?;
+    let blueprint: BugBlueprint = serde_json::from_slice(&content)?;
+    blueprint.validate()?;
+    Ok(Some(blueprint))
 }

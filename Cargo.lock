@@ -1889,6 +1889,7 @@ dependencies = [
  "rand",
  "serde",
  "serde_derive",
+ "thiserror",
 ]
 
 [[package]]

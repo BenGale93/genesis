@@ -39,13 +39,13 @@ pub fn sensory_system(
 pub fn thinking_system(
     mut query: Query<(
         &mind::MindInput,
-        &mut mind::Mind,
+        &mind::Mind,
         &mut mind::MindOutput,
         &mut ThinkingSum,
     )>,
 ) {
     let cost = config::WorldConfig::global().cost_of_thought;
-    for (input, mut bug_brain, mut output, mut thoughts) in query.iter_mut() {
+    for (input, bug_brain, mut output, mut thoughts) in query.iter_mut() {
         let mut result = bug_brain.activate(input).expect("Wrong length vector");
         result[config::MOVEMENT_INDEX] = result[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
         result[config::ROTATE_INDEX] = result[config::ROTATE_INDEX].clamp(-1.0, 1.0);
