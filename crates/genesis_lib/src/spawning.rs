@@ -21,7 +21,6 @@ use genesis_spawners::Spawners;
 use rand_distr::{Distribution, Uniform};
 
 type BugParts<'a> = (
-    attributes::Genome,
     mind::Mind,
     &'a Color,
     &'a attributes::HatchSize,
@@ -34,7 +33,7 @@ pub fn spawn_bug(
     bug_parts: BugParts,
     mut hatching_entity: EntityCommands,
 ) -> ecosystem::Energy {
-    let (bug_body, mind, color, hatch_size, max_size) = bug_parts;
+    let (mind, color, hatch_size, max_size) = bug_parts;
     let mind_bundle = mind::MindBundle::new(&mind);
 
     let original_color = body::OriginalColor(mind.color());
@@ -63,7 +62,6 @@ pub fn spawn_bug(
         .insert(SizeMultiplier::new(vitality.size().current_size()))
         .insert(components::Juvenile)
         .insert(original_color)
-        .insert(bug_body)
         .insert(vitality)
         .insert(mind_bundle)
         .insert(see::Vision::new())
@@ -95,16 +93,17 @@ pub struct EggBundle {
 pub fn spawn_egg(
     commands: &mut Commands,
     asset_server: &Res<AssetServer>,
+    genome: &Res<attributes::Genome>,
     energy: ecosystem::Energy,
     location: Vec3,
-    genome: attributes::Genome,
+    dna: attributes::Dna,
     mind: mind::Mind,
     generation: components::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
     let size = 16.0;
 
-    let attribute_bundle = attributes::AttributeBundle::new(&genome);
+    let attribute_bundle = attributes::AttributeBundle::new(&dna, genome);
     let original_color = body::OriginalColor(Color::WHITE);
     let sprite = SpriteBundle {
         texture: asset_server.load("egg.png"),
@@ -132,7 +131,7 @@ pub fn spawn_egg(
         .insert(attribute_bundle)
         .insert(ecosystem::EggEnergy(energy))
         .insert(original_color)
-        .insert(genome)
+        .insert(dna)
         .insert(components::Relations::new(
             (entity, mind.color()),
             parent_id,

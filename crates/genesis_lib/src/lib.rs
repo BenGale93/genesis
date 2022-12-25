@@ -76,6 +76,7 @@ impl Plugin for GenesisPlugin {
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
             .init_resource::<bug_serde::LoadedBlueprint>()
+            .init_resource::<genesis_attributes::Genome>()
             .insert_resource(config::BACKGROUND)
             .insert_resource(statistics::FamilyTree::default())
             .insert_resource(spawners)

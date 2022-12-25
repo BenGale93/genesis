@@ -355,7 +355,7 @@ pub fn game_speed_widget(
 pub fn bug_serde_widget(
     mut egui_ctx: ResMut<EguiContext>,
     mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
-    bug_query: Query<(&mind::Mind, &attributes::Genome), With<Selected>>,
+    bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
 ) {
     egui::Window::new("Save/Load")
         .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
@@ -397,6 +397,7 @@ pub fn bug_spawner_widget(
 pub fn spawn_at_mouse(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    genome: Res<attributes::Genome>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
     wnds: Res<Windows>,
@@ -419,9 +420,10 @@ pub fn spawn_at_mouse(
     spawning::spawn_egg(
         &mut commands,
         &asset_server,
+        &genome,
         energy,
         Vec3::new(world_pos.x, world_pos.y, 0.0),
-        blueprint.genome().to_owned(),
+        blueprint.dna().to_owned(),
         blueprint.mind().to_owned(),
         Generation(0),
         None,

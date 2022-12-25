@@ -20,7 +20,7 @@ pub enum BugSerdeError {
 #[derive(Debug, Serialize, Deserialize, Getters)]
 pub struct BugBlueprint {
     mind: mind::Mind,
-    genome: attributes::Genome,
+    dna: attributes::Dna,
 }
 
 impl BugBlueprint {
@@ -35,7 +35,7 @@ pub struct LoadedBlueprint {
     pub blueprint: Option<BugBlueprint>,
 }
 
-pub fn save_bug(bug: &(&mind::Mind, &attributes::Genome)) {
+pub fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
     let path = std::env::current_dir().unwrap();
     let Some(res) = rfd::FileDialog::new()
                         .set_file_name("bug.json")
@@ -46,7 +46,7 @@ pub fn save_bug(bug: &(&mind::Mind, &attributes::Genome)) {
                     };
     let bug_info = BugBlueprint {
         mind: bug.0.to_owned(),
-        genome: bug.1.to_owned(),
+        dna: bug.1.to_owned(),
     };
     let bug_json = serde_json::to_string_pretty(&bug_info).unwrap();
     if let Err(e) = fs::write(res, bug_json) {

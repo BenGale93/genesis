@@ -35,18 +35,19 @@ pub fn process_layers_system(
 type Parent<'a> = (
     Entity,
     &'a Transform,
-    &'a attributes::Genome,
     &'a mind::Mind,
     &'a mut body::Vitality,
     &'a attributes::OffspringEnergy,
     &'a components::Generation,
     &'a mut EggsLaid,
     &'a mut components::Relations,
+    &'a attributes::Dna,
 );
 
 pub fn lay_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    genome: Res<attributes::Genome>,
     mind_thresholds: Res<MindThresholds>,
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
@@ -55,13 +56,13 @@ pub fn lay_egg_system(
     for (
         entity,
         transform,
-        genome,
         mind,
         mut vitality,
         offspring_energy,
         generation,
         mut eggs_laid,
         mut relations,
+        dna,
     ) in parent_query.iter_mut()
     {
         let egg_energy =
@@ -75,9 +76,10 @@ pub fn lay_egg_system(
         let egg_entity = spawning::spawn_egg(
             &mut commands,
             &asset_server,
+            &genome,
             energy,
             location,
-            genome.mutate(&mut rng, &prob),
+            genome.mutate(*dna, &mut rng, &prob),
             mind.mutate(&mut rng, &prob, &mind_thresholds).into(),
             *generation + 1.into(),
             Some(entity),
@@ -101,6 +103,7 @@ fn egg_position(parent_transform: &Transform) -> Vec3 {
 pub fn spawn_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    genome: Res<attributes::Genome>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     spawners: Res<Spawners>,
     count_stats: Res<statistics::CountStats>,
@@ -117,7 +120,7 @@ pub fn spawn_egg_system(
         let Some(energy) = ecosystem.request_energy(config_instance.start_energy) else { return };
         let mut rng = rand::thread_rng();
         let location = spawners.random_organism_position(&mut rng);
-        let genome = attributes::Genome::new(&mut rng);
+        let dna = attributes::Dna::new(&genome, &mut rng);
         let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
         for _ in 0..config_instance.mutations {
             mind = mind
@@ -127,9 +130,10 @@ pub fn spawn_egg_system(
         spawning::spawn_egg(
             &mut commands,
             &asset_server,
+            &genome,
             energy,
             location,
-            genome,
+            dna,
             mind,
             components::Generation(0),
             None,
@@ -141,7 +145,6 @@ type EggQuery<'a> = (
     Entity,
     &'a mut ecosystem::EggEnergy,
     &'a mind::Mind,
-    &'a attributes::Genome,
     &'a Sprite,
     &'a attributes::HatchSize,
     &'a attributes::MaxSize,
@@ -153,21 +156,13 @@ pub fn hatch_egg_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     mut hatch_query: Query<EggQuery, With<components::Hatching>>,
 ) {
-    for (entity, mut egg_energy, mind, genome, sprite, hatch_size, max_size) in
-        hatch_query.iter_mut()
-    {
+    for (entity, mut egg_energy, mind, sprite, hatch_size, max_size) in hatch_query.iter_mut() {
         commands.entity(entity).remove::<spawning::EggBundle>();
         let hatching_entity = commands.entity(entity);
         let leftover_energy = spawning::spawn_bug(
             &asset_server,
             egg_energy.move_all_energy(),
-            (
-                genome.clone(),
-                mind.clone(),
-                &sprite.color,
-                hatch_size,
-                max_size,
-            ),
+            (mind.clone(), &sprite.color, hatch_size, max_size),
             hatching_entity,
         );
         ecosystem.return_energy(leftover_energy);
