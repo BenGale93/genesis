@@ -1,4 +1,6 @@
 #![warn(clippy::all, clippy::nursery)]
+use std::fmt;
+
 use bevy_ecs::prelude::{Bundle, Component, Resource};
 use derive_more::Deref;
 use genesis_config as config;
@@ -6,6 +8,7 @@ use genesis_newtype::Probability;
 use ndarray::Array;
 use rand::{seq::IteratorRandom, Rng, RngCore};
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
 #[derive(Debug, Clone, Deref)]
 pub struct Chromosome(Vec<f32>);
@@ -54,6 +57,16 @@ impl Chromosome {
 
     pub fn normalise(&self, value: f32) -> f32 {
         (value - self.lowest()) / self.range()
+    }
+
+    pub fn valid_value(&self, value: f32) -> bool {
+        self.iter().any(|&x| x == value)
+    }
+}
+
+impl fmt::Display for Chromosome {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
     }
 }
 
@@ -132,6 +145,12 @@ impl Default for Genome {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum DnaValidationError {
+    #[error("Invalid value '{0}' for attribute '{1}'. Choose from: '{2}'.")]
+    InvalidValue(f32, String, Chromosome),
+}
+
 #[derive(Debug, Clone, Copy, Component, Serialize, Deserialize)]
 pub struct Dna {
     pub hatch_age: f32,
@@ -152,6 +171,17 @@ impl Dna {
             max_size: genome.max_size.random(rng),
             growth_rate: genome.growth_rate.random(rng),
         }
+    }
+
+    pub fn validate(&self, genome: &Genome) -> Result<(), DnaValidationError> {
+        if !genome.hatch_age.valid_value(self.hatch_age) {
+            return Err(DnaValidationError::InvalidValue(
+                self.hatch_age,
+                "hatch_age".to_string(),
+                genome.hatch_age.clone(),
+            ));
+        }
+        Ok(())
     }
 }
 

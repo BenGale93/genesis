@@ -12,6 +12,8 @@ pub enum BugSerdeError {
     #[error(transparent)]
     MindValidation(#[from] mind::MindValidationError),
     #[error(transparent)]
+    DnaValidation(#[from] attributes::DnaValidationError),
+    #[error(transparent)]
     Serde(#[from] serde_json::error::Error),
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -24,8 +26,9 @@ pub struct BugBlueprint {
 }
 
 impl BugBlueprint {
-    fn validate(&self) -> Result<(), BugSerdeError> {
+    fn validate(&self, genome: &attributes::Genome) -> Result<(), BugSerdeError> {
         self.mind.validate()?;
+        self.dna.validate(genome)?;
         Ok(())
     }
 }
@@ -54,12 +57,14 @@ pub fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
     };
 }
 
-pub fn load_bug_blueprint() -> Result<Option<BugBlueprint>, BugSerdeError> {
+pub fn load_bug_blueprint(
+    genome: &attributes::Genome,
+) -> Result<Option<BugBlueprint>, BugSerdeError> {
     let Some(path) = rfd::FileDialog::new().pick_file() else {
         return Ok(None);
     };
     let content = fs::read(path)?;
     let blueprint: BugBlueprint = serde_json::from_slice(&content)?;
-    blueprint.validate()?;
+    blueprint.validate(genome)?;
     Ok(Some(blueprint))
 }

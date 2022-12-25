@@ -355,6 +355,7 @@ pub fn game_speed_widget(
 pub fn bug_serde_widget(
     mut egui_ctx: ResMut<EguiContext>,
     mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    genome: Res<attributes::Genome>,
     bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
 ) {
     egui::Window::new("Save/Load")
@@ -362,7 +363,7 @@ pub fn bug_serde_widget(
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 if ui.button("Load bug").clicked() {
-                    match bug_serde::load_bug_blueprint() {
+                    match bug_serde::load_bug_blueprint(&genome) {
                         Ok(x) => loaded_blueprint.blueprint = x,
                         Err(e) => warn!("{e}"),
                     };
