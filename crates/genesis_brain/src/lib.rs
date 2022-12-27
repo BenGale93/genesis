@@ -302,15 +302,7 @@ impl Brain {
     }
 
     pub fn mutate_neuron_bias(&mut self) {
-        let mut non_input_neurons: Vec<&mut Neuron> = self
-            .neurons
-            .iter_mut()
-            .filter(|n| !matches!(n.kind(), NeuronKind::Input))
-            .collect();
-
-        let random_neuron = non_input_neurons
-            .choose_mut(&mut rand::thread_rng())
-            .unwrap();
+        let random_neuron = self.neurons.choose_mut(&mut rand::thread_rng()).unwrap();
 
         let offset: f32 = thread_rng().sample(StandardNormal);
         let new_bias =

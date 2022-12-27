@@ -21,7 +21,7 @@ pub enum MindValidationError {
     ExpectedOutputNeuron(usize),
     #[error("Expected hidden neuron at index '{0}'.")]
     ExpectedHiddenNeuron(usize),
-    #[error("Invalid input neuron at index '{0}' it should have Identity activation function and bias 0.0.")]
+    #[error("Invalid input neuron at index '{0}' it should have Identity activation function.")]
     InputNeuronStructure(usize),
     #[error("Invalid output neuron at index '{0}' is should have Tanh activation function.")]
     OutputNeuronStructure(usize),
@@ -70,8 +70,7 @@ impl Mind {
             }
             // Check activation kind.
             if neuron.kind() == &NeuronKind::Input
-                && (neuron.activation() != &ActivationFunctionKind::Identity
-                    || neuron.bias().as_float() != 0.0)
+                && neuron.activation() != &ActivationFunctionKind::Identity
             {
                 return Err(MindValidationError::InputNeuronStructure(i));
             }
