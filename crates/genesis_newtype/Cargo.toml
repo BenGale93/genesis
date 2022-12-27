@@ -8,3 +8,5 @@ license = "MIT"
 [dependencies]
 rand = {workspace = true}
 thiserror = {workspace = true}
+serde_derive = { workspace = true}
+serde = { workspace = true}

@@ -25,3 +25,4 @@ serde_derive = { workspace = true}
 serde = { workspace = true}
 rand = {workspace = true}
 glam = {workspace = true}
+thiserror = { workspace = true }

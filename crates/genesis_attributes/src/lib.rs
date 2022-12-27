@@ -1,37 +1,46 @@
 #![warn(clippy::all, clippy::nursery)]
-use bevy_ecs::prelude::{Bundle, Component};
-use bevy_reflect::{Reflect, Struct};
+use std::fmt;
+
+use bevy_ecs::prelude::{Bundle, Component, Resource};
 use derive_more::Deref;
 use genesis_config as config;
 use genesis_newtype::Probability;
 use ndarray::Array;
 use rand::{seq::IteratorRandom, Rng, RngCore};
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-#[derive(Debug, Reflect, Clone)]
-pub struct Chromosome {
-    array: Vec<f32>,
-    value: f32,
-}
+#[derive(Debug, Clone, Deref)]
+pub struct Chromosome(Vec<f32>);
 
 impl Chromosome {
-    pub fn new(lower: f32, upper: f32, steps: usize, rng: &mut dyn RngCore) -> Self {
+    pub fn new(lower: f32, upper: f32, steps: usize) -> Self {
         let array = Array::linspace(lower, upper, steps);
-        let value = array.iter().copied().choose(rng).unwrap();
-        Self {
-            array: array.to_vec(),
-            value,
-        }
+        Self(array.to_vec())
     }
 
-    pub fn mutate(&mut self, rng: &mut dyn RngCore) {
-        let max = self.array.len() - 1;
-        let position = self.array.iter().position(|&x| x == self.value).unwrap();
-        let new_position = if rng.gen_bool(0.5) {
-            position.saturating_sub(1)
+    pub fn random(&self, rng: &mut dyn RngCore) -> f32 {
+        self.iter().copied().choose(rng).unwrap()
+    }
+
+    pub fn mutate(
+        &self,
+        current_value: f32,
+        rng: &mut dyn RngCore,
+        probability: &Probability,
+    ) -> f32 {
+        if probability.as_float() >= rng.gen_range(0.0..=1.0) {
+            let max = self.len() - 1;
+            let position = self.iter().position(|&x| x == current_value).unwrap();
+            let new_position = if rng.gen_bool(0.5) {
+                position.saturating_sub(1)
+            } else {
+                (position + 1).clamp(0, max)
+            };
+            self[new_position]
         } else {
-            (position + 1).clamp(0, max)
-        };
-        self.value = self.array[new_position];
+            current_value
+        }
     }
 
     pub fn range(&self) -> f32 {
@@ -39,19 +48,29 @@ impl Chromosome {
     }
 
     pub fn lowest(&self) -> f32 {
-        *self.array.first().unwrap()
+        *self.first().unwrap()
     }
 
     pub fn highest(&self) -> f32 {
-        *self.array.last().unwrap()
+        *self.last().unwrap()
     }
 
-    pub fn normalise(&self) -> f32 {
-        (self.value - self.lowest()) / self.range()
+    pub fn normalise(&self, value: f32) -> f32 {
+        (value - self.lowest()) / self.range()
+    }
+
+    pub fn valid_value(&self, value: f32) -> bool {
+        self.iter().any(|&x| x == value)
     }
 }
 
-#[derive(Debug, Component, Reflect, Clone)]
+impl fmt::Display for Chromosome {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+#[derive(Debug, Component, Clone, Resource)]
 pub struct Genome {
     pub hatch_age: Chromosome,
     pub eye_range: Chromosome,
@@ -62,12 +81,12 @@ pub struct Genome {
 }
 
 impl Genome {
-    pub fn new(rng: &mut dyn RngCore) -> Self {
+    pub fn new() -> Self {
         let attributes = &config::WorldConfig::global().attributes;
         macro_rules! get_value {
             ($attr:ident) => {
                 let (min, max, steps) = attributes.$attr;
-                let $attr = Chromosome::new(min, max, steps, rng);
+                let $attr = Chromosome::new(min, max, steps);
             };
             ($attr:ident, $($attrs:ident), +) => {
                 get_value!($attr);
@@ -92,19 +111,77 @@ impl Genome {
         }
     }
 
-    pub fn mutate(&self, rng: &mut dyn RngCore, probability: &Probability) -> Self {
-        let mut output = self.clone();
-        for (i, _) in self.iter_fields().enumerate() {
-            if probability.as_float() >= rng.gen_range(0.0..=1.0) {
-                let attribute = output
-                    .field_at_mut(i)
-                    .unwrap()
-                    .downcast_mut::<Chromosome>()
-                    .unwrap();
-                attribute.mutate(rng);
+    pub fn mutate(
+        &self,
+        current_dna: Dna,
+        rng: &mut dyn RngCore,
+        probability: &Probability,
+    ) -> Dna {
+        let mut output_dna = current_dna;
+        macro_rules! mutate_value {
+            ($attr:ident) => {
+                output_dna.$attr = self.$attr.mutate(current_dna.$attr, rng, probability);
+            };
+            ($attr:ident, $($attrs:ident), +) => {
+                mutate_value!($attr);
+                mutate_value!($($attrs), +)
             }
         }
-        output
+        mutate_value!(
+            hatch_age,
+            eye_range,
+            cost_of_eating,
+            offspring_energy,
+            max_size,
+            growth_rate
+        );
+        output_dna
+    }
+}
+
+impl Default for Genome {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum DnaValidationError {
+    #[error("Invalid value '{0}' for attribute '{1}'. Choose from: '{2}'.")]
+    InvalidValue(f32, String, Chromosome),
+}
+
+#[derive(Debug, Clone, Copy, Component, Serialize, Deserialize)]
+pub struct Dna {
+    pub hatch_age: f32,
+    pub eye_range: f32,
+    pub cost_of_eating: f32,
+    pub offspring_energy: f32,
+    pub max_size: f32,
+    pub growth_rate: f32,
+}
+
+impl Dna {
+    pub fn new(genome: &Genome, rng: &mut dyn RngCore) -> Self {
+        Self {
+            hatch_age: genome.hatch_age.random(rng),
+            eye_range: genome.eye_range.random(rng),
+            cost_of_eating: genome.cost_of_eating.random(rng),
+            offspring_energy: genome.offspring_energy.random(rng),
+            max_size: genome.max_size.random(rng),
+            growth_rate: genome.growth_rate.random(rng),
+        }
+    }
+
+    pub fn validate(&self, genome: &Genome) -> Result<(), DnaValidationError> {
+        if !genome.hatch_age.valid_value(self.hatch_age) {
+            return Err(DnaValidationError::InvalidValue(
+                self.hatch_age,
+                "hatch_age".to_string(),
+                genome.hatch_age.clone(),
+            ));
+        }
+        Ok(())
     }
 }
 
@@ -121,12 +198,14 @@ impl HatchAge {
 pub struct AdultAge(f32);
 
 impl AdultAge {
-    pub fn new(hatch_age: &Chromosome) -> Self {
+    pub fn new(hatch_age: f32, ha_chromosome: &Chromosome) -> Self {
         let (aa_min, aa_max) = config::WorldConfig::global()
             .dependent_attributes
             .adult_age_bounds;
         let aa_range = aa_max - aa_min;
-        let value = hatch_age.normalise().mul_add(-aa_range, aa_max);
+        let value = ha_chromosome
+            .normalise(hatch_age)
+            .mul_add(-aa_range, aa_max);
         Self(value)
     }
 }
@@ -135,12 +214,12 @@ impl AdultAge {
 pub struct DeathAge(f32);
 
 impl DeathAge {
-    pub fn new(max_size: &Chromosome) -> Self {
+    pub fn new(max_size: f32, ms_chromosome: &Chromosome) -> Self {
         let (da_min, da_max) = config::WorldConfig::global()
             .dependent_attributes
             .death_age_bounds;
         let da_range = da_max - da_min;
-        let value = max_size.normalise().mul_add(da_range, da_min);
+        let value = ms_chromosome.normalise(max_size).mul_add(da_range, da_min);
         Self(value)
     }
 }
@@ -158,12 +237,16 @@ impl EyeRange {
 pub struct EyeAngle(f32);
 
 impl EyeAngle {
-    pub fn new(eye_range: &Chromosome) -> Self {
+    pub fn new(eye_range: f32, er_chromosome: &Chromosome) -> Self {
         let (ea_min, ea_max) = config::WorldConfig::global()
             .dependent_attributes
             .eye_angle_bounds;
         let ea_range = ea_max - ea_min;
-        let value = f32::to_radians(eye_range.normalise().mul_add(-ea_range, ea_max));
+        let value = f32::to_radians(
+            er_chromosome
+                .normalise(eye_range)
+                .mul_add(-ea_range, ea_max),
+        );
         Self(value)
     }
 }
@@ -190,12 +273,16 @@ impl OffspringEnergy {
 pub struct MouthWidth(f32);
 
 impl MouthWidth {
-    pub fn new(cost_of_eating: &Chromosome) -> Self {
+    pub fn new(cost_of_eating: f32, coe_chromosome: &Chromosome) -> Self {
         let (mw_min, mw_max) = config::WorldConfig::global()
             .dependent_attributes
             .mouth_width_bounds;
         let mw_range = mw_max - mw_min;
-        let value = f32::to_radians(cost_of_eating.normalise().mul_add(mw_range, mw_min));
+        let value = f32::to_radians(
+            coe_chromosome
+                .normalise(cost_of_eating)
+                .mul_add(mw_range, mw_min),
+        );
         Self(value)
     }
 }
@@ -204,12 +291,12 @@ impl MouthWidth {
 pub struct HatchSize(f32);
 
 impl HatchSize {
-    pub fn new(hatch_age: &Chromosome) -> Self {
+    pub fn new(hatch_age: f32, ha_chromosome: &Chromosome) -> Self {
         let (hs_min, hs_max) = config::WorldConfig::global()
             .dependent_attributes
             .hatch_size_bounds;
         let hs_range = hs_max - hs_min;
-        let value = hatch_age.normalise().mul_add(hs_range, hs_min);
+        let value = ha_chromosome.normalise(hatch_age).mul_add(hs_range, hs_min);
         Self(value)
     }
 }
@@ -248,19 +335,19 @@ pub struct AttributeBundle {
 }
 
 impl AttributeBundle {
-    pub fn new(values: &Genome) -> Self {
+    pub fn new(dna: &Dna, genome: &Genome) -> Self {
         Self {
-            hatch_age: HatchAge::new(values.hatch_age.value),
-            adult_age: AdultAge::new(&values.hatch_age),
-            death_age: DeathAge::new(&values.max_size),
-            eye_range: EyeRange::new(values.eye_range.value),
-            eye_angle: EyeAngle::new(&values.eye_range),
-            cost_of_eating: CostOfEating::new(values.cost_of_eating.value),
-            offspring_energy: OffspringEnergy::new(values.offspring_energy.value),
-            mouth_width: MouthWidth::new(&values.cost_of_eating),
-            hatch_size: HatchSize::new(&values.hatch_age),
-            max_size: MaxSize::new(values.max_size.value),
-            growth_rate: GrowthRate::new(values.growth_rate.value),
+            hatch_age: HatchAge::new(dna.hatch_age),
+            adult_age: AdultAge::new(dna.hatch_age, &genome.hatch_age),
+            death_age: DeathAge::new(dna.max_size, &genome.max_size),
+            eye_range: EyeRange::new(dna.eye_range),
+            eye_angle: EyeAngle::new(dna.eye_range, &genome.eye_range),
+            cost_of_eating: CostOfEating::new(dna.cost_of_eating),
+            offspring_energy: OffspringEnergy::new(dna.offspring_energy),
+            mouth_width: MouthWidth::new(dna.cost_of_eating, &genome.cost_of_eating),
+            hatch_size: HatchSize::new(dna.hatch_age, &genome.hatch_age),
+            max_size: MaxSize::new(dna.max_size),
+            growth_rate: GrowthRate::new(dna.growth_rate),
         }
     }
 }

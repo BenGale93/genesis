@@ -18,7 +18,7 @@ jobs:
       - name: AptUpdate
         run: sudo apt update && sudo apt upgrade -y
       - name: Dependencies
-        run: sudo apt install g++ pkg-config libx11-dev libasound2-dev libudev-dev
+        run: sudo apt install g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
       - name: Update
         run: rustup update nightly && rustup default nightly
       - name: Add components

@@ -2,12 +2,36 @@ use bevy_ecs::prelude::{Bundle, Component};
 use bevy_egui::egui;
 use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut, From};
-use genesis_brain::{feed_forward_layers, Brain, NeuronKind, Neurons, Synapses};
+use genesis_brain::{
+    feed_forward_layers, ActivationFunctionKind, Brain, NeuronKind, Neurons, Synapses,
+};
 use genesis_color as color;
 use genesis_config as config;
 use itertools::Itertools;
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From)]
+#[derive(Error, Debug)]
+pub enum MindValidationError {
+    #[error("Not enough neurons")]
+    NotEnoughNeurons,
+    #[error("Expected input neuron at index '{0}'.")]
+    ExpectedInputNeuron(usize),
+    #[error("Expected output neuron at index '{0}'.")]
+    ExpectedOutputNeuron(usize),
+    #[error("Expected hidden neuron at index '{0}'.")]
+    ExpectedHiddenNeuron(usize),
+    #[error("Invalid input neuron at index '{0}' it should have Identity activation function and bias 0.0.")]
+    InputNeuronStructure(usize),
+    #[error("Invalid output neuron at index '{0}' is should have Tanh activation function.")]
+    OutputNeuronStructure(usize),
+    #[error("Invalid 'to' index found on synapse '{0}'.")]
+    InvalidSynapseTo(usize),
+    #[error("Invalid 'from' index found on synapse '{0}'.")]
+    InvalidSynapseFrom(usize),
+}
+
+#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From, Deserialize, Serialize)]
 pub struct Mind(pub Brain);
 
 impl Mind {
@@ -24,6 +48,51 @@ impl Mind {
     pub fn color(&self) -> Color {
         let innovations = self.0.innovations();
         mind_color(innovations)
+    }
+
+    pub fn validate(&self) -> Result<(), MindValidationError> {
+        let total_non_hidden = config::INPUT_NEURONS + config::OUTPUT_NEURONS;
+        if self.neurons().len() < total_non_hidden {
+            return Err(MindValidationError::NotEnoughNeurons);
+        }
+        for (i, neuron) in self.neurons().iter().enumerate() {
+            // Check neuron kind.
+            if i < config::INPUT_NEURONS && neuron.kind() != &NeuronKind::Input {
+                return Err(MindValidationError::ExpectedInputNeuron(i));
+            }
+            if (config::INPUT_NEURONS..total_non_hidden).contains(&i)
+                && neuron.kind() != &NeuronKind::Output
+            {
+                return Err(MindValidationError::ExpectedOutputNeuron(i));
+            }
+            if i > total_non_hidden && neuron.kind() != &NeuronKind::Hidden {
+                return Err(MindValidationError::ExpectedHiddenNeuron(i));
+            }
+            // Check activation kind.
+            if neuron.kind() == &NeuronKind::Input
+                && (neuron.activation() != &ActivationFunctionKind::Identity
+                    || neuron.bias().as_float() != 0.0)
+            {
+                return Err(MindValidationError::InputNeuronStructure(i));
+            }
+            if neuron.kind() == &NeuronKind::Output
+                && neuron.activation() != &ActivationFunctionKind::Tanh
+            {
+                return Err(MindValidationError::OutputNeuronStructure(i));
+            }
+        }
+        for (i, synapse) in self.synapses().iter().enumerate() {
+            if !(config::INPUT_NEURONS..self.neurons().len()).contains(&synapse.to()) {
+                return Err(MindValidationError::InvalidSynapseTo(i));
+            }
+            if (config::INPUT_NEURONS..total_non_hidden).contains(&synapse.from())
+                || synapse.from() >= self.neurons().len()
+            {
+                return Err(MindValidationError::InvalidSynapseFrom(i));
+            }
+        }
+
+        Ok(())
     }
 }
 

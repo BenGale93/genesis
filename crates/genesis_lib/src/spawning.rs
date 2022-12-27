@@ -1,17 +1,148 @@
 use bevy::{
+    ecs::system::EntityCommands,
     prelude::{
-        default, AssetServer, Color, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut,
-        Resource, Transform, Vec3, With,
+        default, AssetServer, Bundle, Color, Commands, DespawnRecursiveExt, Entity, Handle, Image,
+        Query, Res, ResMut, Resource, Transform, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
 };
-use bevy_rapier2d::prelude::{Collider, ColliderMassProperties, Damping, RigidBody, Velocity};
-use genesis_components::{body, eat::Eaten, Generation};
+use bevy_rapier2d::prelude::{
+    ActiveEvents, Collider, ColliderMassProperties, Damping, RigidBody, Velocity,
+};
+use genesis_attributes as attributes;
+use genesis_components as components;
+use genesis_components::{
+    body, eat, grow, lay, mind, see, time, BurntEnergy, Generation, SizeMultiplier,
+};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
 use rand_distr::{Distribution, Uniform};
+
+type BugParts<'a> = (
+    mind::Mind,
+    &'a Color,
+    &'a attributes::HatchSize,
+    &'a attributes::MaxSize,
+);
+
+pub fn spawn_bug(
+    asset_server: &Res<AssetServer>,
+    energy: ecosystem::Energy,
+    bug_parts: BugParts,
+    mut hatching_entity: EntityCommands,
+) -> ecosystem::Energy {
+    let (mind, color, hatch_size, max_size) = bug_parts;
+    let mind_bundle = mind::MindBundle::new(&mind);
+
+    let original_color = body::OriginalColor(mind.color());
+    // Allows selected eggs to remain selected on hatching
+    let current_color = if *color == Color::RED {
+        *color
+    } else {
+        original_color.0
+    };
+
+    let size = body::Size::new(**hatch_size, **max_size);
+    let (vitality, leftover_energy) = body::Vitality::new(size, energy);
+
+    let sprite_image: Handle<Image> = asset_server.load("sprite.png");
+    let sprite = Sprite {
+        custom_size: Some(vitality.size().sprite()),
+        color: current_color,
+        ..default()
+    };
+
+    hatching_entity
+        .insert(sprite_image)
+        .insert(sprite)
+        .insert(ActiveEvents::COLLISION_EVENTS)
+        .insert(vitality.size().collider())
+        .insert(SizeMultiplier::new(vitality.size().current_size()))
+        .insert(components::Juvenile)
+        .insert(original_color)
+        .insert(vitality)
+        .insert(mind_bundle)
+        .insert(see::Vision::new())
+        .insert(time::Age::default())
+        .insert(time::Heart::new())
+        .insert(time::InternalTimer::new())
+        .insert(components::MovementSum::new())
+        .insert(components::ThinkingSum::new())
+        .insert(eat::EatingSum::new())
+        .insert(grow::GrowingSum::new())
+        .insert(grow::SizeSum::new())
+        .insert(eat::EnergyConsumed(0))
+        .insert(lay::EggsLaid(0));
+
+    leftover_energy
+}
+
+#[derive(Bundle)]
+pub struct EggBundle {
+    pub egg: components::Egg,
+    pub egg_energy: ecosystem::EggEnergy,
+    pub sprite: Sprite,
+    pub handle: Handle<Image>,
+    pub original_color: body::OriginalColor,
+    pub collider: Collider,
+    pub age: time::Age,
+}
+
+pub fn spawn_egg(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    genome: &Res<attributes::Genome>,
+    energy: ecosystem::Energy,
+    location: Vec3,
+    dna: attributes::Dna,
+    mind: mind::Mind,
+    generation: components::Generation,
+    parent_id: Option<Entity>,
+) -> Entity {
+    let size = 16.0;
+
+    let attribute_bundle = attributes::AttributeBundle::new(&dna, genome);
+    let original_color = body::OriginalColor(Color::WHITE);
+    let sprite = SpriteBundle {
+        texture: asset_server.load("egg.png"),
+        sprite: Sprite {
+            custom_size: Some(Vec2::new(size, size)),
+            color: original_color.0,
+            ..default()
+        },
+        transform: Transform::from_translation(location),
+        ..default()
+    };
+
+    let mut egg_entity = commands.spawn(sprite);
+    let entity = egg_entity.id();
+
+    egg_entity
+        .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
+        .insert(Velocity::zero())
+        .insert(Collider::ball(size / 2.0))
+        .insert(components::Egg)
+        .insert(attribute_bundle)
+        .insert(ecosystem::EggEnergy(energy))
+        .insert(original_color)
+        .insert(dna)
+        .insert(components::Relations::new(
+            (entity, mind.color()),
+            parent_id,
+        ))
+        .insert(mind)
+        .insert(time::Age::default())
+        .insert(generation)
+        .insert(BurntEnergy::new());
+
+    entity
+}
 
 pub fn nearest_spawner_system(
     mut spawners: ResMut<Spawners>,
@@ -129,7 +260,7 @@ pub fn update_plant_size(mut plant_query: Query<(&mut Sprite, &mut Collider, &ec
     }
 }
 
-pub fn despawn_plants_system(mut commands: Commands, plant_query: Query<Entity, With<Eaten>>) {
+pub fn despawn_plants_system(mut commands: Commands, plant_query: Query<Entity, With<eat::Eaten>>) {
     for entity in plant_query.iter() {
         commands.entity(entity).despawn_recursive();
     }

@@ -12,7 +12,7 @@ mod graph;
 pub mod neuron;
 pub mod synapse;
 
-use activation::ActivationFunctionKind;
+pub use activation::ActivationFunctionKind;
 pub use brain_error::BrainError;
 use derive_getters::Getters;
 use genesis_config as config;
@@ -21,6 +21,7 @@ pub use graph::feed_forward_layers;
 pub use neuron::{Neuron, NeuronKind, Neurons, NeuronsExt};
 use rand::{prelude::*, seq::SliceRandom};
 use rand_distr::StandardNormal;
+use serde::{Deserialize, Serialize};
 use synapse::SynapsesExt;
 pub use synapse::{create_synapses, Synapse, Synapses};
 
@@ -57,9 +58,39 @@ impl BrainMutationThresholds {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Deserialize)]
+struct DeserBrain {
+    neurons: Vec<Neuron>,
+    synapses: Vec<Synapse>,
+}
+
+impl From<DeserBrain> for Brain {
+    fn from(tmp: DeserBrain) -> Self {
+        let inputs = tmp
+            .neurons
+            .iter()
+            .filter(|n| n.kind() == &NeuronKind::Input)
+            .count();
+        let outputs = tmp
+            .neurons
+            .iter()
+            .filter(|n| n.kind() == &NeuronKind::Output)
+            .count();
+        Self {
+            inputs,
+            outputs,
+            neurons: tmp.neurons,
+            synapses: tmp.synapses,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[serde(from = "DeserBrain")]
 pub struct Brain {
+    #[serde(skip_serializing)]
     inputs: usize,
+    #[serde(skip_serializing)]
     outputs: usize,
     neurons: Vec<Neuron>,
     synapses: Vec<Synapse>,
@@ -101,7 +132,7 @@ impl Brain {
         self.synapses.as_ref()
     }
 
-    pub fn activate(&mut self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
+    pub fn activate(&self, input_values: &[f32]) -> Result<Vec<f32>, BrainError> {
         if input_values.len() != self.inputs {
             return Err(BrainError::InputArrayError);
         }
@@ -115,15 +146,17 @@ impl Brain {
         for layer in layers {
             for neuron_index in layer {
                 let mut neuron = self.neurons[neuron_index];
-                let incoming_values: Vec<f32> = self
+                let incoming_values = self
                     .synapses
                     .iter()
                     .filter(|syn| syn.to() == neuron_index)
                     .map(|syn| {
-                        let incoming_value = stored_values[syn.from()];
-                        incoming_value * syn.weight().as_float()
+                        stored_values.get(syn.from()).map_or_else(
+                            || Err(BrainError::OutOfBounds(syn.from())),
+                            |incoming_value| Ok(incoming_value * syn.weight().as_float()),
+                        )
                     })
-                    .collect();
+                    .collect::<Result<Vec<_>, _>>()?;
                 let final_value: f32 =
                     incoming_values.iter().sum::<f32>() + neuron.bias().as_float();
                 stored_values[neuron_index] = neuron.activate(final_value);
@@ -355,7 +388,7 @@ impl Brain {
 
     pub fn deactivate_synapse(&mut self, synapse_index: usize) -> Result<(), BrainError> {
         if self.synapses.get(synapse_index).is_none() {
-            return Err(BrainError::OutOfBounds);
+            return Err(BrainError::OutOfBounds(synapse_index));
         }
         self.deactivate_synapse_unchecked(synapse_index);
 
@@ -409,7 +442,7 @@ impl Brain {
             let target_synapse = self
                 .synapses
                 .get_mut(synapse_index)
-                .ok_or(BrainError::OutOfBounds)?;
+                .ok_or(BrainError::OutOfBounds(synapse_index))?;
 
             if !target_synapse.active() {
                 return Err(BrainError::NeuronError);
@@ -432,7 +465,8 @@ impl Brain {
 
     pub fn remove_neuron(&mut self, neuron_index: usize) -> Result<(), BrainError> {
         {
-            let Some(neuron_to_remove) = self.neurons.get(neuron_index) else { return Err(BrainError::OutOfBounds) };
+            let Some(neuron_to_remove) = self.neurons.get(neuron_index) else
+            { return Err(BrainError::OutOfBounds(neuron_index)) };
 
             if !matches!(neuron_to_remove.kind(), NeuronKind::Hidden) {
                 return Err(BrainError::NeuronRemovalError);
@@ -735,7 +769,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "value: InputArrayError")]
     fn activate_with_wrong_length_input() {
-        let mut test_brain = super::Brain::new(2, 2);
+        let test_brain = super::Brain::new(2, 2);
         test_brain.activate(&[10.0]).unwrap();
     }
 

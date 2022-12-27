@@ -8,8 +8,8 @@ pub enum BrainError {
     #[error("A synapse cannot be added here.")]
     SynapseError,
 
-    #[error("The index given is out of bounds.")]
-    OutOfBounds,
+    #[error("The index '{0}' given is out of bounds.")]
+    OutOfBounds(usize),
 
     #[error("A neuron cannot be added here.")]
     NeuronError,

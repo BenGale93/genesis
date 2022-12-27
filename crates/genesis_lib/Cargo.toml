@@ -29,5 +29,6 @@ serde_json = { workspace = true}
 rand_distr = { workspace = true}
 iyes_loopless = { workspace = true}
 itertools = { workspace = true }
+rfd = { workspace = true }
 
 [dev-dependencies]

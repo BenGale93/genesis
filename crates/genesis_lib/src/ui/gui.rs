@@ -1,19 +1,23 @@
 use bevy::{
     prelude::{
-        Camera, Color, Commands, Component, Entity, GlobalTransform, Input, MouseButton, Query,
-        Res, ResMut, Resource, With,
+        warn, AssetServer, Camera, Color, Commands, Component, Entity, GlobalTransform, Input,
+        MouseButton, Query, Res, ResMut, Resource, Vec3, With,
     },
     sprite::Sprite,
     window::Windows,
 };
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
+use components::Generation;
 use genesis_attributes as attributes;
 use genesis_components as components;
-use genesis_components::{body, eat, lay, see, time};
+use genesis_components::{body, eat, lay, mind, see, time};
+use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
 
 use super::{brain_panel, interaction, statistics};
+use crate::{bug_serde, spawning};
+
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
 
@@ -346,4 +350,83 @@ pub fn game_speed_widget(
                 ui.add(egui::Slider::new(&mut speed.speed, 0.1..=3.0).text("Game Speed"))
             })
         });
+}
+
+pub fn bug_serde_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    genome: Res<attributes::Genome>,
+    bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
+) {
+    egui::Window::new("Save/Load")
+        .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Load bug").clicked() {
+                    match bug_serde::load_bug_blueprint(&genome) {
+                        Ok(x) => loaded_blueprint.blueprint = x,
+                        Err(e) => warn!("{e}"),
+                    };
+                };
+                if let Ok(bug) = bug_query.get_single() {
+                    if ui.button("Save bug").clicked() {
+                        bug_serde::save_bug(&bug);
+                    };
+                };
+            })
+        });
+}
+
+pub fn bug_spawner_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+) {
+    if loaded_blueprint.blueprint.is_none() {
+        return;
+    }
+    egui::Window::new("Spawn")
+        .anchor(egui::Align2::CENTER_BOTTOM, [5.0, 0.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Clear Bug").clicked() {
+                    loaded_blueprint.blueprint = None;
+                }
+            })
+        });
+}
+
+pub fn spawn_at_mouse(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    genome: Res<attributes::Genome>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    wnds: Res<Windows>,
+    mouse_button: Res<Input<MouseButton>>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+) {
+    if !mouse_button.just_released(MouseButton::Left) {
+        return;
+    }
+    let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) else {
+        return;
+    };
+    let Some(blueprint) = &loaded_blueprint.blueprint else {
+        return;
+    };
+    let Some(energy) = ecosystem.request_energy(WorldConfig::global().start_energy) else {
+        return;
+    };
+
+    spawning::spawn_egg(
+        &mut commands,
+        &asset_server,
+        &genome,
+        energy,
+        Vec3::new(world_pos.x, world_pos.y, 0.0),
+        blueprint.dna().to_owned(),
+        blueprint.mind().to_owned(),
+        Generation(0),
+        None,
+    );
 }

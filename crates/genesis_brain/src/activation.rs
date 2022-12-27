@@ -1,7 +1,8 @@
 use rand::{distributions::Standard, Rng};
 use rand_distr::Distribution;
+use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
 pub enum ActivationFunctionKind {
     Identity,
     Sigmoid,
