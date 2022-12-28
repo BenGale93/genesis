@@ -174,13 +174,29 @@ impl Dna {
     }
 
     pub fn validate(&self, genome: &Genome) -> Result<(), DnaValidationError> {
-        if !genome.hatch_age.valid_value(self.hatch_age) {
-            return Err(DnaValidationError::InvalidValue(
-                self.hatch_age,
-                "hatch_age".to_string(),
-                genome.hatch_age.clone(),
-            ));
+        macro_rules! validate_values {
+            ($attr:ident) => {
+                if !genome.$attr.valid_value(self.$attr) {
+                    return Err(DnaValidationError::InvalidValue(
+                        self.$attr,
+                        stringify!($attr).to_string(),
+                        genome.$attr.clone(),
+                    ))
+                }
+            };
+            ($attr:ident, $($attrs:ident), +) => {
+                validate_values!($attr);
+                validate_values!($($attrs), +)
+            }
         }
+        validate_values!(
+            hatch_age,
+            eye_range,
+            cost_of_eating,
+            offspring_energy,
+            max_size,
+            growth_rate
+        );
         Ok(())
     }
 }
