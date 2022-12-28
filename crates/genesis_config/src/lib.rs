@@ -83,6 +83,7 @@ impl SpawnerConfig {
 pub struct WorldConfig {
     pub start_num: usize,
     pub minimum_number: usize,
+    pub energy_floor: usize,
     pub initial_synapse_count: usize,
     pub mutations: usize,
     pub start_energy: usize,
@@ -158,6 +159,7 @@ impl Default for WorldConfig {
         Self {
             start_num: 10,
             minimum_number: 5,
+            energy_floor: 2000,
             initial_synapse_count: 3,
             mutations: 3,
             start_energy: 800,

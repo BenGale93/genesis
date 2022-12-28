@@ -241,7 +241,10 @@ pub fn spawn_plant_system(
     let config_instance = config::WorldConfig::global();
     let available_energy = ecosystem.available_energy().amount();
 
-    if available_energy > (config_instance.start_num * config_instance.start_energy) {
+    if available_energy
+        > (config_instance.start_num * config_instance.start_energy)
+            .max(config_instance.energy_floor)
+    {
         let mut rng = rand::thread_rng();
         let size = plant_size_randomiser.random_size(&mut rng);
         let Some(energy) =
