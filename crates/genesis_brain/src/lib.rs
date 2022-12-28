@@ -902,10 +902,14 @@ mod tests {
     #[test]
     fn mutate_neuron_bias_success() {
         let mut test_brain = super::Brain::new(1, 1);
-        let starting_bias = test_brain.neurons()[1].bias();
+        let starting_bias_in = test_brain.neurons()[0].bias();
+        let starting_bias_out = test_brain.neurons()[1].bias();
         test_brain.mutate_neuron_bias();
 
-        assert_ne!(test_brain.neurons()[1].bias(), starting_bias);
+        assert!(
+            ((starting_bias_in != test_brain.neurons()[0].bias())
+                || (starting_bias_out != test_brain.neurons()[1].bias()))
+        );
     }
 
     #[test]

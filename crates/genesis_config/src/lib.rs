@@ -18,8 +18,6 @@ pub const ZOOM_SPEED: f32 = 0.1;
 // Bugs
 pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 6;
-pub const CHROMOSOME_COUNT: usize = 20;
-pub const CHROMOSOME_LEN: usize = 100;
 pub const EATING_RATIO: usize = 5;
 pub const CORE_MULTIPLIER: usize = 2;
 pub const HEALTH_MULTIPLIER: usize = 3;
@@ -85,6 +83,7 @@ impl SpawnerConfig {
 pub struct WorldConfig {
     pub start_num: usize,
     pub minimum_number: usize,
+    pub energy_floor: usize,
     pub initial_synapse_count: usize,
     pub mutations: usize,
     pub start_energy: usize,
@@ -160,6 +159,7 @@ impl Default for WorldConfig {
         Self {
             start_num: 10,
             minimum_number: 5,
+            energy_floor: 2000,
             initial_synapse_count: 3,
             mutations: 3,
             start_energy: 800,
