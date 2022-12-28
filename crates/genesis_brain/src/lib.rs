@@ -138,7 +138,8 @@ impl Brain {
         }
         let mut stored_values = vec![0.0; self.neurons.len()];
         for (i, val) in input_values.iter().enumerate() {
-            stored_values[i] = *val + self.neurons()[i].bias().as_float();
+            let mut neuron = self.neurons[i];
+            stored_values[i] = neuron.activate(*val);
         }
 
         let layers = feed_forward_layers(self.neurons().to_vec(), self.synapses().to_vec());
@@ -157,8 +158,7 @@ impl Brain {
                         )
                     })
                     .collect::<Result<Vec<_>, _>>()?;
-                let final_value: f32 =
-                    incoming_values.iter().sum::<f32>() + neuron.bias().as_float();
+                let final_value: f32 = incoming_values.iter().sum::<f32>();
                 stored_values[neuron_index] = neuron.activate(final_value);
             }
         }
