@@ -123,21 +123,22 @@ pub fn select_sprite_system(
         return;
     }
     // check if the cursor is inside the window and get its position
-    if let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) {
-        for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
-            commands.entity(entity).remove::<Selected>();
-            sprite.color = original_color.0;
-        }
-        rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
-            for (entity, mut sprite, _) in sprite_query.iter_mut() {
-                if selected_entity == entity {
-                    commands.entity(selected_entity).insert(Selected);
-                    sprite.color = Color::RED;
-                }
-            }
-            false
-        });
+    let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) else {
+        return;
+    };
+    for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
+        commands.entity(entity).remove::<Selected>();
+        sprite.color = original_color.0;
     }
+    rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
+        for (entity, mut sprite, _) in sprite_query.iter_mut() {
+            if selected_entity == entity {
+                commands.entity(selected_entity).insert(Selected);
+                sprite.color = Color::RED;
+            }
+        }
+        false
+    });
 }
 
 #[derive(Debug, Default, Resource)]
@@ -183,13 +184,14 @@ pub fn bug_live_info_system(
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let Ok(bug_info) = bug_query.get_single() {
-        if panel_state.bug_info_panel_state == BugInfoPanel::Live {
-            top_left_info_window("Bug Live Info").show(egui_ctx.ctx_mut(), |ui| {
-                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                bug_live_sub_panel(ui, &bug_info);
-            });
-        }
+    let Ok(bug_info) = bug_query.get_single() else {
+        return;
+    };
+    if panel_state.bug_info_panel_state == BugInfoPanel::Live {
+        top_left_info_window("Bug Live Info").show(egui_ctx.ctx_mut(), |ui| {
+            bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+            bug_live_sub_panel(ui, &bug_info);
+        });
     }
 }
 
@@ -211,20 +213,21 @@ pub fn attribute_info_system(
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let Ok(attr_info_part) = attr_query_part.get_single() {
-        if is_egg_query.get_single().is_err() {
-            if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
-                top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
-                    bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                    attribute_sub_panel(ui, &attr_info_part);
-                });
-            }
-        } else if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
-            top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
-                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+    let Ok(attr_info_part) = attr_query_part.get_single() else {
+        return;
+    };
+    if is_egg_query.get_single().is_err() {
+        if panel_state.bug_info_panel_state == BugInfoPanel::Attributes {
+            top_left_info_window("Bug Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
                 attribute_sub_panel(ui, &attr_info_part);
             });
         }
+    } else if panel_state.egg_info_panel_state == EggInfoPanel::Attributes {
+        top_left_info_window("Egg Attribute Info").show(egui_ctx.ctx_mut(), |ui| {
+            egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+            attribute_sub_panel(ui, &attr_info_part);
+        });
     }
 }
 
@@ -253,13 +256,14 @@ pub fn bug_brain_info_system(
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let Ok(bug_info) = brain_query.get_single() {
-        if panel_state.bug_info_panel_state == BugInfoPanel::Brain {
-            top_left_info_window("Bug Brain Info").show(egui_ctx.ctx_mut(), |ui| {
-                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                brain_panel::bug_brain_sub_panel(ui, &bug_info);
-            });
-        }
+    let Ok(bug_info) = brain_query.get_single() else {
+        return;
+    };
+    if panel_state.bug_info_panel_state == BugInfoPanel::Brain {
+        top_left_info_window("Bug Brain Info").show(egui_ctx.ctx_mut(), |ui| {
+            bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+            brain_panel::bug_brain_sub_panel(ui, &bug_info);
+        });
     }
 }
 
@@ -270,13 +274,14 @@ pub fn bug_stats_info_system(
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let Ok(bug_info) = bug_query.get_single() {
-        if panel_state.bug_info_panel_state == BugInfoPanel::Stats {
-            top_left_info_window("Bug Statistics").show(egui_ctx.ctx_mut(), |ui| {
-                bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
-                bug_stat_sub_panel(ui, &bug_info);
-            });
-        }
+    let Ok(bug_info) = bug_query.get_single() else {
+        return;
+    };
+    if panel_state.bug_info_panel_state == BugInfoPanel::Stats {
+        top_left_info_window("Bug Statistics").show(egui_ctx.ctx_mut(), |ui| {
+            bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+            bug_stat_sub_panel(ui, &bug_info);
+        });
     }
 }
 
@@ -307,13 +312,14 @@ pub fn egg_live_info_panel_system(
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
-    if let Ok(egg_info) = egg_query.get_single() {
-        if panel_state.egg_info_panel_state == EggInfoPanel::Live {
-            top_left_info_window("Egg Live Info").show(egui_ctx.ctx_mut(), |ui| {
-                egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
-                egg_live_sub_panel(ui, &egg_info);
-            });
-        }
+    let Ok(egg_info) = egg_query.get_single() else {
+        return;
+    };
+    if panel_state.egg_info_panel_state == EggInfoPanel::Live {
+        top_left_info_window("Egg Live Info").show(egui_ctx.ctx_mut(), |ui| {
+            egg_panel_buttons(ui, &mut panel_state.egg_info_panel_state);
+            egg_live_sub_panel(ui, &egg_info);
+        });
     }
 }
 
@@ -328,11 +334,12 @@ pub fn plant_info_panel_system(
     plant_query: Query<PlantInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
 ) {
-    if let Ok(plant_info) = plant_query.get_single() {
-        top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
-            ui.label(format!("Energy: {}", &plant_info.energy()));
-        });
-    }
+    let Ok(plant_info) = plant_query.get_single() else {
+        return;
+    };
+    top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
+        ui.label(format!("Energy: {}", &plant_info.energy()));
+    });
 }
 
 pub fn game_speed_widget(
@@ -368,10 +375,11 @@ pub fn bug_serde_widget(
                         Err(e) => warn!("{e}"),
                     };
                 };
-                if let Ok(bug) = bug_query.get_single() {
-                    if ui.button("Save bug").clicked() {
-                        bug_serde::save_bug(&bug);
-                    };
+                let Ok(bug) = bug_query.get_single() else {
+                    return;
+                };
+                if ui.button("Save bug").clicked() {
+                    bug_serde::save_bug(&bug);
                 };
             })
         });

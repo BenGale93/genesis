@@ -61,19 +61,21 @@ fn paint_neuron_labels(
     neuron_index: usize,
     neuron_position: egui::Pos2,
 ) {
-    if let Some(hover_pos) = response.hover_pos() {
-        let dist = (neuron_position - hover_pos).length();
-        if dist < mind::RADIUS {
-            let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
-            ui.painter().text(
-                egui::pos2(380.0, 42.0),
-                egui::Align2::LEFT_TOP,
-                label,
-                egui::FontId::proportional(16.0),
-                egui::Color32::WHITE,
-            );
-        }
+    let Some(hover_pos) = response.hover_pos() else {
+        return;
+    };
+    let dist = (neuron_position - hover_pos).length();
+    if dist >= mind::RADIUS {
+        return;
     }
+    let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
+    ui.painter().text(
+        egui::pos2(380.0, 42.0),
+        egui::Align2::LEFT_TOP,
+        label,
+        egui::FontId::proportional(16.0),
+        egui::Color32::WHITE,
+    );
 }
 
 fn paint_neurons(
