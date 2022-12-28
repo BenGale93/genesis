@@ -138,7 +138,7 @@ impl Brain {
         }
         let mut stored_values = vec![0.0; self.neurons.len()];
         for (i, val) in input_values.iter().enumerate() {
-            stored_values[i] = *val;
+            stored_values[i] = *val + self.neurons()[i].bias().as_float();
         }
 
         let layers = feed_forward_layers(self.neurons().to_vec(), self.synapses().to_vec());
