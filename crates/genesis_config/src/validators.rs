@@ -26,7 +26,7 @@ pub fn low_high<T: PartialOrd + Clone>(
     low_name: &str,
     high_name: &str,
 ) -> Option<String> {
-    if higher <= lower {
+    if higher < lower {
         Some(format!(
             "The value '{high_name}' must be larger than '{low_name}'"
         ))
