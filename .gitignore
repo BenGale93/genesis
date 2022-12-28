@@ -1,3 +1,4 @@
 /target
 .vscode
 *.json
+!test_bug.json

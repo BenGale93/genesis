@@ -7,7 +7,7 @@ use genesis_attributes as attributes;
 use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg};
 use genesis_config as config;
 use genesis_ecosystem::Plant;
-use genesis_maths::{angle_to_point, rebased_angle};
+use genesis_maths::angle_between;
 
 pub fn process_eaters_system(
     mut commands: Commands,
@@ -75,10 +75,11 @@ pub fn eating_system(
             };
             for (plant_entity, mut plant_energy, plant_transform) in plant_query.iter_mut() {
                 if other_collider == plant_entity {
-                    let angle =
-                        angle_to_point(plant_transform.translation - bug_transform.translation);
-                    let rebased_angle = rebased_angle(angle, bug_transform.rotation.z.asin() * 2.0);
-                    if rebased_angle.abs() < **mouth_width {
+                    let angle_to_food = angle_between(
+                        &bug_transform.rotation,
+                        plant_transform.translation - bug_transform.translation,
+                    );
+                    if angle_to_food.abs() < **mouth_width {
                         let initial_plant_energy = plant_energy.energy().amount();
                         let leftover = vitality.eat(&mut plant_energy);
                         energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
