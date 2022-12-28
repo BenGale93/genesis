@@ -169,11 +169,11 @@
     ]
   },
   "dna": {
-    "hatch_age": 24.285715,
-    "eye_range": 700.0,
-    "cost_of_eating": 0.24444446,
-    "offspring_energy": 0.5050505,
-    "max_size": 85.26316,
-    "growth_rate": 0.08947369
+    "hatch_age": 10.0,
+    "eye_range": 639.3939,
+    "cost_of_eating": 0.3,
+    "offspring_energy": 0.5858586,
+    "max_size": 80.0,
+    "growth_rate": 0.1
   }
 }
