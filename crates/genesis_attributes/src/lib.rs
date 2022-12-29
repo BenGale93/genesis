@@ -363,7 +363,7 @@ impl GrabStrength {
         let gs_range = gs_max - gs_min;
         let value = ga_chromosome
             .normalise(grab_angle)
-            .mul_add(gs_range, gs_min);
+            .mul_add(-gs_range, gs_max);
         Self(value)
     }
 }
