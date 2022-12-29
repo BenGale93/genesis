@@ -8,7 +8,7 @@ use bevy::{
     transform::TransformBundle,
 };
 use bevy_rapier2d::prelude::{
-    ActiveEvents, Collider, ColliderMassProperties, Damping, RigidBody, Velocity,
+    ActiveEvents, Collider, ColliderMassProperties, Damping, ExternalImpulse, RigidBody, Velocity,
 };
 use genesis_attributes as attributes;
 use genesis_components as components;
@@ -126,6 +126,7 @@ pub fn spawn_egg(
             angular_damping: 1.0,
         })
         .insert(Velocity::zero())
+        .insert(ExternalImpulse::default())
         .insert(Collider::ball(size / 2.0))
         .insert(components::Egg)
         .insert(attribute_bundle)
@@ -216,6 +217,7 @@ fn spawn_plant(
             config::WorldConfig::global().plant_density,
         ))
         .insert(Velocity::zero())
+        .insert(ExternalImpulse::default())
         .insert(plant);
 }
 

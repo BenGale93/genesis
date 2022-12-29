@@ -17,7 +17,7 @@ pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
 pub const INPUT_NEURONS: usize = 14;
-pub const OUTPUT_NEURONS: usize = 6;
+pub const OUTPUT_NEURONS: usize = 7;
 pub const EATING_RATIO: usize = 5;
 pub const CORE_MULTIPLIER: usize = 2;
 pub const HEALTH_MULTIPLIER: usize = 3;
@@ -29,6 +29,7 @@ pub const REPRODUCE_INDEX: usize = 2;
 pub const EAT_INDEX: usize = 3;
 pub const RESET_TIMER_INDEX: usize = 4;
 pub const WANT_TO_GROWN_INDEX: usize = 5;
+pub const WANT_TO_GRAB_INDEX: usize = 6;
 
 // Inputs
 pub const CONSTANT_INDEX: usize = 0;
@@ -99,6 +100,7 @@ pub struct WorldConfig {
     pub plant_density: f32,
     pub mutation_probability: f32,
     pub cost_of_thought: f32,
+    pub cost_of_grab: f32,
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
     pub dependent_attributes: attr_config::DependentAttributeConfig,
@@ -175,6 +177,7 @@ impl Default for WorldConfig {
             plant_density: 10.0,
             mutation_probability: 0.1,
             cost_of_thought: 0.008,
+            cost_of_grab: 0.02,
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
             dependent_attributes: attr_config::DependentAttributeConfig::default(),

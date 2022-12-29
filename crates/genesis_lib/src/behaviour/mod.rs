@@ -7,6 +7,7 @@ use iyes_loopless::prelude::*;
 use crate::ui;
 
 pub mod eating;
+pub mod grabbing;
 pub mod growing;
 pub mod laying;
 pub mod metabolism;
@@ -43,6 +44,7 @@ pub fn after_thinking_system_set() -> SystemSet {
         .with_system(eating::process_eaters_system)
         .with_system(laying::process_layers_system)
         .with_system(growing::process_growers_system)
+        .with_system(grabbing::process_grabbers_system)
         .into()
 }
 
@@ -53,6 +55,7 @@ pub fn attempting_behaviour_system_set() -> SystemSet {
         .run_if_not(ui::is_paused)
         .with_system(eating::attempted_to_eat_system)
         .with_system(growing::attempted_to_grow_system)
+        .with_system(grabbing::attempted_to_grab_system)
         .into()
 }
 
@@ -62,6 +65,7 @@ pub fn other_behaviour_system_set() -> SystemSet {
         .run_if_not(ui::is_paused)
         .with_system(growing::existence_system)
         .with_system(eating::eating_system)
+        .with_system(grabbing::grabbing_system)
         .into()
 }
 

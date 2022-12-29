@@ -7,7 +7,7 @@ pub(super) type BugBrainInfo<'a> = (
     &'a mind::MindOutput,
 );
 
-const NEURON_NAMES: [&str; 20] = [
+const NEURON_NAMES: [&str; 21] = [
     "Constant",
     "Movement",
     "Rotation",
@@ -28,6 +28,7 @@ const NEURON_NAMES: [&str; 20] = [
     "Eat",
     "Reset timer",
     "Want to grow",
+    "Want to grab",
 ];
 
 fn paint_synapses(ui: &mut egui::Ui, synapses: &[mind::PaintedSynapse]) {
