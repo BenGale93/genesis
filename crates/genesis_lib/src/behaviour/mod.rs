@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, Plugin, SystemSet};
-use genesis_components::time;
+use genesis_components::{eat, time};
 use iyes_loopless::prelude::*;
 
 use crate::ui;
@@ -99,6 +99,7 @@ pub struct GenesisBehaviourPlugin;
 impl Plugin for GenesisBehaviourPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(time::SimulationTime::default())
+            .add_event::<eat::EatenEvent>()
             .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
             .add_fixed_timestep(Duration::from_secs_f32(1.0), "very_slow")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())

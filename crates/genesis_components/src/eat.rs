@@ -1,4 +1,4 @@
-use bevy_ecs::prelude::Component;
+use bevy_ecs::prelude::{Component, Entity};
 use bevy_time::Stopwatch;
 use derive_more::{Deref, DerefMut};
 
@@ -30,3 +30,6 @@ pub struct EnergyConsumed(pub usize);
 
 #[derive(Component, Debug)]
 pub struct Eaten;
+
+#[derive(Debug)]
+pub struct EatenEvent(pub Entity);

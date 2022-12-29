@@ -1,8 +1,8 @@
 use bevy::{
     ecs::system::EntityCommands,
     prelude::{
-        default, AssetServer, Bundle, Color, Commands, DespawnRecursiveExt, Entity, Handle, Image,
-        Query, Res, ResMut, Resource, Transform, Vec2, Vec3, With,
+        default, AssetServer, Bundle, Color, Commands, DespawnRecursiveExt, Entity, EventReader,
+        Handle, Image, Query, Res, ResMut, Resource, Transform, Vec2, Vec3, With,
     },
     sprite::{Sprite, SpriteBundle},
     transform::TransformBundle,
@@ -256,12 +256,16 @@ pub fn spawn_plant_system(
     }
 }
 
-pub fn update_plant_size(mut plant_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Plant)>) {
-    // Might be able to improve this using bevy events.
-    // Basically listen for changes to plants and only then update.
-    for (mut sprite, mut collider, plant) in plant_query.iter_mut() {
-        sprite.custom_size = plant.sprite_size();
-        *collider = plant.collider();
+pub fn update_plant_size(
+    mut ev_eaten: EventReader<eat::EatenEvent>,
+    mut plant_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Plant)>,
+) {
+    for ev in ev_eaten.iter() {
+        if let Ok(plant_extract) = plant_query.get_mut(ev.0) {
+            let (mut sprite, mut collider, plant) = plant_extract;
+            sprite.custom_size = plant.sprite_size();
+            *collider = plant.collider();
+        }
     }
 }
 
