@@ -89,7 +89,7 @@
       {
         "kind": "Output",
         "activation": "Tanh",
-        "bias": 0.1
+        "bias": -0.1
       },
       {
         "kind": "Output",
@@ -100,6 +100,11 @@
         "kind": "Output",
         "activation": "Tanh",
         "bias": 0.0
+      },
+      {
+        "kind": "Output",
+        "activation": "Tanh",
+        "bias": 1.0
       },
       {
         "kind": "Hidden",
@@ -132,18 +137,18 @@
         },
         {
           "from": 9,
-          "to": 20,
+          "to": 21,
           "weight": -1.0,
           "active": true
         },
         {
-          "from": 20,
-          "to": 21,
+          "from": 21,
+          "to": 22,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 21,
+          "from": 22,
           "to": 15,
           "weight": 0.05,
           "active": true
@@ -156,12 +161,12 @@
         },
         {
           "from": 11,
-          "to": 22,
+          "to": 23,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 22,
+          "from": 23,
           "to": 14,
           "weight": -1.0,
           "active": true
@@ -174,6 +179,7 @@
     "cost_of_eating": 0.3,
     "offspring_energy": 0.5858586,
     "max_size": 80.0,
-    "growth_rate": 0.1
+    "growth_rate": 0.1,
+    "grab_angle": 40.0
   }
 }

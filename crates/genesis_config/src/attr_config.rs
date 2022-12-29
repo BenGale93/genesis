@@ -11,6 +11,7 @@ struct AttributeConfigValidator {
     offspring_energy: MinMax,
     max_size: MinMax,
     growth_rate: MinMax,
+    grab_angle: MinMax,
 }
 
 impl Default for AttributeConfigValidator {
@@ -22,6 +23,7 @@ impl Default for AttributeConfigValidator {
             offspring_energy: (Some(0.1), Some(1.0)),
             max_size: (Some(50.0), Some(150.0)),
             growth_rate: (Some(0.0), Some(1.0)),
+            grab_angle: (Some(20.0), Some(90.0)),
         }
     }
 }
@@ -36,6 +38,7 @@ pub struct AttributeConfig {
     pub offspring_energy: MinMaxLen,
     pub max_size: MinMaxLen,
     pub growth_rate: MinMaxLen,
+    pub grab_angle: MinMaxLen,
 }
 
 impl Default for AttributeConfig {
@@ -47,6 +50,7 @@ impl Default for AttributeConfig {
             offspring_energy: (0.5, 1.0, 100),
             max_size: (80.0, 100.0, 20),
             growth_rate: (0.05, 0.1, 20),
+            grab_angle: (30.0, 60.0, 10),
         }
     }
 }
@@ -77,7 +81,8 @@ impl AttributeConfig {
             cost_of_eating,
             offspring_energy,
             max_size,
-            growth_rate
+            growth_rate,
+            grab_angle
         );
         messages
     }
@@ -89,6 +94,7 @@ struct DependentAttributeConfigValidator {
     eye_angle_bounds: MinMax,
     mouth_width_bounds: MinMax,
     hatch_size_bounds: MinMax,
+    grab_strength_bounds: MinMax,
 }
 
 impl Default for DependentAttributeConfigValidator {
@@ -99,6 +105,7 @@ impl Default for DependentAttributeConfigValidator {
             eye_angle_bounds: (Some(40.0), Some(360.0)),
             mouth_width_bounds: (Some(20.0), Some(180.0)),
             hatch_size_bounds: (Some(10.0), Some(49.0)),
+            grab_strength_bounds: (Some(0.0), Some(1.0)),
         }
     }
 }
@@ -110,6 +117,7 @@ pub struct DependentAttributeConfig {
     pub eye_angle_bounds: (f32, f32),
     pub mouth_width_bounds: (f32, f32),
     pub hatch_size_bounds: (f32, f32),
+    pub grab_strength_bounds: (f32, f32),
 }
 
 impl Default for DependentAttributeConfig {
@@ -120,6 +128,7 @@ impl Default for DependentAttributeConfig {
             eye_angle_bounds: (60.0, 330.0),
             mouth_width_bounds: (30.0, 90.0),
             hatch_size_bounds: (20.0, 35.0),
+            grab_strength_bounds: (0.5, 1.0),
         }
     }
 }
@@ -149,7 +158,8 @@ impl DependentAttributeConfig {
             death_age_bounds,
             eye_angle_bounds,
             mouth_width_bounds,
-            hatch_size_bounds
+            hatch_size_bounds,
+            grab_strength_bounds
         );
         messages
     }

@@ -10,6 +10,7 @@ use serde_derive::Serialize;
 
 pub mod body;
 pub mod eat;
+pub mod grab;
 pub mod grow;
 pub mod lay;
 pub mod mind;

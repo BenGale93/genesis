@@ -19,6 +19,7 @@ plant_size_range = [
 plant_density = 10.0
 mutation_probability = 0.1
 cost_of_thought = 0.008
+cost_of_grab = 0.02
 
 [[spawners]]
 centre = [
@@ -63,6 +64,11 @@ growth_rate = [
     0.1,
     20,
 ]
+grab_angle = [
+    30.0,
+    60.0,
+    10,
+]
 
 [dependent_attributes]
 adult_age_bounds = [
@@ -84,6 +90,10 @@ mouth_width_bounds = [
 hatch_size_bounds = [
     20.0,
     35.0,
+]
+grab_strength_bounds = [
+    0.5,
+    1.0,
 ]
 
 [brain_mutations]

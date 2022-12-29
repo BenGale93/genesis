@@ -78,6 +78,7 @@ pub struct Genome {
     pub offspring_energy: Chromosome,
     pub max_size: Chromosome,
     pub growth_rate: Chromosome,
+    pub grab_angle: Chromosome,
 }
 
 impl Genome {
@@ -99,7 +100,8 @@ impl Genome {
             cost_of_eating,
             offspring_energy,
             max_size,
-            growth_rate
+            growth_rate,
+            grab_angle
         );
         Self {
             hatch_age,
@@ -108,6 +110,7 @@ impl Genome {
             offspring_energy,
             max_size,
             growth_rate,
+            grab_angle,
         }
     }
 
@@ -133,7 +136,8 @@ impl Genome {
             cost_of_eating,
             offspring_energy,
             max_size,
-            growth_rate
+            growth_rate,
+            grab_angle
         );
         output_dna
     }
@@ -159,6 +163,7 @@ pub struct Dna {
     pub offspring_energy: f32,
     pub max_size: f32,
     pub growth_rate: f32,
+    pub grab_angle: f32,
 }
 
 impl Dna {
@@ -170,6 +175,7 @@ impl Dna {
             offspring_energy: genome.offspring_energy.random(rng),
             max_size: genome.max_size.random(rng),
             growth_rate: genome.growth_rate.random(rng),
+            grab_angle: genome.grab_angle.random(rng),
         }
     }
 
@@ -195,7 +201,8 @@ impl Dna {
             cost_of_eating,
             offspring_energy,
             max_size,
-            growth_rate
+            growth_rate,
+            grab_angle
         );
         Ok(())
     }
@@ -335,6 +342,32 @@ impl GrowthRate {
     }
 }
 
+#[derive(Component, Debug, Deref)]
+pub struct GrabAngle(f32);
+
+impl GrabAngle {
+    pub fn new(value: f32) -> Self {
+        let value = f32::to_radians(value);
+        Self(value)
+    }
+}
+
+#[derive(Component, Debug, Deref)]
+pub struct GrabStrength(f32);
+
+impl GrabStrength {
+    pub fn new(grab_angle: f32, ga_chromosome: &Chromosome) -> Self {
+        let (gs_min, gs_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .grab_strength_bounds;
+        let gs_range = gs_max - gs_min;
+        let value = ga_chromosome
+            .normalise(grab_angle)
+            .mul_add(gs_range, gs_min);
+        Self(value)
+    }
+}
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub hatch_age: HatchAge,
@@ -348,6 +381,8 @@ pub struct AttributeBundle {
     pub hatch_size: HatchSize,
     pub max_size: MaxSize,
     pub growth_rate: GrowthRate,
+    pub grab_angle: GrabAngle,
+    pub grab_strength: GrabStrength,
 }
 
 impl AttributeBundle {
@@ -364,6 +399,8 @@ impl AttributeBundle {
             hatch_size: HatchSize::new(dna.hatch_age, &genome.hatch_age),
             max_size: MaxSize::new(dna.max_size),
             growth_rate: GrowthRate::new(dna.growth_rate),
+            grab_angle: GrabAngle::new(dna.grab_angle),
+            grab_strength: GrabStrength::new(dna.grab_angle, &genome.grab_angle),
         }
     }
 }
@@ -380,4 +417,6 @@ pub type BugAttributes<'a> = (
     &'a HatchSize,
     &'a MaxSize,
     &'a GrowthRate,
+    &'a GrabAngle,
+    &'a GrabStrength,
 );

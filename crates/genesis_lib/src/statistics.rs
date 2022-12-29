@@ -94,6 +94,8 @@ pub struct AverageAttributes {
     pub hatch_size: Vec<f32>,
     pub max_size: Vec<f32>,
     pub growth_rate: Vec<f32>,
+    pub grab_angle: Vec<f32>,
+    pub grab_strength: Vec<f32>,
 }
 
 pub fn count_system(
@@ -174,10 +176,12 @@ pub fn attribute_stats_system(
         mouth_width,
         hatch_size,
         max_size,
-        growth_rate
+        growth_rate,
+        grab_angle,
+        grab_strength
     );
 
-    for (ha, aa, da, er, ea, coe, oe, mw, hs, ms, gr) in attribute_query.iter() {
+    for (ha, aa, da, er, ea, coe, oe, mw, hs, ms, gr, ga, gs) in attribute_query.iter() {
         hatch_age.push(**ha);
         adult_age.push(**aa);
         death_age.push(**da);
@@ -189,6 +193,8 @@ pub fn attribute_stats_system(
         hatch_size.push(**hs);
         max_size.push(**ms);
         growth_rate.push(**gr);
+        grab_angle.push(**ga);
+        grab_strength.push(**gs);
     }
 
     macro_rules! push_attr {
@@ -211,7 +217,9 @@ pub fn attribute_stats_system(
         mouth_width,
         hatch_size,
         max_size,
-        growth_rate
+        growth_rate,
+        grab_angle,
+        grab_strength
     );
 }
 

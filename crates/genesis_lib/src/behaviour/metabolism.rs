@@ -1,6 +1,6 @@
 use bevy::prelude::{Query, ResMut};
 use genesis_components::{
-    body, eat::EatingSum, grow::SizeSum, BurntEnergy, MovementSum, ThinkingSum,
+    body, eat::EatingSum, grab::GrabbingSum, grow::SizeSum, BurntEnergy, MovementSum, ThinkingSum,
 };
 use genesis_ecosystem as ecosystem;
 
@@ -10,6 +10,7 @@ pub fn energy_return_system(
         &mut body::Vitality,
         &mut ThinkingSum,
         &mut EatingSum,
+        &mut GrabbingSum,
         &mut MovementSum,
         &mut SizeSum,
         &mut BurntEnergy,
@@ -19,6 +20,7 @@ pub fn energy_return_system(
         mut vitality,
         mut thinking_sum,
         mut eating_sum,
+        mut grabbing_sum,
         mut movement_sum,
         mut size_sum,
         mut burnt_energy,
@@ -34,6 +36,7 @@ pub fn energy_return_system(
         }
         shift_energy!(thinking_sum);
         shift_energy!(eating_sum);
+        shift_energy!(grabbing_sum);
         shift_energy!(movement_sum);
         shift_energy!(size_sum);
 
