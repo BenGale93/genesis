@@ -71,6 +71,7 @@ pub fn spawn_bug(
         .insert(components::MovementSum::new())
         .insert(components::ThinkingSum::new())
         .insert(eat::EatingSum::new())
+        .insert(lay::LayingSum::new())
         .insert(grow::GrowingSum::new())
         .insert(grow::SizeSum::new())
         .insert(grab::GrabbingSum::new())

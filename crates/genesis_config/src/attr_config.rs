@@ -128,7 +128,7 @@ impl Default for DependentAttributeConfig {
             eye_angle_bounds: (60.0, 330.0),
             mouth_width_bounds: (30.0, 90.0),
             hatch_size_bounds: (20.0, 35.0),
-            grab_strength_bounds: (0.5, 1.0),
+            grab_strength_bounds: (0.01, 0.05),
         }
     }
 }

@@ -54,6 +54,7 @@ pub fn attempting_behaviour_system_set() -> SystemSet {
         .after("after_thinking")
         .run_if_not(ui::is_paused)
         .with_system(eating::attempted_to_eat_system)
+        .with_system(laying::attempted_to_lay_system)
         .with_system(growing::attempted_to_grow_system)
         .with_system(grabbing::attempted_to_grab_system)
         .into()

@@ -1,6 +1,7 @@
 use bevy::{
     prelude::{AssetServer, Commands, Entity, Query, Res, ResMut, Transform, Vec3, With, Without},
     sprite::Sprite,
+    time::{Stopwatch, Time},
 };
 use genesis_attributes as attributes;
 use genesis_components as components;
@@ -21,13 +22,30 @@ pub fn process_layers_system(
 ) {
     for (entity, mind_out) in not_laying_query.iter() {
         if mind_out[config::REPRODUCE_INDEX] >= 0.0 {
-            commands.entity(entity).insert(TryingToLay);
+            commands
+                .entity(entity)
+                .insert(TryingToLay(Stopwatch::new()));
         }
     }
 
     for (entity, mind_out) in laying_query.iter() {
         if mind_out[config::REPRODUCE_INDEX] < 0.0 {
             commands.entity(entity).remove::<TryingToLay>();
+        }
+    }
+}
+
+pub fn attempted_to_lay_system(
+    time: Res<Time>,
+    mut bug_query: Query<(&mut TryingToLay, &mut LayingSum)>,
+) {
+    let world_config = config::WorldConfig::global();
+    for (mut trying_to_lay, mut laying_sum) in bug_query.iter_mut() {
+        trying_to_lay.tick(time.delta());
+        let time_spent = trying_to_lay.elapsed().as_secs_f32();
+        if time_spent >= 1.0 {
+            laying_sum.add_time(time_spent, world_config.cost_of_lay);
+            trying_to_lay.reset();
         }
     }
 }
