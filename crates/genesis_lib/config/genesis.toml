@@ -20,6 +20,7 @@ plant_density = 10.0
 mutation_probability = 0.1
 cost_of_thought = 0.008
 cost_of_grab = 0.02
+cost_of_lay = 0.05
 
 [[spawners]]
 centre = [
@@ -92,8 +93,8 @@ hatch_size_bounds = [
     35.0,
 ]
 grab_strength_bounds = [
-    0.5,
-    1.0,
+    0.01,
+    0.05,
 ]
 
 [brain_mutations]

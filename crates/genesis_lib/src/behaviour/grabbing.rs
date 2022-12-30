@@ -39,7 +39,7 @@ pub fn attempted_to_grab_system(
         trying_to_grab.tick(time.delta());
         let time_spent = trying_to_grab.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
-            grow_sum.add_grabbing_time(time_spent, grab_cost);
+            grow_sum.add_time(time_spent, grab_cost);
             trying_to_grab.reset();
         }
     }

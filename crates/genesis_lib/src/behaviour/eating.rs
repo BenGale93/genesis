@@ -37,7 +37,7 @@ pub fn attempted_to_eat_system(
         trying_to_eat.tick(time.delta());
         let time_spent = trying_to_eat.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
-            eating_sum.add_eating_time(time_spent, **cost);
+            eating_sum.add_time(time_spent, **cost);
             trying_to_eat.reset();
         }
     }

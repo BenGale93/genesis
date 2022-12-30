@@ -38,7 +38,7 @@ pub fn attempted_to_grow_system(
         trying_to_grow.tick(time.delta());
         let time_spent = trying_to_grow.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
-            grow_sum.add_growing_time(time_spent, **growth_rate);
+            grow_sum.add_time(time_spent, **growth_rate);
             trying_to_grow.reset();
         }
     }
@@ -71,6 +71,6 @@ pub fn grow_bug_system(
 
 pub fn existence_system(time: Res<Time>, mut bug_query: Query<(&body::Vitality, &mut SizeSum)>) {
     for (vitality, mut size_sum) in bug_query.iter_mut() {
-        size_sum.add_existence_time(time.delta_seconds(), vitality.metabolism_rate());
+        size_sum.add_time(time.delta_seconds(), vitality.metabolism_rate());
     }
 }

@@ -3,6 +3,7 @@ use bevy_render::color::Color;
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_config as config;
+use genesis_derive::BehaviourTracker;
 use genesis_ecosystem::Energy;
 use genesis_maths::cantor_pairing;
 use genesis_newtype::Weight;
@@ -65,25 +66,8 @@ impl MovementSum {
     }
 }
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, BehaviourTracker)]
 pub struct ThinkingSum(f32);
-
-impl ThinkingSum {
-    pub const fn new() -> Self {
-        Self(0.0)
-    }
-
-    pub fn add_thought(&mut self, synapses: usize, cost: f32) {
-        self.0 += synapses as f32 * cost;
-    }
-
-    pub fn uint_portion(&mut self) -> usize {
-        let thought_floor = self.0.floor();
-        self.0 -= thought_floor;
-
-        thought_floor as usize
-    }
-}
 
 #[derive(Component, Debug)]
 pub struct Egg;

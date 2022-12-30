@@ -13,7 +13,7 @@ use bevy_rapier2d::prelude::{
 use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{
-    body, eat, grow, lay, mind, see, time, BurntEnergy, Generation, SizeMultiplier,
+    body, eat, grab, grow, lay, mind, see, time, BurntEnergy, Generation, SizeMultiplier,
 };
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
@@ -71,8 +71,10 @@ pub fn spawn_bug(
         .insert(components::MovementSum::new())
         .insert(components::ThinkingSum::new())
         .insert(eat::EatingSum::new())
+        .insert(lay::LayingSum::new())
         .insert(grow::GrowingSum::new())
         .insert(grow::SizeSum::new())
+        .insert(grab::GrabbingSum::new())
         .insert(eat::EnergyConsumed(0))
         .insert(lay::EggsLaid(0));
 
