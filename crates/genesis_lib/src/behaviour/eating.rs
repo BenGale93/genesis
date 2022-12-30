@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Commands, Entity, Mut, Query, Res, Transform, With, Without},
+    prelude::{Commands, Entity, EventWriter, Mut, Query, Res, Transform, With, Without},
     time::{Stopwatch, Time},
 };
 use bevy_rapier2d::prelude::RapierContext;
@@ -45,6 +45,7 @@ pub fn attempted_to_eat_system(
 
 fn eat_plant(
     commands: &mut Commands,
+    ev_eaten: &mut EventWriter<EatenEvent>,
     bug: &mut (
         Mut<Vitality>,
         &Transform,
@@ -63,7 +64,11 @@ fn eat_plant(
     if angle_to_food.abs() < ***mouth_width {
         let initial_plant_energy = plant_energy.energy().amount();
         let leftover = vitality.eat(plant_energy);
-        energy_consumed.0 += initial_plant_energy - plant_energy.energy().amount();
+        let consumed = initial_plant_energy - plant_energy.energy().amount();
+        energy_consumed.0 += consumed;
+        if consumed > 0 {
+            ev_eaten.send(EatenEvent(*plant_entity));
+        }
         if plant_energy.energy().amount() == 0 {
             commands.entity(*plant_entity).insert(Eaten);
         }
@@ -83,6 +88,7 @@ pub type EatenPlant<'a> = (Entity, &'a mut Plant, &'a Transform);
 
 pub fn eating_system(
     mut commands: Commands,
+    mut ev_eaten: EventWriter<EatenEvent>,
     rapier_context: Res<RapierContext>,
     mut bug_query: Query<EatingBug, With<TryingToEat>>,
     mut plant_query: Query<EatenPlant>,
@@ -92,14 +98,14 @@ pub fn eating_system(
             bug_query.get_mut(contact_pair.collider1()),
             plant_query.get_mut(contact_pair.collider2()),
         ) {
-            eat_plant(&mut commands, &mut bug, &mut plant);
+            eat_plant(&mut commands, &mut ev_eaten, &mut bug, &mut plant);
             continue;
         }
         if let (Ok(mut bug), Ok(mut plant)) = (
             bug_query.get_mut(contact_pair.collider2()),
             plant_query.get_mut(contact_pair.collider1()),
         ) {
-            eat_plant(&mut commands, &mut bug, &mut plant);
+            eat_plant(&mut commands, &mut ev_eaten, &mut bug, &mut plant);
         }
     }
 }
