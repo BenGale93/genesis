@@ -16,6 +16,8 @@ genesis_lib = { path = "./crates/genesis_lib" }
 genesis_maths = {path = "./crates/genesis_maths/"}
 genesis_newtype = { path = "./crates/genesis_newtype/"}
 genesis_spawners = { path = "./crates/genesis_spawners" }
+genesis_derive = { path = "./crates/genesis_derive" }
+genesis_macros = { path = "./crates/genesis_macros" }
 bevy = "0.9.1"
 bevy_ecs = "0.9.1"
 bevy_render = "0.9.1"

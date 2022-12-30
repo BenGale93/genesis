@@ -1,0 +1,13 @@
+[package]
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+name = "genesis_derive"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0"
+genesis_macros = { workspace = true}

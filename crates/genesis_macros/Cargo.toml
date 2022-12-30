@@ -1,0 +1,11 @@
+[package]
+authors = ["Ben Askew-Gale <bengale2007@googlemail.com>"]
+name = "genesis_macros"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+syn = { version = "1.0.60", features = ["full"]}
+quote = "1.0.9"
+proc-macro2 = "1.0.24"

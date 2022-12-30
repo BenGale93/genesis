@@ -1882,6 +1882,7 @@ dependencies = [
  "genesis_brain",
  "genesis_color",
  "genesis_config",
+ "genesis_derive",
  "genesis_ecosystem",
  "genesis_maths",
  "genesis_newtype",
@@ -1904,6 +1905,14 @@ dependencies = [
  "once_cell",
  "serde",
  "serde_derive",
+]
+
+[[package]]
+name = "genesis_derive"
+version = "0.1.0"
+dependencies = [
+ "genesis_macros",
+ "proc-macro2",
 ]
 
 [[package]]
@@ -1956,6 +1965,15 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "thiserror",
+]
+
+[[package]]
+name = "genesis_macros"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
