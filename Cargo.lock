@@ -1966,6 +1966,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bevy",
+ "bevy-trait-query",
  "bevy_egui",
  "bevy_rapier2d",
  "derive-getters",

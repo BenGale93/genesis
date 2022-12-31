@@ -17,6 +17,7 @@ genesis_ecosystem = { workspace = true }
 genesis_attributes = { workspace = true }
 genesis_traits = { workspace = true }
 bevy = { workspace = true }
+bevy-trait-query = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }
 derive_more = { workspace = true }
