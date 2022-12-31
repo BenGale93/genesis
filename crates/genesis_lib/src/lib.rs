@@ -12,6 +12,7 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
+use genesis_attributes as attributes;
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
@@ -68,7 +69,8 @@ impl Plugin for GenesisPlugin {
         let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
         let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 
-        app.add_plugin(ui::GenesisUiPlugin)
+        app.add_plugin(attributes::AttributesPlugin)
+            .add_plugin(ui::GenesisUiPlugin)
             .add_plugin(behaviour::GenesisBehaviourPlugin)
             .add_stage_after(
                 CoreStage::Update,

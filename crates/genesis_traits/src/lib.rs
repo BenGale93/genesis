@@ -8,3 +8,8 @@ pub trait BehaviourTracker {
 
     fn uint_portion(&mut self) -> usize;
 }
+
+#[bevy_trait_query::queryable]
+pub trait AttributeDisplay {
+    fn display(&self) -> String;
+}

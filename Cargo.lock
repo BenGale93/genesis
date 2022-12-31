@@ -1853,11 +1853,14 @@ dependencies = [
 name = "genesis_attributes"
 version = "0.1.0"
 dependencies = [
+ "bevy-trait-query",
+ "bevy_app",
  "bevy_ecs",
  "bevy_reflect",
  "derive_more",
  "genesis_config",
  "genesis_newtype",
+ "genesis_traits",
  "ndarray",
  "rand",
  "serde",

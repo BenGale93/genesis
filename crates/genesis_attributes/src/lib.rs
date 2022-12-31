@@ -1,10 +1,13 @@
 #![warn(clippy::all, clippy::nursery)]
 use std::fmt;
 
+use bevy_app::Plugin;
 use bevy_ecs::prelude::{Bundle, Component, Resource};
+use bevy_trait_query::RegisterExt;
 use derive_more::Deref;
 use genesis_config as config;
 use genesis_newtype::Probability;
+use genesis_traits::AttributeDisplay;
 use ndarray::Array;
 use rand::{seq::IteratorRandom, Rng, RngCore};
 use serde::{Deserialize, Serialize};
@@ -217,6 +220,12 @@ impl HatchAge {
     }
 }
 
+impl AttributeDisplay for HatchAge {
+    fn display(&self) -> String {
+        format!("Hatch age: {:.3}", self.0)
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct AdultAge(f32);
 
@@ -230,6 +239,12 @@ impl AdultAge {
             .normalise(hatch_age)
             .mul_add(-aa_range, aa_max);
         Self(value)
+    }
+}
+
+impl AttributeDisplay for AdultAge {
+    fn display(&self) -> String {
+        format!("Adult age: {:.3}", self.0)
     }
 }
 
@@ -247,12 +262,24 @@ impl DeathAge {
     }
 }
 
+impl AttributeDisplay for DeathAge {
+    fn display(&self) -> String {
+        format!("Death age: {:.3}", self.0)
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct EyeRange(f32);
 
 impl EyeRange {
     pub const fn new(value: f32) -> Self {
         Self(value)
+    }
+}
+
+impl AttributeDisplay for EyeRange {
+    fn display(&self) -> String {
+        format!("Eye range: {:.3}", self.0)
     }
 }
 
@@ -274,6 +301,12 @@ impl EyeAngle {
     }
 }
 
+impl AttributeDisplay for EyeAngle {
+    fn display(&self) -> String {
+        format!("Eye angle: {:.3}", f32::to_degrees(self.0))
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct CostOfEating(f32);
 
@@ -283,12 +316,24 @@ impl CostOfEating {
     }
 }
 
+impl AttributeDisplay for CostOfEating {
+    fn display(&self) -> String {
+        format!("Cost of eating: {:.3}", self.0)
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
     pub const fn new(value: f32) -> Self {
         Self(value)
+    }
+}
+
+impl AttributeDisplay for OffspringEnergy {
+    fn display(&self) -> String {
+        format!("Offspring energy: {:.3}", self.0)
     }
 }
 
@@ -310,6 +355,12 @@ impl MouthWidth {
     }
 }
 
+impl AttributeDisplay for MouthWidth {
+    fn display(&self) -> String {
+        format!("Mouth width: {:.3}", f32::to_degrees(self.0))
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct HatchSize(f32);
 
@@ -324,12 +375,24 @@ impl HatchSize {
     }
 }
 
+impl AttributeDisplay for HatchSize {
+    fn display(&self) -> String {
+        format!("Hatch size: {:.3}", self.0)
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct MaxSize(f32);
 
 impl MaxSize {
     pub const fn new(value: f32) -> Self {
         Self(value)
+    }
+}
+
+impl AttributeDisplay for MaxSize {
+    fn display(&self) -> String {
+        format!("Max size: {:.3}", self.0)
     }
 }
 
@@ -342,6 +405,12 @@ impl GrowthRate {
     }
 }
 
+impl AttributeDisplay for GrowthRate {
+    fn display(&self) -> String {
+        format!("Growth rate: {:.3}", self.0)
+    }
+}
+
 #[derive(Component, Debug, Deref)]
 pub struct GrabAngle(f32);
 
@@ -349,6 +418,12 @@ impl GrabAngle {
     pub fn new(value: f32) -> Self {
         let value = f32::to_radians(value);
         Self(value)
+    }
+}
+
+impl AttributeDisplay for GrabAngle {
+    fn display(&self) -> String {
+        format!("Grab angle: {:.3}", f32::to_degrees(self.0))
     }
 }
 
@@ -365,6 +440,12 @@ impl GrabStrength {
             .normalise(grab_angle)
             .mul_add(-gs_range, gs_max);
         Self(value)
+    }
+}
+
+impl AttributeDisplay for GrabStrength {
+    fn display(&self) -> String {
+        format!("Grab strength: {:.3}", self.0)
     }
 }
 
@@ -420,3 +501,23 @@ pub type BugAttributes<'a> = (
     &'a GrabAngle,
     &'a GrabStrength,
 );
+
+pub struct AttributesPlugin;
+
+impl Plugin for AttributesPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        app.register_component_as::<dyn AttributeDisplay, HatchAge>()
+            .register_component_as::<dyn AttributeDisplay, AdultAge>()
+            .register_component_as::<dyn AttributeDisplay, DeathAge>()
+            .register_component_as::<dyn AttributeDisplay, EyeRange>()
+            .register_component_as::<dyn AttributeDisplay, EyeAngle>()
+            .register_component_as::<dyn AttributeDisplay, CostOfEating>()
+            .register_component_as::<dyn AttributeDisplay, OffspringEnergy>()
+            .register_component_as::<dyn AttributeDisplay, MouthWidth>()
+            .register_component_as::<dyn AttributeDisplay, HatchSize>()
+            .register_component_as::<dyn AttributeDisplay, MaxSize>()
+            .register_component_as::<dyn AttributeDisplay, GrowthRate>()
+            .register_component_as::<dyn AttributeDisplay, GrabAngle>()
+            .register_component_as::<dyn AttributeDisplay, GrabStrength>();
+    }
+}

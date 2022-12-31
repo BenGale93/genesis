@@ -21,6 +21,7 @@ genesis_macros = { path = "./crates/genesis_macros" }
 genesis_traits = { path = "./crates/genesis_traits" }
 bevy = "0.9.1"
 bevy_ecs = "0.9.1"
+bevy_app = "0.9.1"
 bevy_render = "0.9.1"
 bevy_reflect = "0.9.1"
 bevy_time = "0.9.1"
