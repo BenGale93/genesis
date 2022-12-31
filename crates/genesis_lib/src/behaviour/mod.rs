@@ -1,10 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, Plugin, SystemSet};
-use bevy_trait_query::RegisterExt;
 use genesis_components as components;
-use genesis_components::{eat, grab, grow, lay, time};
-use genesis_traits::BehaviourTracker;
 use iyes_loopless::prelude::*;
 
 use crate::ui;
@@ -102,21 +99,12 @@ pub struct GenesisBehaviourPlugin;
 
 impl Plugin for GenesisBehaviourPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(time::SimulationTime::default())
-            .add_event::<eat::EatenEvent>()
-            .register_component_as::<dyn BehaviourTracker, components::ThinkingSum>()
-            .register_component_as::<dyn BehaviourTracker, eat::EatingSum>()
-            .register_component_as::<dyn BehaviourTracker, lay::LayingSum>()
-            .register_component_as::<dyn BehaviourTracker, grab::GrabbingSum>()
-            .register_component_as::<dyn BehaviourTracker, grow::SizeSum>()
-            .register_component_as::<dyn BehaviourTracker, grow::GrowingSum>()
-            .register_component_as::<dyn BehaviourTracker, components::TranslationSum>()
-            .register_component_as::<dyn BehaviourTracker, components::RotationSum>()
-            .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
+        app.add_plugin(components::ComponentsPlugin)
             .add_fixed_timestep(Duration::from_secs_f32(1.0), "very_slow")
+            .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
+            .add_fixed_timestep(Duration::from_secs_f32(0.05), "standard")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())
             .add_fixed_timestep_system_set("slow", 0, slow_behaviour_system_set())
-            .add_fixed_timestep(Duration::from_secs_f32(0.05), "standard")
             .add_fixed_timestep_system_set("standard", 0, before_thinking_system_set())
             .add_fixed_timestep_system_set("standard", 0, thinking_system_set())
             .add_fixed_timestep_system_set("standard", 0, after_thinking_system_set())

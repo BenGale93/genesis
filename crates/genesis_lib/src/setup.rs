@@ -1,17 +1,5 @@
-use bevy::prelude::{Camera2dBundle, Commands, ResMut, Resource, SystemSet, Vec2};
+use bevy::prelude::{Camera2dBundle, Commands, ResMut, SystemSet, Vec2};
 use bevy_rapier2d::prelude::RapierConfiguration;
-use derive_more::Deref;
-use genesis_brain::BrainMutationThresholds;
-use genesis_config as config;
-
-#[derive(Resource, Debug, Deref)]
-pub struct MindThresholds(BrainMutationThresholds);
-
-impl MindThresholds {
-    pub fn new(brain_config: &config::BrainMutationConfig) -> Self {
-        Self(BrainMutationThresholds::new(brain_config))
-    }
-}
 
 fn camera_setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());

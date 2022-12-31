@@ -12,7 +12,7 @@ use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 use genesis_traits::BehaviourTracker;
 
-use crate::{setup::MindThresholds, spawning, statistics};
+use crate::{spawning, statistics};
 
 type LayerTest<'a> = (Entity, &'a mind::MindOutput);
 
@@ -67,7 +67,7 @@ pub fn lay_egg_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     genome: Res<attributes::Genome>,
-    mind_thresholds: Res<MindThresholds>,
+    mind_thresholds: Res<mind::MindThresholds>,
     mut parent_query: Query<Parent, With<TryingToLay>>,
 ) {
     let prob = Probability::new(config::WorldConfig::global().mutation_probability).unwrap();
@@ -127,7 +127,7 @@ pub fn spawn_egg_system(
     spawners: Res<Spawners>,
     count_stats: Res<statistics::CountStats>,
     performance_stats: Res<statistics::BugPerformance>,
-    mind_thresholds: Res<MindThresholds>,
+    mind_thresholds: Res<mind::MindThresholds>,
 ) {
     let config_instance = config::WorldConfig::global();
     let bug_num = count_stats.current_organisms();
