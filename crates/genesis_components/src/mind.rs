@@ -124,6 +124,7 @@ pub struct GuiNeuron {
     pub index: usize,
     pub pos: Option<egui::Pos2>,
     pub color: egui::Color32,
+    pub activation: String,
 }
 
 #[derive(Debug)]
@@ -237,6 +238,7 @@ impl MindLayout {
                 index: k,
                 pos,
                 color,
+                activation: neuron.activation().display().to_string(),
             });
 
             *offset += 1;
