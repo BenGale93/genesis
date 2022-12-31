@@ -18,6 +18,7 @@ use genesis_components::{
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
+use genesis_traits::BehaviourTracker;
 use rand_distr::{Distribution, Uniform};
 
 type BugParts<'a> = (

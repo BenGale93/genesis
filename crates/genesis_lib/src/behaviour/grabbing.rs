@@ -7,6 +7,7 @@ use genesis_attributes as attributes;
 use genesis_components::{grab::*, mind, Egg};
 use genesis_config as config;
 use genesis_maths::angle_between;
+use genesis_traits::BehaviourTracker;
 
 type GrabberTest<'a> = (Entity, &'a mind::MindOutput);
 

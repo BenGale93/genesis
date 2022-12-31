@@ -15,6 +15,7 @@ genesis_spawners = { workspace = true }
 genesis_config = { workspace = true }
 genesis_ecosystem = { workspace = true }
 genesis_attributes = { workspace = true }
+genesis_traits = { workspace = true }
 bevy = { workspace = true }
 rand = { workspace = true }
 thiserror = { workspace = true }

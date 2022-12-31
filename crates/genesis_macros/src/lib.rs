@@ -6,17 +6,19 @@ pub fn derive_behaviour_tracker(input: TokenStream2) -> TokenStream2 {
     let ast = parse2::<ItemStruct>(input).unwrap();
 
     let struct_name = &ast.ident;
+    let (impl_generics, type_generics, where_clause) = &ast.generics.split_for_impl();
+
     quote! {
-        impl #struct_name {
-            pub const fn new() -> Self {
+        impl #impl_generics genesis_traits::BehaviourTracker for #struct_name #type_generics #where_clause {
+            fn new() -> Self where Self: Sized {
                 Self(0.0)
             }
 
-            pub fn add_time(&mut self, time: f32, cost: f32) {
+            fn add_time(&mut self, time: f32, cost: f32) {
                 self.0 += time * cost
             }
 
-            pub fn uint_portion(&mut self) -> usize {
+            fn uint_portion(&mut self) -> usize {
                 let floor = self.0.floor();
                 self.0 -= floor;
                 floor as usize
@@ -48,16 +50,16 @@ mod tests {
         };
 
         let expected = quote! {
-            impl EatingSum {
-                pub const fn new() -> Self {
+            impl genesis_traits::BehaviourTracker for EatingSum {
+                fn new() -> Self where Self: Sized {
                     Self(0.0)
                 }
 
-                pub fn add_time(&mut self, time: f32, cost: f32) {
+                fn add_time(&mut self, time: f32, cost: f32) {
                     self.0 += time * cost
                 }
 
-                pub fn uint_portion(&mut self) -> usize {
+                fn uint_portion(&mut self) -> usize {
                     let floor = self.0.floor();
                     self.0 -= floor;
                     floor as usize

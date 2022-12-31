@@ -10,6 +10,7 @@ use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
+use genesis_traits::BehaviourTracker;
 
 use crate::{setup::MindThresholds, spawning, statistics};
 

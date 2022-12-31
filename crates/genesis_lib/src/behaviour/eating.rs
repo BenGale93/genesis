@@ -8,6 +8,7 @@ use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, 
 use genesis_config as config;
 use genesis_ecosystem::Plant;
 use genesis_maths::angle_between;
+use genesis_traits::BehaviourTracker;
 
 pub fn process_eaters_system(
     mut commands: Commands,

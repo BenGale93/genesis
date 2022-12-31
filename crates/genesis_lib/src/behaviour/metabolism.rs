@@ -4,6 +4,7 @@ use genesis_components::{
     MovementSum, ThinkingSum,
 };
 use genesis_ecosystem as ecosystem;
+use genesis_traits::BehaviourTracker;
 
 pub fn energy_return_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
