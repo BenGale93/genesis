@@ -8,12 +8,14 @@ use bevy::{
 };
 use bevy_egui::{egui, EguiContext};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
+use bevy_trait_query::ReadTraits;
 use components::Generation;
 use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{body, eat, lay, mind, see, time};
 use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
+use genesis_traits::AttributeDisplay;
 
 use super::{brain_panel, interaction, statistics};
 use crate::{bug_serde, spawning};
@@ -209,7 +211,7 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
 
 pub fn attribute_info_system(
     is_egg_query: Query<&components::Egg, With<Selected>>,
-    attr_query_part: Query<attributes::BugAttributes, With<Selected>>,
+    attr_query_part: Query<&dyn AttributeDisplay, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
     mut panel_state: ResMut<EntityPanelState>,
 ) {
@@ -231,29 +233,10 @@ pub fn attribute_info_system(
     }
 }
 
-fn attribute_sub_panel(ui: &mut egui::Ui, bug_info_part: &attributes::BugAttributes) {
-    ui.label(format!("Hatch age: {:.3}", **bug_info_part.0));
-    ui.label(format!("Adult Age: {:.3}", **bug_info_part.1));
-    ui.label(format!("Death Age: {:.3}", **bug_info_part.2));
-    ui.label(format!("Eye range: {:.3}", **bug_info_part.3));
-    ui.label(format!(
-        "Eye angle: {:.3}",
-        f32::to_degrees(**bug_info_part.4)
-    ));
-    ui.label(format!("Cost of eating: {:.3}", **bug_info_part.5));
-    ui.label(format!("Offspring energy: {:.3}", **bug_info_part.6));
-    ui.label(format!(
-        "Mouth width: {:.3}",
-        f32::to_degrees(**bug_info_part.7)
-    ));
-    ui.label(format!("Hatch size: {:.3}", **bug_info_part.8));
-    ui.label(format!("Maximum size: {:.3}", **bug_info_part.9));
-    ui.label(format!("Growth rate: {:.3}", **bug_info_part.10));
-    ui.label(format!(
-        "Grab angle: {:.3}",
-        f32::to_degrees(**bug_info_part.11)
-    ));
-    ui.label(format!("Grab strength: {:.3}", **bug_info_part.12));
+fn attribute_sub_panel(ui: &mut egui::Ui, bug_info_part: &ReadTraits<dyn AttributeDisplay>) {
+    for attr in bug_info_part {
+        ui.label(attr.display());
+    }
 }
 
 pub fn bug_brain_info_system(

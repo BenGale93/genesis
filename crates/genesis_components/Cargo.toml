@@ -13,6 +13,7 @@ genesis_config = { workspace = true }
 genesis_color = { workspace = true }
 genesis_ecosystem = { workspace = true }
 genesis_derive = { workspace = true }
+genesis_traits = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_time = { workspace = true }
 bevy_render = { workspace = true }

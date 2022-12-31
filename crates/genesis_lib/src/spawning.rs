@@ -18,6 +18,7 @@ use genesis_components::{
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_spawners::Spawners;
+use genesis_traits::BehaviourTracker;
 use rand_distr::{Distribution, Uniform};
 
 type BugParts<'a> = (
@@ -68,7 +69,8 @@ pub fn spawn_bug(
         .insert(time::Age::default())
         .insert(time::Heart::new())
         .insert(time::InternalTimer::new())
-        .insert(components::MovementSum::new())
+        .insert(components::TranslationSum::new())
+        .insert(components::RotationSum::new())
         .insert(components::ThinkingSum::new())
         .insert(eat::EatingSum::new())
         .insert(lay::LayingSum::new())

@@ -7,6 +7,7 @@ use bevy_rapier2d::prelude::Collider;
 use genesis_attributes as attributes;
 use genesis_components::{body, grow::*, mind, Egg, SizeMultiplier};
 use genesis_config as config;
+use genesis_traits::BehaviourTracker;
 
 type GrowerTest<'a> = (Entity, &'a mind::MindOutput);
 

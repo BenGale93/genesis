@@ -1,6 +1,7 @@
 use bevy::prelude::{Query, Without};
 use genesis_components::{body, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
+use genesis_traits::BehaviourTracker;
 
 const CONST: f32 = 1.0;
 
