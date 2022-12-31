@@ -1,5 +1,7 @@
+use bevy_app::Plugin;
 use bevy_ecs::prelude::{Component, Entity};
 use bevy_render::color::Color;
+use bevy_trait_query::RegisterExt;
 use derive_more::{Add, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_config as config;
@@ -7,6 +9,7 @@ use genesis_derive::BehaviourTracker;
 use genesis_ecosystem::Energy;
 use genesis_maths::cantor_pairing;
 use genesis_newtype::Weight;
+use genesis_traits::BehaviourTracker;
 use serde_derive::Serialize;
 
 pub mod body;
@@ -118,5 +121,25 @@ impl SizeMultiplier {
 
     pub fn as_float(&self) -> f32 {
         self.0.as_float()
+    }
+}
+
+pub struct ComponentsPlugin;
+
+impl Plugin for ComponentsPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        let config_instance = config::WorldConfig::global();
+
+        app.init_resource::<time::SimulationTime>()
+            .insert_resource(mind::MindThresholds::new(&config_instance.brain_mutations))
+            .add_event::<eat::EatenEvent>()
+            .register_component_as::<dyn BehaviourTracker, ThinkingSum>()
+            .register_component_as::<dyn BehaviourTracker, TranslationSum>()
+            .register_component_as::<dyn BehaviourTracker, RotationSum>()
+            .register_component_as::<dyn BehaviourTracker, eat::EatingSum>()
+            .register_component_as::<dyn BehaviourTracker, lay::LayingSum>()
+            .register_component_as::<dyn BehaviourTracker, grab::GrabbingSum>()
+            .register_component_as::<dyn BehaviourTracker, grow::SizeSum>()
+            .register_component_as::<dyn BehaviourTracker, grow::GrowingSum>();
     }
 }

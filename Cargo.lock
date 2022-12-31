@@ -1897,6 +1897,8 @@ name = "genesis_components"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bevy-trait-query",
+ "bevy_app",
  "bevy_ecs",
  "bevy_egui",
  "bevy_rapier2d",

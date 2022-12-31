@@ -1,9 +1,13 @@
-use bevy_ecs::prelude::{Bundle, Component};
+use bevy_ecs::{
+    prelude::{Bundle, Component},
+    system::Resource,
+};
 use bevy_egui::egui;
 use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::{
-    feed_forward_layers, ActivationFunctionKind, Brain, NeuronKind, Neurons, Synapses,
+    feed_forward_layers, ActivationFunctionKind, Brain, BrainMutationThresholds, NeuronKind,
+    Neurons, Synapses,
 };
 use genesis_color as color;
 use genesis_config as config;
@@ -263,6 +267,15 @@ impl MindBundle {
             output: output_vec,
             layout,
         }
+    }
+}
+
+#[derive(Resource, Debug, Deref)]
+pub struct MindThresholds(BrainMutationThresholds);
+
+impl MindThresholds {
+    pub fn new(brain_config: &config::BrainMutationConfig) -> Self {
+        Self(BrainMutationThresholds::new(brain_config))
     }
 }
 
