@@ -35,6 +35,24 @@ impl Distribution<ActivationFunctionKind> for Standard {
     }
 }
 
+impl ActivationFunctionKind {
+    pub const fn display(&self) -> &str {
+        match self {
+            Self::Identity => "Identity",
+            Self::Sigmoid => "Sigmoid",
+            Self::Tanh => "Tanh",
+            Self::Relu => "Relu",
+            Self::Step => "Step",
+            Self::Softsign => "SoftSign",
+            Self::Sin => "Sin",
+            Self::Gaussian => "Gaussian",
+            Self::BentIdentity => "BentIdentity",
+            Self::Selu => "Selu",
+            Self::Latch(_) => "Latch",
+        }
+    }
+}
+
 const fn identity(x: f32) -> f32 {
     x
 }

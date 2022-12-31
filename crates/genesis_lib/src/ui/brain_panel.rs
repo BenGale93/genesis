@@ -1,5 +1,5 @@
 use bevy_egui::egui;
-use genesis_components::mind;
+use genesis_components::mind::{self, GuiNeuron};
 
 pub(super) type BugBrainInfo<'a> = (
     &'a mind::MindInput,
@@ -56,20 +56,18 @@ fn paint_neuron_values(
     }
 }
 
-fn paint_neuron_labels(
-    ui: &mut egui::Ui,
-    response: &egui::Response,
-    neuron_index: usize,
-    neuron_position: egui::Pos2,
-) {
-    let Some(hover_pos) = response.hover_pos() else {
+fn paint_neuron_labels(ui: &mut egui::Ui, response: &egui::Response, neuron: &GuiNeuron) {
+    let (Some(neuron_pos), Some(hover_pos)) = (neuron.pos, response.hover_pos()) else {
         return;
     };
-    let dist = (neuron_position - hover_pos).length();
+    let dist = (neuron_pos - hover_pos).length();
     if dist >= mind::RADIUS {
         return;
     }
-    let label = NEURON_NAMES.get(neuron_index).map_or("", |text| *text);
+    let label = NEURON_NAMES
+        .get(neuron.index)
+        .map_or(neuron.activation.as_str(), |l| *l);
+
     ui.painter().text(
         egui::pos2(380.0, 42.0),
         egui::Align2::LEFT_TOP,
@@ -94,7 +92,7 @@ fn paint_neurons(
             .circle_filled(neuron_position, mind::RADIUS, gui_neuron.color);
 
         paint_neuron_values(ui, gui_neuron.index, neuron_position, mind_values);
-        paint_neuron_labels(ui, response, gui_neuron.index, neuron_position);
+        paint_neuron_labels(ui, response, gui_neuron);
     }
 }
 
