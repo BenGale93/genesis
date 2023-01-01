@@ -1,6 +1,7 @@
 mod brain_panel;
 mod gui;
 mod interaction;
+pub mod menus;
 
 use std::{fs, time::Duration};
 

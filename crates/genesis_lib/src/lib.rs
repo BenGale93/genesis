@@ -10,8 +10,7 @@
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
 
-use bevy::prelude::{App, Commands, Plugin, ResMut};
-use bevy_egui::{egui, EguiContext};
+use bevy::prelude::{App, Plugin};
 use iyes_loopless::prelude::*;
 use simulation::SimulationPlugin;
 
@@ -30,26 +29,12 @@ enum SimState {
     Simulation,
 }
 
-pub fn main_menu_system(mut egui_ctx: ResMut<EguiContext>, mut commands: Commands) {
-    egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
-        ui.heading("Genesis Life Simulator");
-        if ui.button("New simulation").clicked() {
-            commands.insert_resource(NextState(SimState::Simulation));
-        }
-    });
-}
-
 pub struct GenesisPlugin;
 
 impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(SimState::MainMenu)
             .add_plugin(SimulationPlugin)
-            .add_system_set(
-                ConditionSet::new()
-                    .run_in_state(SimState::MainMenu)
-                    .with_system(main_menu_system)
-                    .into(),
-            );
+            .add_plugin(ui::menus::MenusPlugin);
     }
 }
