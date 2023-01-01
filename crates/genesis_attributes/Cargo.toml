@@ -9,6 +9,7 @@ license = "MIT"
 genesis_newtype = {workspace = true}
 genesis_config = {workspace = true}
 genesis_traits = {workspace = true}
+genesis_derive = {workspace = true}
 bevy_ecs = {workspace = true}
 bevy_app = {workspace = true}
 bevy_reflect = {workspace = true}

@@ -1859,6 +1859,7 @@ dependencies = [
  "bevy_reflect",
  "derive_more",
  "genesis_config",
+ "genesis_derive",
  "genesis_newtype",
  "genesis_traits",
  "ndarray",
