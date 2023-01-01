@@ -6,6 +6,7 @@ use bevy_ecs::prelude::{Bundle, Component, Resource};
 use bevy_trait_query::RegisterExt;
 use derive_more::Deref;
 use genesis_config as config;
+use genesis_derive::AttributeDisplay;
 use genesis_newtype::Probability;
 use genesis_traits::AttributeDisplay;
 use ndarray::Array;
@@ -211,7 +212,7 @@ impl Dna {
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct HatchAge(f32);
 
 impl HatchAge {
@@ -220,13 +221,7 @@ impl HatchAge {
     }
 }
 
-impl AttributeDisplay for HatchAge {
-    fn display(&self) -> String {
-        format!("Hatch age: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct AdultAge(f32);
 
 impl AdultAge {
@@ -242,13 +237,7 @@ impl AdultAge {
     }
 }
 
-impl AttributeDisplay for AdultAge {
-    fn display(&self) -> String {
-        format!("Adult age: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct DeathAge(f32);
 
 impl DeathAge {
@@ -262,24 +251,12 @@ impl DeathAge {
     }
 }
 
-impl AttributeDisplay for DeathAge {
-    fn display(&self) -> String {
-        format!("Death age: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct EyeRange(f32);
 
 impl EyeRange {
     pub const fn new(value: f32) -> Self {
         Self(value)
-    }
-}
-
-impl AttributeDisplay for EyeRange {
-    fn display(&self) -> String {
-        format!("Eye range: {:.3}", self.0)
     }
 }
 
@@ -302,12 +279,19 @@ impl EyeAngle {
 }
 
 impl AttributeDisplay for EyeAngle {
+    fn name(&self) -> &str {
+        "EyeAngle"
+    }
+    fn value(&self) -> f32 {
+        f32::to_degrees(self.0)
+    }
+
     fn display(&self) -> String {
-        format!("Eye angle: {:.3}", f32::to_degrees(self.0))
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct CostOfEating(f32);
 
 impl CostOfEating {
@@ -316,24 +300,12 @@ impl CostOfEating {
     }
 }
 
-impl AttributeDisplay for CostOfEating {
-    fn display(&self) -> String {
-        format!("Cost of eating: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
     pub const fn new(value: f32) -> Self {
         Self(value)
-    }
-}
-
-impl AttributeDisplay for OffspringEnergy {
-    fn display(&self) -> String {
-        format!("Offspring energy: {:.3}", self.0)
     }
 }
 
@@ -356,12 +328,20 @@ impl MouthWidth {
 }
 
 impl AttributeDisplay for MouthWidth {
+    fn name(&self) -> &str {
+        "MouthWidth"
+    }
+
+    fn value(&self) -> f32 {
+        f32::to_degrees(self.0)
+    }
+
     fn display(&self) -> String {
-        format!("Mouth width: {:.3}", f32::to_degrees(self.0))
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct HatchSize(f32);
 
 impl HatchSize {
@@ -375,13 +355,7 @@ impl HatchSize {
     }
 }
 
-impl AttributeDisplay for HatchSize {
-    fn display(&self) -> String {
-        format!("Hatch size: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct MaxSize(f32);
 
 impl MaxSize {
@@ -390,24 +364,12 @@ impl MaxSize {
     }
 }
 
-impl AttributeDisplay for MaxSize {
-    fn display(&self) -> String {
-        format!("Max size: {:.3}", self.0)
-    }
-}
-
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct GrowthRate(f32);
 
 impl GrowthRate {
     pub const fn new(value: f32) -> Self {
         Self(value)
-    }
-}
-
-impl AttributeDisplay for GrowthRate {
-    fn display(&self) -> String {
-        format!("Growth rate: {:.3}", self.0)
     }
 }
 
@@ -422,12 +384,20 @@ impl GrabAngle {
 }
 
 impl AttributeDisplay for GrabAngle {
+    fn name(&self) -> &str {
+        "GrabAngle"
+    }
+
+    fn value(&self) -> f32 {
+        f32::to_degrees(self.0)
+    }
+
     fn display(&self) -> String {
-        format!("Grab angle: {:.3}", f32::to_degrees(self.0))
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, AttributeDisplay)]
 pub struct GrabStrength(f32);
 
 impl GrabStrength {
@@ -440,12 +410,6 @@ impl GrabStrength {
             .normalise(grab_angle)
             .mul_add(-gs_range, gs_max);
         Self(value)
-    }
-}
-
-impl AttributeDisplay for GrabStrength {
-    fn display(&self) -> String {
-        format!("Grab strength: {:.3}", self.0)
     }
 }
 
@@ -485,22 +449,6 @@ impl AttributeBundle {
         }
     }
 }
-
-pub type BugAttributes<'a> = (
-    &'a HatchAge,
-    &'a AdultAge,
-    &'a DeathAge,
-    &'a EyeRange,
-    &'a EyeAngle,
-    &'a CostOfEating,
-    &'a OffspringEnergy,
-    &'a MouthWidth,
-    &'a HatchSize,
-    &'a MaxSize,
-    &'a GrowthRate,
-    &'a GrabAngle,
-    &'a GrabStrength,
-);
 
 pub struct AttributesPlugin;
 

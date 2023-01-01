@@ -27,6 +27,31 @@ pub fn derive_behaviour_tracker(input: TokenStream2) -> TokenStream2 {
     }
 }
 
+pub fn derive_attribute_display(input: TokenStream2) -> TokenStream2 {
+    let ast = parse2::<ItemStruct>(input).unwrap();
+
+    let struct_name = &ast.ident;
+    let (impl_generics, type_generics, where_clause) = &ast.generics.split_for_impl();
+
+    let name = struct_name.to_string();
+
+    quote! {
+        impl #impl_generics genesis_traits::AttributeDisplay for #struct_name #type_generics #where_clause {
+            fn name(&self) -> &str {
+                #name
+            }
+
+            fn value(&self) -> f32 {
+                self.0
+            }
+
+            fn display(&self) -> String {
+                format!("{}: {:.3}", self.name(), self.value())
+            }
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use proc_macro2::TokenStream as TokenStream2;
@@ -68,6 +93,32 @@ mod tests {
         };
 
         let after = derive_behaviour_tracker(before);
+        assert_tokens_eq(&expected, &after);
+    }
+
+    #[test]
+    fn derive_attribute_display_trait() {
+        let before = quote! {
+            pub struct HatchAge(f32);
+        };
+
+        let expected = quote! {
+            impl genesis_traits::AttributeDisplay for HatchAge {
+                fn name(&self) -> &str {
+                    "HatchAge"
+                }
+
+                fn value(&self) -> f32 {
+                    self.0
+                }
+
+                fn display(&self) -> String {
+                    format!("{}: {:.3}", self.name(), self.value())
+                }
+            }
+        };
+
+        let after = derive_attribute_display(before);
         assert_tokens_eq(&expected, &after);
     }
 }

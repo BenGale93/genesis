@@ -1,10 +1,12 @@
+use std::collections::HashMap;
+
 use bevy::prelude::{Query, Res, ResMut, Resource};
+use bevy_trait_query::ReadTraits;
 use components::{eat, lay, time};
 use derive_getters::Getters;
-use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_ecosystem as ecosystem;
-use genesis_maths::mean;
+use genesis_traits::AttributeDisplay;
 use serde_derive::Serialize;
 
 fn last_element<T>(vector: &[T]) -> T
@@ -81,23 +83,6 @@ impl BugPerformance {
     }
 }
 
-#[derive(Debug, Getters, Serialize, Default, Resource)]
-pub struct AverageAttributes {
-    pub hatch_age: Vec<f32>,
-    pub adult_age: Vec<f32>,
-    pub death_age: Vec<f32>,
-    pub eye_range: Vec<f32>,
-    pub eye_angle: Vec<f32>,
-    pub cost_of_eating: Vec<f32>,
-    pub offspring_energy: Vec<f32>,
-    pub mouth_width: Vec<f32>,
-    pub hatch_size: Vec<f32>,
-    pub max_size: Vec<f32>,
-    pub growth_rate: Vec<f32>,
-    pub grab_angle: Vec<f32>,
-    pub grab_strength: Vec<f32>,
-}
-
 pub fn count_system(
     mut stats: ResMut<CountStats>,
     adult_query: Query<&components::Adult>,
@@ -152,92 +137,59 @@ pub fn performance_stats_system(
     stats.oldest_bug.push(oldest_bug);
 }
 
-pub fn attribute_stats_system(
-    mut stats: ResMut<AverageAttributes>,
-    attribute_query: Query<attributes::BugAttributes>,
-) {
-    macro_rules! attr_vecs {
-        ($attr:ident) => {
-            let mut $attr = vec![];
-        };
-        ($attr:ident, $($attrs:ident), +) => {
-            attr_vecs!($attr);
-            attr_vecs!($($attrs), +)
+#[derive(Serialize, Debug)]
+struct BugData {
+    relations: components::Relations,
+    attributes: HashMap<String, f32>,
+}
+
+impl BugData {
+    fn new(relations: components::Relations, attrs: ReadTraits<dyn AttributeDisplay>) -> Self {
+        let mut attributes = HashMap::new();
+        for attr in attrs.into_iter() {
+            attributes.insert(attr.name().to_string(), attr.value());
+        }
+        Self {
+            relations,
+            attributes,
         }
     }
-    attr_vecs!(
-        hatch_age,
-        adult_age,
-        death_age,
-        eye_range,
-        eye_angle,
-        cost_of_eating,
-        offspring_energy,
-        mouth_width,
-        hatch_size,
-        max_size,
-        growth_rate,
-        grab_angle,
-        grab_strength
-    );
-
-    for (ha, aa, da, er, ea, coe, oe, mw, hs, ms, gr, ga, gs) in attribute_query.iter() {
-        hatch_age.push(**ha);
-        adult_age.push(**aa);
-        death_age.push(**da);
-        eye_range.push(**er);
-        eye_angle.push(**ea);
-        cost_of_eating.push(**coe);
-        offspring_energy.push(**oe);
-        mouth_width.push(**mw);
-        hatch_size.push(**hs);
-        max_size.push(**ms);
-        growth_rate.push(**gr);
-        grab_angle.push(**ga);
-        grab_strength.push(**gs);
-    }
-
-    macro_rules! push_attr {
-        ($attr:ident) => {
-            stats.$attr.push(mean($attr))
-        };
-        ($attr:ident, $($attrs:ident), +) => {
-            push_attr!($attr);
-            push_attr!($($attrs), +)
-        }
-    }
-    push_attr!(
-        hatch_age,
-        adult_age,
-        death_age,
-        eye_range,
-        eye_angle,
-        cost_of_eating,
-        offspring_energy,
-        mouth_width,
-        hatch_size,
-        max_size,
-        growth_rate,
-        grab_angle,
-        grab_strength
-    );
 }
 
 #[derive(Resource, Serialize, Debug, Default)]
 pub struct FamilyTree {
-    pub dead_relations: Vec<components::Relations>,
-    pub active_relations: Vec<components::Relations>,
+    dead_relations: Vec<BugData>,
+    active_relations: Vec<BugData>,
+}
+
+impl FamilyTree {
+    pub fn add_active_relation(
+        &mut self,
+        relations: &components::Relations,
+        attrs: ReadTraits<dyn AttributeDisplay>,
+    ) {
+        if relations.is_interesting() {
+            let bug_data = BugData::new(relations.clone(), attrs);
+            self.active_relations.push(bug_data);
+        }
+    }
+    pub fn add_dead_relation(
+        &mut self,
+        relations: &components::Relations,
+        attrs: ReadTraits<dyn AttributeDisplay>,
+    ) {
+        if relations.is_interesting() {
+            let bug_data = BugData::new(relations.clone(), attrs);
+            self.dead_relations.push(bug_data);
+        }
+    }
 }
 
 pub fn family_tree_update(
     mut family_tree: ResMut<FamilyTree>,
-    relations_query: Query<&components::Relations>,
+    relations_query: Query<(&components::Relations, &dyn AttributeDisplay)>,
 ) {
-    let interesting_relations = relations_query
-        .into_iter()
-        .cloned()
-        .filter(|x| x.is_interesting())
-        .collect();
-
-    family_tree.active_relations = interesting_relations;
+    for (relation, attrs) in relations_query.into_iter() {
+        family_tree.add_active_relation(relation, attrs)
+    }
 }

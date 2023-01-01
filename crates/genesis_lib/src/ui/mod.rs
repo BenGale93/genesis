@@ -24,7 +24,6 @@ struct RunInfo<'a> {
     count_stats: &'a statistics::CountStats,
     energy_stats: &'a statistics::EnergyStats,
     performance_stats: &'a statistics::BugPerformance,
-    attribute_stats: &'a statistics::AverageAttributes,
     family_tree: &'a statistics::FamilyTree,
 }
 
@@ -35,7 +34,6 @@ impl<'a> RunInfo<'a> {
         count_stats: &'a statistics::CountStats,
         energy_stats: &'a statistics::EnergyStats,
         performance_stats: &'a statistics::BugPerformance,
-        attribute_stats: &'a statistics::AverageAttributes,
         family_tree: &'a statistics::FamilyTree,
     ) -> Self {
         Self {
@@ -44,7 +42,6 @@ impl<'a> RunInfo<'a> {
             count_stats,
             energy_stats,
             performance_stats,
-            attribute_stats,
             family_tree,
         }
     }
@@ -55,7 +52,6 @@ fn save_stats(
     count_stats: &Res<statistics::CountStats>,
     energy_stats: &Res<statistics::EnergyStats>,
     performance_stats: &Res<statistics::BugPerformance>,
-    attribute_stats: &Res<statistics::AverageAttributes>,
     family_tree: &Res<statistics::FamilyTree>,
 ) {
     let time = time.elapsed_seconds();
@@ -65,7 +61,6 @@ fn save_stats(
         count_stats,
         energy_stats,
         performance_stats,
-        attribute_stats,
         family_tree,
     );
     let j = serde_json::to_string_pretty(&run_info).unwrap();
@@ -78,7 +73,6 @@ pub fn save_on_close(
     count_stats: Res<statistics::CountStats>,
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
-    attribute_stats: Res<statistics::AverageAttributes>,
     family_tree: Res<statistics::FamilyTree>,
 ) {
     if !events.is_empty() {
@@ -87,7 +81,6 @@ pub fn save_on_close(
             &count_stats,
             &energy_stats,
             &performance_stats,
-            &attribute_stats,
             &family_tree,
         );
     }
@@ -98,7 +91,6 @@ pub fn regular_saver(
     count_stats: Res<statistics::CountStats>,
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
-    attribute_stats: Res<statistics::AverageAttributes>,
     family_tree: Res<statistics::FamilyTree>,
 ) {
     save_stats(
@@ -106,7 +98,6 @@ pub fn regular_saver(
         &count_stats,
         &energy_stats,
         &performance_stats,
-        &attribute_stats,
         &family_tree,
     );
 }
@@ -150,7 +141,6 @@ pub fn global_statistics_system_set() -> SystemSet {
         .with_system(statistics::count_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::performance_stats_system)
-        .with_system(statistics::attribute_stats_system)
         .into()
 }
 
@@ -165,7 +155,6 @@ impl Plugin for GenesisUiPlugin {
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
             .add_system_set(manual_spawn_system_set())
-            .insert_resource(statistics::AverageAttributes::default())
             .insert_resource(statistics::CountStats::default())
             .insert_resource(statistics::BugPerformance::default())
             .insert_resource(statistics::EnergyStats::default())
