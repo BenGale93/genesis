@@ -2,6 +2,7 @@ use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, ResMut, With, 
 use genesis_attributes as attributes;
 use genesis_components::*;
 use genesis_ecosystem as ecosystem;
+use genesis_traits::AttributeDisplay;
 
 use crate::statistics;
 
@@ -37,14 +38,13 @@ pub fn kill_bug_system(
         &attributes::DeathAge,
         &time::Age,
         &Relations,
+        &dyn AttributeDisplay,
     )>,
 ) {
-    for (entity, mut vitality, death_age, age, relations) in query.iter_mut() {
+    for (entity, mut vitality, death_age, age, relation, attrs) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
             ecosystem.return_energy(vitality.take_all_energy());
-            if relations.is_interesting() {
-                family_tree.dead_relations.push(relations.clone());
-            }
+            family_tree.add_dead_relation(relation, attrs);
             commands.entity(entity).despawn_recursive();
         }
     }

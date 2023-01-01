@@ -11,6 +11,8 @@ pub trait BehaviourTracker {
 
 #[bevy_trait_query::queryable]
 pub trait AttributeDisplay {
+    fn name(&self) -> &str;
+
     fn value(&self) -> f32;
 
     fn display(&self) -> String;

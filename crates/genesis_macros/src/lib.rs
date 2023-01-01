@@ -37,12 +37,16 @@ pub fn derive_attribute_display(input: TokenStream2) -> TokenStream2 {
 
     quote! {
         impl #impl_generics genesis_traits::AttributeDisplay for #struct_name #type_generics #where_clause {
+            fn name(&self) -> &str {
+                #name
+            }
+
             fn value(&self) -> f32 {
                 self.0
             }
 
             fn display(&self) -> String {
-                format!("{}: {:.3}", #name, self.value())
+                format!("{}: {:.3}", self.name(), self.value())
             }
         }
     }
@@ -100,12 +104,16 @@ mod tests {
 
         let expected = quote! {
             impl genesis_traits::AttributeDisplay for HatchAge {
+                fn name(&self) -> &str {
+                    "HatchAge"
+                }
+
                 fn value(&self) -> f32 {
                     self.0
                 }
 
                 fn display(&self) -> String {
-                    format!("{}: {:.3}", "HatchAge", self.value())
+                    format!("{}: {:.3}", self.name(), self.value())
                 }
             }
         };

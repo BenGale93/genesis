@@ -279,12 +279,15 @@ impl EyeAngle {
 }
 
 impl AttributeDisplay for EyeAngle {
+    fn name(&self) -> &str {
+        "EyeAngle"
+    }
     fn value(&self) -> f32 {
         f32::to_degrees(self.0)
     }
 
     fn display(&self) -> String {
-        format!("EyeAngle: {:.3}", self.value())
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
@@ -325,12 +328,16 @@ impl MouthWidth {
 }
 
 impl AttributeDisplay for MouthWidth {
+    fn name(&self) -> &str {
+        "MouthWidth"
+    }
+
     fn value(&self) -> f32 {
         f32::to_degrees(self.0)
     }
 
     fn display(&self) -> String {
-        format!("MouthWidth: {:.3}", self.value())
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
@@ -377,12 +384,16 @@ impl GrabAngle {
 }
 
 impl AttributeDisplay for GrabAngle {
+    fn name(&self) -> &str {
+        "GrabAngle"
+    }
+
     fn value(&self) -> f32 {
         f32::to_degrees(self.0)
     }
 
     fn display(&self) -> String {
-        format!("GrabAngle: {:.3}", self.value())
+        format!("{}: {:.3}", self.name(), self.value())
     }
 }
 
@@ -438,22 +449,6 @@ impl AttributeBundle {
         }
     }
 }
-
-pub type BugAttributes<'a> = (
-    &'a HatchAge,
-    &'a AdultAge,
-    &'a DeathAge,
-    &'a EyeRange,
-    &'a EyeAngle,
-    &'a CostOfEating,
-    &'a OffspringEnergy,
-    &'a MouthWidth,
-    &'a HatchSize,
-    &'a MaxSize,
-    &'a GrowthRate,
-    &'a GrabAngle,
-    &'a GrabStrength,
-);
 
 pub struct AttributesPlugin;
 
