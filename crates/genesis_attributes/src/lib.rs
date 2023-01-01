@@ -466,7 +466,6 @@ impl Plugin for AttributesPlugin {
             .register_component_as::<dyn AttributeDisplay, MaxSize>()
             .register_component_as::<dyn AttributeDisplay, GrowthRate>()
             .register_component_as::<dyn AttributeDisplay, GrabAngle>()
-            .register_component_as::<dyn AttributeDisplay, GrabStrength>()
-            .init_resource::<Genome>();
+            .register_component_as::<dyn AttributeDisplay, GrabStrength>();
     }
 }

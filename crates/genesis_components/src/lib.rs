@@ -128,11 +128,7 @@ pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut bevy_app::App) {
-        let config_instance = config::WorldConfig::global();
-
-        app.init_resource::<time::SimulationTime>()
-            .insert_resource(mind::MindThresholds::new(&config_instance.brain_mutations))
-            .add_event::<eat::EatenEvent>()
+        app.add_event::<eat::EatenEvent>()
             .register_component_as::<dyn BehaviourTracker, ThinkingSum>()
             .register_component_as::<dyn BehaviourTracker, TranslationSum>()
             .register_component_as::<dyn BehaviourTracker, RotationSum>()
