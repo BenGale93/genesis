@@ -27,6 +27,7 @@ mod ui;
 enum SimState {
     MainMenu,
     Simulation,
+    Saving,
 }
 
 pub struct GenesisPlugin;
@@ -35,6 +36,7 @@ impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(SimState::MainMenu)
             .add_plugin(SimulationPlugin)
+            .add_plugin(genesis_ecosystem::EcosystemPlugin)
             .add_plugin(ui::menus::MenusPlugin);
     }
 }

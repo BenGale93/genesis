@@ -37,6 +37,7 @@ fn resource_setup(mut commands: Commands) {
 pub fn sim_setup_system_set() -> SystemSet {
     ConditionSet::new()
         .run_in_state(SimState::Simulation)
+        .run_unless_resource_exists::<time::SimulationTime>()
         .with_system(camera_setup)
         .with_system(physics_setup)
         .with_system(resource_setup)

@@ -1,8 +1,10 @@
 use bevy_ecs::{
     prelude::{Bundle, Component},
+    reflect::ReflectComponent,
     system::Resource,
 };
 use bevy_egui::egui;
+use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut, From};
 use genesis_brain::{
@@ -35,7 +37,21 @@ pub enum MindValidationError {
     InvalidSynapseFrom(usize),
 }
 
-#[derive(Component, Debug, PartialEq, Eq, Clone, Deref, DerefMut, From, Deserialize, Serialize)]
+#[derive(
+    Component,
+    Debug,
+    PartialEq,
+    Eq,
+    Clone,
+    Deref,
+    DerefMut,
+    From,
+    Deserialize,
+    Serialize,
+    Reflect,
+    Default,
+)]
+#[reflect(Component)]
 pub struct Mind(pub Brain);
 
 impl Mind {
@@ -99,10 +115,12 @@ impl Mind {
     }
 }
 
-#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
+#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From, Reflect, Default)]
+#[reflect(Component)]
 pub struct MindInput(pub Vec<f32>);
 
-#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From)]
+#[derive(Component, Debug, PartialEq, Clone, Deref, DerefMut, From, Reflect, Default)]
+#[reflect(Component)]
 pub struct MindOutput(pub Vec<f32>);
 
 fn mind_color(mut innovations: Vec<usize>) -> Color {
@@ -149,7 +167,7 @@ pub const SPACING: f32 = 20.0;
 pub const START_POS: (f32, f32) = (30.0, 100.0);
 pub const COLOR_ARRAY: &[(u8, u8, u8)] = &[(255, 0, 0), (160, 160, 160), (0, 150, 0)];
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Default)]
 pub struct MindLayout {
     neurons: Vec<GuiNeuron>,
     synapses: Vec<PaintedSynapse>,
@@ -278,6 +296,16 @@ pub struct MindThresholds(BrainMutationThresholds);
 impl MindThresholds {
     pub fn new(brain_config: &config::BrainMutationConfig) -> Self {
         Self(BrainMutationThresholds::new(brain_config))
+    }
+}
+
+pub struct MindComponentPlugin;
+
+impl bevy_app::Plugin for MindComponentPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        app.register_type::<Mind>()
+            .register_type::<MindInput>()
+            .register_type::<MindOutput>();
     }
 }
 

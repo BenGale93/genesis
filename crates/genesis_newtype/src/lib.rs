@@ -1,6 +1,7 @@
 #![warn(clippy::all, clippy::nursery)]
 use std::ops;
 
+use bevy_reflect::{FromReflect, Reflect};
 use rand::Rng;
 use serde::{de::Error, Deserialize, Deserializer, Serialize};
 use thiserror::Error;
@@ -14,7 +15,7 @@ pub enum GenesisNewTypeError {
     InvalidProbability,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Reflect, Default)]
 pub struct Probability(f32);
 
 impl Probability {
@@ -31,7 +32,7 @@ impl Probability {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Serialize, Reflect, Default, FromReflect)]
 pub struct Weight(f32);
 
 impl<'de> Deserialize<'de> for Weight {

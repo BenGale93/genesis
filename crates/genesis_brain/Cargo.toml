@@ -9,6 +9,7 @@ license = "MIT"
 genesis_newtype = { workspace = true }
 genesis_maths = { workspace = true }
 genesis_config = { workspace = true }
+bevy_reflect = {workspace = true}
 rand = { workspace = true }
 rand_distr = { workspace = true }
 thiserror = { workspace = true }

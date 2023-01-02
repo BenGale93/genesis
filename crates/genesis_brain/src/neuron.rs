@@ -3,20 +3,25 @@ use std::{
     hash::{Hash, Hasher},
 };
 
+use bevy_reflect::{FromReflect, Reflect};
 use genesis_newtype::Bias;
 use rand::random;
 use serde::{Deserialize, Serialize};
 
 use crate::activation::{self, ActivationFunctionKind};
 
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(
+    PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, Default, Reflect, FromReflect,
+)]
 pub enum NeuronKind {
+    #[default]
     Input,
     Output,
     Hidden,
 }
 
-#[derive(Debug, Clone, Copy, Deserialize, Serialize)]
+#[derive(Debug, Clone, Copy, Deserialize, Serialize, Default, Reflect, FromReflect)]
+#[reflect(Hash, PartialEq)]
 pub struct Neuron {
     kind: NeuronKind,
     activation: activation::ActivationFunctionKind,

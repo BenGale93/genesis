@@ -11,7 +11,7 @@ use bevy::{
     time::Time,
 };
 use genesis_config::WorldConfig;
-pub use gui::{EntityPanelState, GlobalPanelState};
+pub use gui::{EntityPanelState, GlobalPanelState, Selected};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
@@ -154,7 +154,8 @@ pub struct GenesisUiPlugin;
 
 impl Plugin for GenesisUiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_fixed_timestep(Duration::from_millis(100), "stats")
+        app.register_type::<Selected>()
+            .add_fixed_timestep(Duration::from_millis(100), "stats")
             .add_fixed_timestep(Duration::from_secs(60), "regular_saver")
             .add_fixed_timestep_system("regular_saver", 0, regular_saver)
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
@@ -167,6 +168,7 @@ impl Plugin for GenesisUiPlugin {
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())
+            .add_event::<gui::SaveSimulationEvent>()
             .add_system_to_stage(CoreStage::Last, save_on_close);
     }
 }

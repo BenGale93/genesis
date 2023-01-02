@@ -1873,6 +1873,7 @@ dependencies = [
 name = "genesis_brain"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "cached",
  "derive-getters",
  "genesis_config",
@@ -1903,6 +1904,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_egui",
  "bevy_rapier2d",
+ "bevy_reflect",
  "bevy_render",
  "bevy_time",
  "derive-getters",
@@ -1949,8 +1951,10 @@ name = "genesis_ecosystem"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bevy_app",
  "bevy_ecs",
  "bevy_rapier2d",
+ "bevy_reflect",
  "derive_more",
  "genesis_config",
  "glam",
@@ -2022,6 +2026,7 @@ dependencies = [
 name = "genesis_newtype"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rand",
  "serde",
  "serde_derive",

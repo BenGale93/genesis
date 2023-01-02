@@ -1,25 +1,28 @@
 use anyhow::{anyhow, Result};
-use bevy_ecs::prelude::Component;
+use bevy_ecs::{prelude::Component, reflect::ReflectComponent};
 use bevy_rapier2d::prelude::Collider;
+use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use glam::Vec2;
 
-#[derive(Component, Debug, Deref, DerefMut)]
+#[derive(Component, Debug, Deref, DerefMut, Default, Reflect)]
+#[reflect(Component)]
 pub struct OriginalColor(pub Color);
 
-#[derive(Debug, Deref, DerefMut)]
+#[derive(Debug, Deref, DerefMut, Default, Reflect)]
 struct EnergyStore(ecosystem::EnergyReserve);
 
-#[derive(Debug, Deref, DerefMut)]
+#[derive(Debug, Deref, DerefMut, Default, Reflect)]
 struct Health(ecosystem::EnergyReserve);
 
-#[derive(Debug, PartialEq, Eq, Deref, DerefMut)]
+#[derive(Debug, PartialEq, Eq, Deref, DerefMut, Default, Reflect)]
 pub struct CoreReserve(ecosystem::Energy);
 
-#[derive(Component, Debug)]
+#[derive(Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct Vitality {
     size: Size,
     energy_store: EnergyStore,
@@ -143,7 +146,7 @@ impl Vitality {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Reflect)]
 pub struct Size {
     current_size: f32,
     max_size: f32,
@@ -183,5 +186,18 @@ impl Size {
 
     pub fn at_max_size(&self) -> bool {
         (self.current_size - self.max_size).abs() < f32::EPSILON
+    }
+}
+
+pub struct BodyComponentPlugin;
+
+impl bevy_app::Plugin for BodyComponentPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        app.register_type::<OriginalColor>()
+            .register_type::<EnergyStore>()
+            .register_type::<Health>()
+            .register_type::<CoreReserve>()
+            .register_type::<Vitality>()
+            .register_type::<Size>();
     }
 }

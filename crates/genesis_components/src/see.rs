@@ -1,7 +1,9 @@
-use bevy_ecs::prelude::Component;
+use bevy_ecs::{prelude::Component, reflect::ReflectComponent};
+use bevy_reflect::Reflect;
 use derive_getters::Getters;
 
-#[derive(Component, Debug, Getters)]
+#[derive(Component, Debug, Getters, Reflect)]
+#[reflect(Component)]
 pub struct Vision {
     visible_bugs: u32,
     bug_angle_score: f32,
