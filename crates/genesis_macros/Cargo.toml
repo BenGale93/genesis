@@ -9,4 +9,4 @@ license = "MIT"
 genesis_traits = {workspace = true}
 syn = { version = "1.0.60", features = ["full"]}
 quote = "1.0.9"
-proc-macro2 = "1.0.24"
+proc-macro2 = "1.0.49"
