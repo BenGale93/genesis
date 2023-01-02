@@ -12,7 +12,7 @@ use bevy_egui::{egui, EguiContext};
 use iyes_loopless::prelude::*;
 
 use super::gui;
-use crate::SimState;
+use crate::{genesis_serde, SimState};
 
 fn main_menu_system(mut egui_ctx: ResMut<EguiContext>, mut commands: Commands) {
     egui::CentralPanel::default().show(egui_ctx.ctx_mut(), |ui| {
@@ -47,24 +47,31 @@ fn transition_to_saving_system_set() -> SystemSet {
         .into()
 }
 
-fn save_simulation_system(world: &mut World) {
+fn save_simulation_system(world: &World) {
     let type_registry = world.resource::<AppTypeRegistry>();
     let scene = DynamicScene::from_world(world, type_registry);
     let serialized_scene = scene.serialize_ron(type_registry).unwrap();
+    let serialized_sim = genesis_serde::serialize_simulation(world);
     let path = std::env::current_dir().unwrap();
     let Some(res) = rfd::FileDialog::new()
-                        .set_file_name("scene.ron")
                         .set_directory(path)
-                        .save_file() else
+                        .pick_folder() else
                     {
                         return;
                     };
 
     IoTaskPool::get()
         .spawn(async move {
-            match fs::File::create(res).and_then(|mut file| file.write(serialized_scene.as_bytes()))
+            match fs::File::create(res.join("scene.ron"))
+                .and_then(|mut file| file.write(serialized_scene.as_bytes()))
             {
                 Ok(_) => info!("Saved simulation."),
+                Err(e) => warn!("Could not save simulation. Please try again: {e}."),
+            };
+            match fs::File::create(res.join("resources.ron"))
+                .and_then(|mut file| file.write(serialized_sim.as_bytes()))
+            {
+                Ok(_) => info!("Saved simulation resources."),
                 Err(e) => warn!("Could not save simulation. Please try again: {e}."),
             };
         })

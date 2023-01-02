@@ -25,6 +25,7 @@ bevy_rapier2d = { workspace = true }
 anyhow = { workspace = true }
 serde_derive = { workspace = true}
 serde = { workspace = true}
+ron = {workspace = true}
 bevy_egui = { workspace = true}
 derive-getters = { workspace = true}
 serde_json = { workspace = true}

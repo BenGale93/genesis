@@ -7,8 +7,9 @@ use bevy_ecs::{
 use bevy_reflect::Reflect;
 use bevy_time::Stopwatch;
 use derive_more::{Deref, DerefMut};
+use serde::{Deserialize, Serialize};
 
-#[derive(Resource, Debug, Deref, DerefMut)]
+#[derive(Resource, Debug, Deref, DerefMut, Serialize, Deserialize, Clone)]
 pub struct SimulationTime(pub Stopwatch);
 
 impl Default for SimulationTime {

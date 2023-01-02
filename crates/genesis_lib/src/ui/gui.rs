@@ -20,7 +20,7 @@ use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
 use super::{brain_panel, interaction, statistics};
-use crate::{bug_serde, spawning};
+use crate::{genesis_serde, spawning};
 
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
@@ -356,7 +356,7 @@ pub struct SaveSimulationEvent;
 pub fn bug_serde_widget(
     mut ev_save_sim: EventWriter<SaveSimulationEvent>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
     genome: Res<attributes::Genome>,
     bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
 ) {
@@ -368,7 +368,7 @@ pub fn bug_serde_widget(
                     ev_save_sim.send(SaveSimulationEvent);
                 };
                 if ui.button("Load bug").clicked() {
-                    match bug_serde::load_bug_blueprint(&genome) {
+                    match genesis_serde::load_bug_blueprint(&genome) {
                         Ok(x) => loaded_blueprint.blueprint = x,
                         Err(e) => warn!("{e}"),
                     };
@@ -377,7 +377,7 @@ pub fn bug_serde_widget(
                     return;
                 };
                 if ui.button("Save bug").clicked() {
-                    bug_serde::save_bug(&bug);
+                    genesis_serde::save_bug(&bug);
                 };
             })
         });
@@ -385,7 +385,7 @@ pub fn bug_serde_widget(
 
 pub fn bug_spawner_widget(
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
 ) {
     if loaded_blueprint.blueprint.is_none() {
         return;
@@ -406,7 +406,7 @@ pub fn spawn_at_mouse(
     asset_server: Res<AssetServer>,
     genome: Res<attributes::Genome>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,

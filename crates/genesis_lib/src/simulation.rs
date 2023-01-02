@@ -5,7 +5,7 @@ use genesis_attributes as attributes;
 use genesis_config as config;
 use iyes_loopless::prelude::*;
 
-use crate::{behaviour, bug_serde, lifecycle, setup, spawning, statistics, ui, SimState};
+use crate::{behaviour, genesis_serde, lifecycle, setup, spawning, statistics, ui, SimState};
 
 pub fn plant_system_set() -> SystemSet {
     ConditionSet::new()
@@ -69,7 +69,7 @@ impl Plugin for SimulationPlugin {
                 GenesisStage::CleanUp,
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
-            .init_resource::<bug_serde::LoadedBlueprint>()
+            .init_resource::<genesis_serde::LoadedBlueprint>()
             .init_resource::<statistics::FamilyTree>()
             .insert_resource(config::BACKGROUND)
             .add_system_set(plant_system_set())

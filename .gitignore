@@ -2,4 +2,4 @@
 .vscode
 *.json
 !test_bug.json
-*.ron
+save/*

@@ -13,8 +13,23 @@ use bevy_reflect::Reflect;
 use derive_more::{Add, Constructor, Display, Sub};
 use genesis_config as config;
 use glam::Vec2;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub, Default, Reflect)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Add,
+    Display,
+    Sub,
+    Default,
+    Reflect,
+    Serialize,
+    Deserialize,
+    Clone,
+)]
 pub struct Energy(usize);
 
 impl Energy {
@@ -87,7 +102,7 @@ impl EggEnergy {
     }
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Serialize, Deserialize, Clone)]
 pub struct Ecosystem {
     energy: Energy,
 }

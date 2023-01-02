@@ -15,7 +15,7 @@ use iyes_loopless::prelude::*;
 use simulation::SimulationPlugin;
 
 mod behaviour;
-mod bug_serde;
+mod genesis_serde;
 mod lifecycle;
 mod setup;
 mod simulation;

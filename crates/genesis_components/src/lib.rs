@@ -14,6 +14,7 @@ use genesis_ecosystem::Energy;
 use genesis_maths::cantor_pairing;
 use genesis_newtype::{Probability, Weight};
 use genesis_traits::BehaviourTracker;
+use serde::Deserialize;
 use serde_derive::Serialize;
 
 pub mod body;
@@ -89,7 +90,7 @@ pub struct Adult;
 #[reflect(Component)]
 pub struct Generation(pub usize);
 
-#[derive(Debug, Component, Serialize, Clone, Reflect, Default)]
+#[derive(Debug, Component, Serialize, Deserialize, Clone, Reflect, Default)]
 #[reflect(Component)]
 pub struct Relations {
     entity: (u32, String),
