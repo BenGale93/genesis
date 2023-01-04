@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use bevy::prelude::{App, CoreStage, Plugin, StageLabel, SystemSet, SystemStage};
+use bevy_rapier2d::prelude::{ActiveEvents, ColliderMassProperties};
 use genesis_attributes as attributes;
 use genesis_config as config;
 use iyes_loopless::prelude::*;
@@ -60,17 +61,20 @@ pub struct SimulationPlugin;
 
 impl Plugin for SimulationPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugin(attributes::AttributesPlugin)
+        app.register_type::<ColliderMassProperties>()
+            .register_type::<ActiveEvents>()
+            .add_plugin(attributes::AttributesPlugin)
             .add_plugin(ui::GenesisUiPlugin)
             .add_plugin(behaviour::GenesisBehaviourPlugin)
             .add_enter_system_set(SimState::Simulation, setup::sim_setup_system_set())
+            .add_enter_system_set(SimState::Loading, setup::load_simulation_system_set())
+            .add_exit_system_set(SimState::Loading, setup::load_simulation_setup_system_set())
             .add_stage_after(
                 CoreStage::Update,
                 GenesisStage::CleanUp,
                 SystemStage::parallel().with_system_set(despawn_system_set()),
             )
             .init_resource::<genesis_serde::LoadedBlueprint>()
-            .init_resource::<statistics::FamilyTree>()
             .insert_resource(config::BACKGROUND)
             .add_system_set(plant_system_set())
             .add_fixed_timestep(Duration::from_secs(10), "family_tree")

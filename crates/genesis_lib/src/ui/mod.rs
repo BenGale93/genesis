@@ -150,25 +150,29 @@ pub fn global_statistics_system_set() -> SystemSet {
         .into()
 }
 
+pub fn save_on_close_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .run_if_not(interaction::is_paused)
+        .with_system(save_on_close)
+        .into()
+}
+
 pub struct GenesisUiPlugin;
 
 impl Plugin for GenesisUiPlugin {
     fn build(&self, app: &mut App) {
-        app.register_type::<Selected>()
-            .add_fixed_timestep(Duration::from_millis(100), "stats")
+        app.add_fixed_timestep(Duration::from_millis(100), "stats")
             .add_fixed_timestep(Duration::from_secs(60), "regular_saver")
             .add_fixed_timestep_system("regular_saver", 0, regular_saver)
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
             .add_system_set(manual_spawn_system_set())
-            .insert_resource(statistics::CountStats::default())
-            .insert_resource(statistics::BugPerformance::default())
-            .insert_resource(statistics::EnergyStats::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())
             .add_event::<gui::SaveSimulationEvent>()
-            .add_system_to_stage(CoreStage::Last, save_on_close);
+            .add_system_set_to_stage(CoreStage::Last, save_on_close_set());
     }
 }

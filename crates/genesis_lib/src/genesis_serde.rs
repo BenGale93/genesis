@@ -12,7 +12,7 @@ use genesis_ecosystem::Ecosystem;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::statistics::{CountStats, EnergyStats, FamilyTree};
+use crate::statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree};
 
 #[derive(Debug, Error)]
 pub enum BugSerdeError {
@@ -76,13 +76,14 @@ pub fn load_bug_blueprint(
     Ok(Some(blueprint))
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Getters)]
 pub struct SimulationSerializer {
     config: WorldConfig,
     sim_time: SimulationTime,
     ecosystem: Ecosystem,
     count_stats: CountStats,
     energy_stats: EnergyStats,
+    bug_performance: BugPerformance,
     family_tree: FamilyTree,
 }
 
@@ -93,6 +94,7 @@ impl SimulationSerializer {
         let ecosystem = world.get_resource::<Ecosystem>().unwrap().to_owned();
         let count_stats = world.get_resource::<CountStats>().unwrap().to_owned();
         let energy_stats = world.get_resource::<EnergyStats>().unwrap().to_owned();
+        let bug_performance = world.get_resource::<BugPerformance>().unwrap().to_owned();
         let family_tree = world.get_resource::<FamilyTree>().unwrap().to_owned();
         Self {
             config,
@@ -100,6 +102,7 @@ impl SimulationSerializer {
             ecosystem,
             count_stats,
             energy_stats,
+            bug_performance,
             family_tree,
         }
     }

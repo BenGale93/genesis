@@ -223,11 +223,14 @@ impl EnergyLimitConfig {
 
 pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
 
-pub fn initialize_configs() {
-    let config = match WorldConfig::from_config() {
-        Ok(c) => c,
-        Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
-    };
+pub fn initialize_configs(input_config: Option<WorldConfig>) {
+    let config = input_config.map_or_else(
+        || match WorldConfig::from_config() {
+            Ok(c) => c,
+            Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
+        },
+        |c| c,
+    );
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);
     _ = ENERGY_LIMIT_INSTANCE.set(energy_limit_config);

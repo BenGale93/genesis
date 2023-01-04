@@ -27,7 +27,7 @@ bevy_reflect = "0.9.1"
 bevy_time = "0.9.1"
 bevy_core_pipeline = "0.9.1"
 bevy_egui = "0.17.1"
-bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
+bevy_rapier2d = {version = "0.19.0", features = ["debug-render", "serde-serialize"]}
 iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}
 bevy-trait-query = "0.1.0"
 derive_more = "0.99.17"

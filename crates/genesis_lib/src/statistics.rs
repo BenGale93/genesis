@@ -57,7 +57,7 @@ impl EnergyStats {
     }
 }
 
-#[derive(Debug, Getters, Serialize, Deserialize, Default, Resource)]
+#[derive(Debug, Getters, Serialize, Deserialize, Default, Resource, Clone)]
 pub struct BugPerformance {
     highest_energy_consumed: Vec<usize>,
     most_eggs_laid: Vec<usize>,

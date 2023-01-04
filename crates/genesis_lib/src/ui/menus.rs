@@ -2,13 +2,15 @@ use std::{fs, io::Write};
 
 use bevy::{
     prelude::{
-        info, warn, App, AppTypeRegistry, Commands, EventReader, Plugin, ResMut, SystemSet, World,
+        info, warn, App, AppTypeRegistry, Commands, Entity, EventReader, Plugin, Query, ResMut,
+        SystemSet, With, World,
     },
     scene::DynamicScene,
     tasks::IoTaskPool,
     time::Time,
 };
 use bevy_egui::{egui, EguiContext};
+use genesis_components::body::OriginalColor;
 use iyes_loopless::prelude::*;
 
 use super::gui;
@@ -19,6 +21,9 @@ fn main_menu_system(mut egui_ctx: ResMut<EguiContext>, mut commands: Commands) {
         ui.heading("Genesis Life Simulator");
         if ui.button("New simulation").clicked() {
             commands.insert_resource(NextState(SimState::Simulation));
+        };
+        if ui.button("Load simulation").clicked() {
+            commands.insert_resource(NextState(SimState::Loading));
         }
     });
 }
@@ -47,6 +52,13 @@ fn transition_to_saving_system_set() -> SystemSet {
         .into()
 }
 
+fn transition_to_simulation_system(mut commands: Commands, mut time: ResMut<Time>) {
+    info!("Transitioning to Simulation state.");
+    // Need to update time here manually otherwise we get a huge delta for the next tick.
+    time.update();
+    commands.insert_resource(NextState(SimState::Simulation));
+}
+
 fn save_simulation_system(world: &World) {
     let type_registry = world.resource::<AppTypeRegistry>();
     let scene = DynamicScene::from_world(world, type_registry);
@@ -62,7 +74,7 @@ fn save_simulation_system(world: &World) {
 
     IoTaskPool::get()
         .spawn(async move {
-            match fs::File::create(res.join("scene.ron"))
+            match fs::File::create(res.join("scene.scn.ron"))
                 .and_then(|mut file| file.write(serialized_scene.as_bytes()))
             {
                 Ok(_) => info!("Saved simulation."),
@@ -78,11 +90,14 @@ fn save_simulation_system(world: &World) {
         .detach();
 }
 
-fn transition_to_simulation_system(mut commands: Commands, mut time: ResMut<Time>) {
-    info!("Transitioning to Simulation state.");
-    // Need to update time here manually otherwise we get a huge delta for the next tick.
-    time.update();
-    commands.insert_resource(NextState(SimState::Simulation));
+fn check_entities_are_loaded_system(
+    mut commands: Commands,
+    entity_query: Query<Entity, With<OriginalColor>>,
+) {
+    if entity_query.iter().len() > 0 {
+        info!("Transitioning to Simulation state.");
+        commands.insert_resource(NextState(SimState::Simulation));
+    };
 }
 
 pub struct MenusPlugin;
@@ -96,6 +111,12 @@ impl Plugin for MenusPlugin {
                 ConditionSet::new()
                     .run_in_state(SimState::Saving)
                     .with_system(transition_to_simulation_system)
+                    .into(),
+            )
+            .add_system_set(
+                ConditionSet::new()
+                    .run_in_state(SimState::Loading)
+                    .with_system(check_entities_are_loaded_system)
                     .into(),
             );
     }

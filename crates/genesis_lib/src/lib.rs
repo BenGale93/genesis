@@ -28,6 +28,7 @@ enum SimState {
     MainMenu,
     Simulation,
     Saving,
+    Loading,
 }
 
 pub struct GenesisPlugin;
