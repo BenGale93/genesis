@@ -335,19 +335,24 @@ pub fn plant_info_panel_system(
 
 pub fn game_speed_widget(
     mut egui_ctx: ResMut<EguiContext>,
-    mut speed: ResMut<interaction::SimulationSpeed>,
+    mut sim_speed: ResMut<interaction::SimulationSpeed>,
 ) {
-    let symbol = if speed.paused { "⏵" } else { "⏸" };
+    let symbol = if sim_speed.paused { "⏵" } else { "⏸" };
+    let mut speed_copy = sim_speed.speed;
     egui::Window::new("Controls")
         .anchor(egui::Align2::RIGHT_TOP, [-5.0, 5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 if ui.button(symbol).clicked() {
-                    speed.paused = !speed.paused;
+                    sim_speed.paused = !sim_speed.paused;
                 }
-                ui.add(egui::Slider::new(&mut speed.speed, 0.1..=3.0).text("Game Speed"))
+                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=3.0).text("Game Speed"))
             })
         });
+
+    if sim_speed.speed != speed_copy {
+        sim_speed.speed = speed_copy;
+    }
 }
 
 #[derive(Debug)]

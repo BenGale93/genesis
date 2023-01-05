@@ -16,6 +16,7 @@ pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
 
+use self::interaction::SimulationSpeed;
 use crate::{statistics, SimState};
 
 #[derive(Debug, Serialize)]
@@ -110,7 +111,6 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(interaction::camera_zooming_system)
         .with_system(interaction::pause_key_system)
         .with_system(interaction::pause_system)
-        .with_system(interaction::game_time_system)
         .with_system(gui::game_speed_widget)
         .with_system(gui::bug_live_info_system)
         .with_system(gui::attribute_info_system)
@@ -121,6 +121,18 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(gui::bug_stats_info_system)
         .with_system(gui::bug_serde_widget)
         .with_system(gui::bug_spawner_widget)
+        .into()
+}
+
+fn simulation_speed_changed(speed: Res<SimulationSpeed>) -> bool {
+    speed.is_changed()
+}
+
+pub fn game_time_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .run_if(simulation_speed_changed)
+        .with_system(interaction::game_time_system)
         .into()
 }
 
@@ -169,6 +181,7 @@ impl Plugin for GenesisUiPlugin {
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
             .add_system_set(manual_spawn_system_set())
+            .add_system_set(game_time_system_set())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())
