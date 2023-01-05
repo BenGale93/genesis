@@ -1,8 +1,10 @@
 use bevy::{
     prelude::{
-        warn, AssetServer, Camera, Color, Commands, Component, Entity, GlobalTransform, Input,
-        MouseButton, Query, Res, ResMut, Resource, Vec3, With,
+        warn, AssetServer, Camera, Color, Commands, Component, Entity, EventWriter,
+        GlobalTransform, Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3,
+        With,
     },
+    reflect::Reflect,
     sprite::Sprite,
     window::Windows,
 };
@@ -18,7 +20,7 @@ use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
 use super::{brain_panel, interaction, statistics};
-use crate::{bug_serde, spawning};
+use crate::{genesis_serde, spawning};
 
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
@@ -109,7 +111,8 @@ pub fn using_ui(mut egui_context: ResMut<EguiContext>) -> bool {
     ctx.is_using_pointer() || ctx.is_pointer_over_area()
 }
 
-#[derive(Component)]
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
 pub struct Selected;
 
 pub fn select_sprite_system(
@@ -347,9 +350,13 @@ pub fn game_speed_widget(
         });
 }
 
+#[derive(Debug)]
+pub struct SaveSimulationEvent;
+
 pub fn bug_serde_widget(
+    mut ev_save_sim: EventWriter<SaveSimulationEvent>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
     genome: Res<attributes::Genome>,
     bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
 ) {
@@ -357,8 +364,11 @@ pub fn bug_serde_widget(
         .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
+                if ui.button("Save simulation").clicked() {
+                    ev_save_sim.send(SaveSimulationEvent);
+                };
                 if ui.button("Load bug").clicked() {
-                    match bug_serde::load_bug_blueprint(&genome) {
+                    match genesis_serde::load_bug_blueprint(&genome) {
                         Ok(x) => loaded_blueprint.blueprint = x,
                         Err(e) => warn!("{e}"),
                     };
@@ -367,7 +377,7 @@ pub fn bug_serde_widget(
                     return;
                 };
                 if ui.button("Save bug").clicked() {
-                    bug_serde::save_bug(&bug);
+                    genesis_serde::save_bug(&bug);
                 };
             })
         });
@@ -375,7 +385,7 @@ pub fn bug_serde_widget(
 
 pub fn bug_spawner_widget(
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
 ) {
     if loaded_blueprint.blueprint.is_none() {
         return;
@@ -396,7 +406,7 @@ pub fn spawn_at_mouse(
     asset_server: Res<AssetServer>,
     genome: Res<attributes::Genome>,
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    loaded_blueprint: ResMut<bug_serde::LoadedBlueprint>,
+    loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
     wnds: Res<Windows>,
     mouse_button: Res<Input<MouseButton>>,
     q_camera: Query<(&Camera, &GlobalTransform)>,

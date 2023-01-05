@@ -1,10 +1,15 @@
 use std::fmt;
 
-use bevy_ecs::prelude::{Component, Resource};
+use bevy_ecs::{
+    prelude::{Component, Resource},
+    reflect::ReflectComponent,
+};
+use bevy_reflect::Reflect;
 use bevy_time::Stopwatch;
 use derive_more::{Deref, DerefMut};
+use serde::{Deserialize, Serialize};
 
-#[derive(Resource, Debug, Deref, DerefMut)]
+#[derive(Resource, Debug, Deref, DerefMut, Serialize, Deserialize, Clone)]
 pub struct SimulationTime(pub Stopwatch);
 
 impl Default for SimulationTime {
@@ -19,7 +24,8 @@ impl fmt::Display for SimulationTime {
     }
 }
 
-#[derive(Component, Debug, Deref, DerefMut)]
+#[derive(Component, Debug, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
 pub struct Age(pub Stopwatch);
 
 impl Default for Age {
@@ -34,7 +40,8 @@ impl fmt::Display for Age {
     }
 }
 
-#[derive(Component, Debug, Deref, DerefMut)]
+#[derive(Component, Debug, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
 pub struct Heart(pub Stopwatch);
 
 impl Heart {
@@ -53,7 +60,8 @@ impl Default for Heart {
     }
 }
 
-#[derive(Component, Debug, Deref, DerefMut)]
+#[derive(Component, Debug, Deref, DerefMut, Reflect)]
+#[reflect(Component)]
 pub struct InternalTimer(pub Stopwatch);
 
 impl InternalTimer {
@@ -71,5 +79,15 @@ impl Default for InternalTimer {
 impl fmt::Display for InternalTimer {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.elapsed().as_secs())
+    }
+}
+
+pub struct TimeComponentPlugin;
+
+impl bevy_app::Plugin for TimeComponentPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        app.register_type::<Age>()
+            .register_type::<Heart>()
+            .register_type::<InternalTimer>();
     }
 }

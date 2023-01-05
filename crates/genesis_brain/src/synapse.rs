@@ -1,5 +1,6 @@
 use std::hash::{Hash, Hasher};
 
+use bevy_reflect::{FromReflect, Reflect};
 use genesis_maths::cantor_pairing;
 use genesis_newtype::Weight;
 use serde::{Deserialize, Serialize};
@@ -26,7 +27,8 @@ impl From<DeserSynapse> for Synapse {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, Default, Reflect, FromReflect)]
+#[reflect(PartialEq, Hash)]
 #[serde(from = "DeserSynapse")]
 pub struct Synapse {
     from: usize,

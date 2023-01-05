@@ -6,6 +6,7 @@
 #![allow(clippy::module_name_repetitions)]
 #![allow(clippy::similar_names)]
 #![allow(clippy::many_single_char_names)]
+#![allow(clippy::option_if_let_else)]
 mod activation;
 pub mod brain_error;
 mod graph;
@@ -13,6 +14,7 @@ pub mod neuron;
 pub mod synapse;
 
 pub use activation::ActivationFunctionKind;
+use bevy_reflect::Reflect;
 pub use brain_error::BrainError;
 use derive_getters::Getters;
 use genesis_config as config;
@@ -85,7 +87,7 @@ impl From<DeserBrain> for Brain {
     }
 }
 
-#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, Default, Reflect)]
 #[serde(from = "DeserBrain")]
 pub struct Brain {
     #[serde(skip_serializing)]

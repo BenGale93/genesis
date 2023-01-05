@@ -7,7 +7,7 @@ use derive_getters::Getters;
 use genesis_components as components;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
-use serde_derive::Serialize;
+use serde::{Deserialize, Serialize};
 
 fn last_element<T>(vector: &[T]) -> T
 where
@@ -16,7 +16,7 @@ where
     vector.last().copied().unwrap_or_default()
 }
 
-#[derive(Debug, Getters, Serialize, Default, Resource)]
+#[derive(Debug, Getters, Default, Resource, Serialize, Deserialize, Clone)]
 pub struct CountStats {
     adults: Vec<usize>,
     juveniles: Vec<usize>,
@@ -41,7 +41,7 @@ impl CountStats {
     }
 }
 
-#[derive(Debug, Getters, Serialize, Default, Resource)]
+#[derive(Debug, Getters, Serialize, Deserialize, Default, Resource, Clone)]
 pub struct EnergyStats {
     available_energy: Vec<usize>,
     food_energy: Vec<usize>,
@@ -57,7 +57,7 @@ impl EnergyStats {
     }
 }
 
-#[derive(Debug, Getters, Serialize, Default, Resource)]
+#[derive(Debug, Getters, Serialize, Deserialize, Default, Resource, Clone)]
 pub struct BugPerformance {
     highest_energy_consumed: Vec<usize>,
     most_eggs_laid: Vec<usize>,
@@ -137,7 +137,7 @@ pub fn performance_stats_system(
     stats.oldest_bug.push(oldest_bug);
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 struct BugData {
     relations: components::Relations,
     attributes: HashMap<String, f32>,
@@ -156,7 +156,7 @@ impl BugData {
     }
 }
 
-#[derive(Resource, Serialize, Debug, Default)]
+#[derive(Resource, Serialize, Deserialize, Debug, Default, Clone)]
 pub struct FamilyTree {
     dead_relations: Vec<BugData>,
     active_relations: Vec<BugData>,

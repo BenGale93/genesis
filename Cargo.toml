@@ -19,7 +19,7 @@ genesis_spawners = { path = "./crates/genesis_spawners" }
 genesis_derive = { path = "./crates/genesis_derive" }
 genesis_macros = { path = "./crates/genesis_macros" }
 genesis_traits = { path = "./crates/genesis_traits" }
-bevy = "0.9.1"
+bevy = {version = "0.9.1", features = ["serialize"] }
 bevy_ecs = "0.9.1"
 bevy_app = "0.9.1"
 bevy_render = "0.9.1"
@@ -27,7 +27,7 @@ bevy_reflect = "0.9.1"
 bevy_time = "0.9.1"
 bevy_core_pipeline = "0.9.1"
 bevy_egui = "0.17.1"
-bevy_rapier2d = {version = "0.19.0", features = ["debug-render"]}
+bevy_rapier2d = {version = "0.19.0", features = ["debug-render", "serde-serialize"]}
 iyes_loopless = {version="0.9.1", features = ["fixedtimestep"]}
 bevy-trait-query = "0.1.0"
 derive_more = "0.99.17"
@@ -37,6 +37,7 @@ thiserror = "1.0.38"
 serde_derive = "1.0.147"
 serde = "1.0.151"
 serde_json = "1.0.91"
+ron = "0.8"
 rand = "0.8.5"
 rand_distr = "0.4.3"
 nalgebra = "0.31.4"

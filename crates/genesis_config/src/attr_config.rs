@@ -30,7 +30,7 @@ impl Default for AttributeConfigValidator {
 
 type MinMaxLen = (f32, f32, usize);
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct AttributeConfig {
     pub hatch_age: MinMaxLen,
     pub eye_range: MinMaxLen,
@@ -110,7 +110,7 @@ impl Default for DependentAttributeConfigValidator {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct DependentAttributeConfig {
     pub adult_age_bounds: (f32, f32),
     pub death_age_bounds: (f32, f32),

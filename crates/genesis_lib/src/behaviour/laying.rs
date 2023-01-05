@@ -176,7 +176,10 @@ pub fn hatch_egg_system(
     mut hatch_query: Query<EggQuery, With<components::Hatching>>,
 ) {
     for (entity, mut egg_energy, mind, sprite, hatch_size, max_size) in hatch_query.iter_mut() {
-        commands.entity(entity).remove::<spawning::EggBundle>();
+        commands
+            .entity(entity)
+            .remove::<spawning::EggBundle>()
+            .remove::<components::Hatching>();
         let hatching_entity = commands.entity(entity);
         let leftover_energy = spawning::spawn_bug(
             &asset_server,

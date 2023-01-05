@@ -50,7 +50,7 @@ pub const INTERNAL_TIMER_INDEX: usize = 13;
 // Other
 pub const GENERATION_SWITCH: usize = 5;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DistributionConfig {
     pub name: String,
     pub a: f32,
@@ -63,7 +63,7 @@ impl DistributionConfig {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SpawnerConfig {
     pub centre: (f32, f32),
     pub radius: f32,
@@ -80,7 +80,7 @@ impl SpawnerConfig {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct WorldConfig {
     pub start_num: usize,
     pub minimum_number: usize,
@@ -223,17 +223,20 @@ impl EnergyLimitConfig {
 
 pub static ENERGY_LIMIT_INSTANCE: OnceCell<EnergyLimitConfig> = OnceCell::new();
 
-pub fn initialize_configs() {
-    let config = match WorldConfig::from_config() {
-        Ok(c) => c,
-        Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
-    };
+pub fn initialize_configs(input_config: Option<WorldConfig>) {
+    let config = input_config.map_or_else(
+        || match WorldConfig::from_config() {
+            Ok(c) => c,
+            Err(e) => panic!("Config validation failed. Issues are: {e:?}"),
+        },
+        |c| c,
+    );
     let energy_limit_config = EnergyLimitConfig::new(&config);
     _ = WORLD_CONFIG_INSTANCE.set(config);
     _ = ENERGY_LIMIT_INSTANCE.set(energy_limit_config);
 }
 
-#[derive(Debug, Serialize, Deserialize, Getters)]
+#[derive(Debug, Serialize, Deserialize, Getters, Clone)]
 pub struct BrainMutationConfig {
     deactivate_neuron: f32,
     add_neuron: f32,

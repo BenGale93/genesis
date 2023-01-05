@@ -6,6 +6,7 @@ edition = "2021"
 license = "MIT"
 
 [dependencies]
+bevy_reflect = {workspace = true}
 rand = {workspace = true}
 thiserror = {workspace = true}
 serde_derive = { workspace = true}

@@ -3,13 +3,33 @@ extern crate derive_more;
 use std::fmt;
 
 use anyhow::{anyhow, Result};
-use bevy_ecs::prelude::{Component, Resource};
+use bevy_app::Plugin;
+use bevy_ecs::{
+    prelude::{Component, Resource},
+    reflect::ReflectComponent,
+};
 use bevy_rapier2d::prelude::Collider;
+use bevy_reflect::Reflect;
 use derive_more::{Add, Constructor, Display, Sub};
 use genesis_config as config;
 use glam::Vec2;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Add, Display, Sub)]
+#[derive(
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Add,
+    Display,
+    Sub,
+    Default,
+    Reflect,
+    Serialize,
+    Deserialize,
+    Clone,
+)]
 pub struct Energy(usize);
 
 impl Energy {
@@ -42,7 +62,8 @@ impl Energy {
     }
 }
 
-#[derive(Component, Debug, Constructor)]
+#[derive(Component, Debug, Constructor, Default, Reflect)]
+#[reflect(Component)]
 pub struct Plant {
     energy: Energy,
 }
@@ -70,7 +91,8 @@ impl Plant {
     }
 }
 
-#[derive(Component)]
+#[derive(Component, Debug, Default, Reflect)]
+#[reflect(Component)]
 pub struct EggEnergy(pub Energy);
 
 impl EggEnergy {
@@ -80,7 +102,7 @@ impl EggEnergy {
     }
 }
 
-#[derive(Debug, Resource)]
+#[derive(Debug, Resource, Serialize, Deserialize, Clone)]
 pub struct Ecosystem {
     energy: Energy,
 }
@@ -110,7 +132,7 @@ impl Ecosystem {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default, Reflect)]
 pub struct EnergyReserve {
     energy: Energy,
     energy_limit: usize,
@@ -168,6 +190,17 @@ impl EnergyReserve {
 impl fmt::Display for EnergyReserve {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}/{}", self.energy.amount(), self.energy_limit)
+    }
+}
+
+pub struct EcosystemPlugin;
+
+impl Plugin for EcosystemPlugin {
+    fn build(&self, app: &mut bevy_app::App) {
+        app.register_type::<Energy>()
+            .register_type::<EggEnergy>()
+            .register_type::<Plant>()
+            .register_type::<EnergyReserve>();
     }
 }
 

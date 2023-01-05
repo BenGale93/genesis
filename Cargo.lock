@@ -159,6 +159,9 @@ name = "arrayvec"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8da52d66c7071e2e3fa2a1e5c6d088fec47b593032b254f5e980de8ea54454d6"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "ash"
@@ -374,6 +377,7 @@ dependencies = [
  "bevy_tasks",
  "bevy_utils",
  "bytemuck",
+ "serde",
 ]
 
 [[package]]
@@ -544,6 +548,7 @@ dependencies = [
  "bevy_math",
  "bevy_reflect",
  "bevy_utils",
+ "serde",
  "thiserror",
 ]
 
@@ -670,6 +675,7 @@ dependencies = [
  "log",
  "nalgebra",
  "rapier2d",
+ "serde",
 ]
 
 [[package]]
@@ -856,6 +862,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils",
  "crossbeam-channel",
+ "serde",
 ]
 
 [[package]]
@@ -869,6 +876,7 @@ dependencies = [
  "bevy_hierarchy",
  "bevy_math",
  "bevy_reflect",
+ "serde",
 ]
 
 [[package]]
@@ -927,6 +935,7 @@ dependencies = [
  "bevy_reflect",
  "bevy_utils",
  "raw-window-handle 0.5.0",
+ "serde",
 ]
 
 [[package]]
@@ -982,6 +991,9 @@ name = "bit-vec"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349f9b6a179ed607305526ca489b34ad0a41aed5f7980fa90eb03160b69598fb"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "bitflags"
@@ -1873,6 +1885,7 @@ dependencies = [
 name = "genesis_brain"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "cached",
  "derive-getters",
  "genesis_config",
@@ -1903,6 +1916,7 @@ dependencies = [
  "bevy_ecs",
  "bevy_egui",
  "bevy_rapier2d",
+ "bevy_reflect",
  "bevy_render",
  "bevy_time",
  "derive-getters",
@@ -1949,11 +1963,14 @@ name = "genesis_ecosystem"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bevy_app",
  "bevy_ecs",
  "bevy_rapier2d",
+ "bevy_reflect",
  "derive_more",
  "genesis_config",
  "glam",
+ "serde",
 ]
 
 [[package]]
@@ -1992,6 +2009,7 @@ dependencies = [
  "rand",
  "rand_distr",
  "rfd",
+ "ron",
  "serde",
  "serde_derive",
  "serde_json",
@@ -2022,6 +2040,7 @@ dependencies = [
 name = "genesis_newtype"
 version = "0.1.0"
 dependencies = [
+ "bevy_reflect",
  "rand",
  "serde",
  "serde_derive",
@@ -2795,6 +2814,7 @@ dependencies = [
  "num-complex",
  "num-rational 0.4.1",
  "num-traits",
+ "serde",
  "simba",
  "typenum",
 ]
@@ -3010,6 +3030,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ae39348c8bc5fbd7f40c727a9925f03517afd2ab27d46702108b6a7e5414c19"
 dependencies = [
  "num-traits",
+ "serde",
 ]
 
 [[package]]
@@ -3246,6 +3267,7 @@ dependencies = [
  "num-derive",
  "num-traits",
  "rustc-hash",
+ "serde",
  "simba",
  "slab",
  "smallvec",
@@ -3440,6 +3462,7 @@ dependencies = [
  "num-traits",
  "parry2d",
  "rustc-hash",
+ "serde",
  "simba",
 ]
 

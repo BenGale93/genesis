@@ -1,11 +1,18 @@
 use std::fs;
 
-use bevy::{log::warn, prelude::Resource};
+use bevy::{
+    log::warn,
+    prelude::{Resource, World},
+};
 use derive_getters::Getters;
 use genesis_attributes as attributes;
-use genesis_components::mind;
+use genesis_components::{mind, time::SimulationTime};
+use genesis_config::WorldConfig;
+use genesis_ecosystem::Ecosystem;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+use crate::statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree};
 
 #[derive(Debug, Error)]
 pub enum BugSerdeError {
@@ -67,4 +74,44 @@ pub fn load_bug_blueprint(
     let blueprint: BugBlueprint = serde_json::from_slice(&content)?;
     blueprint.validate(genome)?;
     Ok(Some(blueprint))
+}
+
+#[derive(Serialize, Deserialize, Getters)]
+pub struct SimulationSerializer {
+    config: WorldConfig,
+    sim_time: SimulationTime,
+    ecosystem: Ecosystem,
+    count_stats: CountStats,
+    energy_stats: EnergyStats,
+    bug_performance: BugPerformance,
+    family_tree: FamilyTree,
+}
+
+impl SimulationSerializer {
+    pub fn new(world: &World) -> Self {
+        let config = genesis_config::WorldConfig::global().to_owned();
+        let sim_time = world.get_resource::<SimulationTime>().unwrap().to_owned();
+        let ecosystem = world.get_resource::<Ecosystem>().unwrap().to_owned();
+        let count_stats = world.get_resource::<CountStats>().unwrap().to_owned();
+        let energy_stats = world.get_resource::<EnergyStats>().unwrap().to_owned();
+        let bug_performance = world.get_resource::<BugPerformance>().unwrap().to_owned();
+        let family_tree = world.get_resource::<FamilyTree>().unwrap().to_owned();
+        Self {
+            config,
+            sim_time,
+            ecosystem,
+            count_stats,
+            energy_stats,
+            bug_performance,
+            family_tree,
+        }
+    }
+}
+
+pub fn serialize_simulation(world: &World) -> String {
+    let simulation = SimulationSerializer::new(world);
+    let pretty_config = ron::ser::PrettyConfig::default()
+        .indentor("  ".to_string())
+        .new_line("\n".to_string());
+    ron::ser::to_string_pretty(&simulation, pretty_config).unwrap()
 }

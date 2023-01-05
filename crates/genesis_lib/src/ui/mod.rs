@@ -1,6 +1,7 @@
 mod brain_panel;
 mod gui;
 mod interaction;
+pub mod menus;
 
 use std::{fs, time::Duration};
 
@@ -10,12 +11,12 @@ use bevy::{
     time::Time,
 };
 use genesis_config::WorldConfig;
-pub use gui::{EntityPanelState, GlobalPanelState};
+pub use gui::{EntityPanelState, GlobalPanelState, Selected};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
 
-use crate::statistics;
+use crate::{statistics, SimState};
 
 #[derive(Debug, Serialize)]
 struct RunInfo<'a> {
@@ -103,7 +104,8 @@ pub fn regular_saver(
 }
 
 pub fn interaction_system_set() -> SystemSet {
-    SystemSet::new()
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
         .with_system(interaction::move_camera_system)
         .with_system(interaction::camera_zooming_system)
         .with_system(interaction::pause_key_system)
@@ -119,11 +121,13 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(gui::bug_stats_info_system)
         .with_system(gui::bug_serde_widget)
         .with_system(gui::bug_spawner_widget)
+        .into()
 }
 
 pub fn selection_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(gui::using_ui)
+        .run_in_state(SimState::Simulation)
         .with_system(gui::select_sprite_system)
         .into()
 }
@@ -131,16 +135,26 @@ pub fn selection_system_set() -> SystemSet {
 pub fn manual_spawn_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(gui::using_ui)
+        .run_in_state(SimState::Simulation)
         .with_system(gui::spawn_at_mouse)
         .into()
 }
 
 pub fn global_statistics_system_set() -> SystemSet {
     ConditionSet::new()
+        .run_in_state(SimState::Simulation)
         .run_if_not(interaction::is_paused)
         .with_system(statistics::count_system)
         .with_system(statistics::energy_stats_system)
         .with_system(statistics::performance_stats_system)
+        .into()
+}
+
+pub fn save_on_close_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .run_if_not(interaction::is_paused)
+        .with_system(save_on_close)
         .into()
 }
 
@@ -155,12 +169,10 @@ impl Plugin for GenesisUiPlugin {
             .add_system_set(selection_system_set())
             .add_system_set(interaction_system_set())
             .add_system_set(manual_spawn_system_set())
-            .insert_resource(statistics::CountStats::default())
-            .insert_resource(statistics::BugPerformance::default())
-            .insert_resource(statistics::EnergyStats::default())
             .insert_resource(EntityPanelState::default())
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())
-            .add_system_to_stage(CoreStage::Last, save_on_close);
+            .add_event::<gui::SaveSimulationEvent>()
+            .add_system_set_to_stage(CoreStage::Last, save_on_close_set());
     }
 }

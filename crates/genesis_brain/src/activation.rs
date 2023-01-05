@@ -1,9 +1,13 @@
+use bevy_reflect::{FromReflect, Reflect};
 use rand::{distributions::Standard, Rng};
 use rand_distr::Distribution;
 use serde::{Deserialize, Serialize};
 
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize)]
+#[derive(
+    PartialEq, Eq, Debug, Hash, Clone, Copy, Deserialize, Serialize, Default, Reflect, FromReflect,
+)]
 pub enum ActivationFunctionKind {
+    #[default]
     Identity,
     Sigmoid,
     Tanh,

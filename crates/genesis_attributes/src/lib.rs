@@ -2,7 +2,11 @@
 use std::fmt;
 
 use bevy_app::Plugin;
-use bevy_ecs::prelude::{Bundle, Component, Resource};
+use bevy_ecs::{
+    prelude::{Bundle, Component, Resource},
+    reflect::ReflectComponent,
+};
+use bevy_reflect::Reflect;
 use bevy_trait_query::RegisterExt;
 use derive_more::Deref;
 use genesis_config as config;
@@ -159,7 +163,8 @@ pub enum DnaValidationError {
     InvalidValue(f32, String, Chromosome),
 }
 
-#[derive(Debug, Clone, Copy, Component, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Component, Serialize, Deserialize, Reflect, Default)]
+#[reflect(Component)]
 pub struct Dna {
     pub hatch_age: f32,
     pub eye_range: f32,
@@ -212,7 +217,8 @@ impl Dna {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct HatchAge(f32);
 
 impl HatchAge {
@@ -221,7 +227,8 @@ impl HatchAge {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct AdultAge(f32);
 
 impl AdultAge {
@@ -237,7 +244,8 @@ impl AdultAge {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct DeathAge(f32);
 
 impl DeathAge {
@@ -251,7 +259,8 @@ impl DeathAge {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct EyeRange(f32);
 
 impl EyeRange {
@@ -260,7 +269,8 @@ impl EyeRange {
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, Default, Reflect)]
+#[reflect(Component)]
 pub struct EyeAngle(f32);
 
 impl EyeAngle {
@@ -291,7 +301,8 @@ impl AttributeDisplay for EyeAngle {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct CostOfEating(f32);
 
 impl CostOfEating {
@@ -300,7 +311,8 @@ impl CostOfEating {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct OffspringEnergy(f32);
 
 impl OffspringEnergy {
@@ -309,7 +321,8 @@ impl OffspringEnergy {
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, Default, Reflect)]
+#[reflect(Component)]
 pub struct MouthWidth(f32);
 
 impl MouthWidth {
@@ -341,7 +354,8 @@ impl AttributeDisplay for MouthWidth {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct HatchSize(f32);
 
 impl HatchSize {
@@ -355,7 +369,8 @@ impl HatchSize {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct MaxSize(f32);
 
 impl MaxSize {
@@ -364,7 +379,8 @@ impl MaxSize {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct GrowthRate(f32);
 
 impl GrowthRate {
@@ -373,7 +389,8 @@ impl GrowthRate {
     }
 }
 
-#[derive(Component, Debug, Deref)]
+#[derive(Component, Debug, Deref, Default, Reflect)]
+#[reflect(Component)]
 pub struct GrabAngle(f32);
 
 impl GrabAngle {
@@ -397,7 +414,8 @@ impl AttributeDisplay for GrabAngle {
     }
 }
 
-#[derive(Component, Debug, Deref, AttributeDisplay)]
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
 pub struct GrabStrength(f32);
 
 impl GrabStrength {
@@ -454,7 +472,20 @@ pub struct AttributesPlugin;
 
 impl Plugin for AttributesPlugin {
     fn build(&self, app: &mut bevy_app::App) {
-        app.register_component_as::<dyn AttributeDisplay, HatchAge>()
+        app.register_type::<Dna>()
+            .register_type::<HatchAge>()
+            .register_type::<AdultAge>()
+            .register_type::<DeathAge>()
+            .register_type::<EyeRange>()
+            .register_type::<EyeAngle>()
+            .register_type::<CostOfEating>()
+            .register_type::<OffspringEnergy>()
+            .register_type::<MouthWidth>()
+            .register_type::<MaxSize>()
+            .register_type::<GrowthRate>()
+            .register_type::<GrabAngle>()
+            .register_type::<GrabStrength>()
+            .register_component_as::<dyn AttributeDisplay, HatchAge>()
             .register_component_as::<dyn AttributeDisplay, AdultAge>()
             .register_component_as::<dyn AttributeDisplay, DeathAge>()
             .register_component_as::<dyn AttributeDisplay, EyeRange>()
@@ -466,7 +497,6 @@ impl Plugin for AttributesPlugin {
             .register_component_as::<dyn AttributeDisplay, MaxSize>()
             .register_component_as::<dyn AttributeDisplay, GrowthRate>()
             .register_component_as::<dyn AttributeDisplay, GrabAngle>()
-            .register_component_as::<dyn AttributeDisplay, GrabStrength>()
-            .init_resource::<Genome>();
+            .register_component_as::<dyn AttributeDisplay, GrabStrength>();
     }
 }
