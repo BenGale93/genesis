@@ -30,7 +30,14 @@ pub fn plant_system_set() -> SystemSet {
         .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(spawning::spawn_plant_system)
-        .with_system(spawning::update_plant_size)
+        .into()
+}
+
+pub fn food_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_if_not(conditions::is_paused)
+        .run_in_state(SimState::Simulation)
+        .with_system(spawning::update_food_size)
         .into()
 }
 
@@ -40,7 +47,7 @@ pub fn despawn_system_set() -> SystemSet {
         .run_in_state(SimState::Simulation)
         .with_system(lifecycle::kill_bug_system)
         .with_system(behaviour::laying::hatch_egg_system)
-        .with_system(spawning::despawn_plants_system)
+        .with_system(spawning::despawn_food_system)
         .into()
 }
 
@@ -106,6 +113,7 @@ impl Plugin for SimulationPlugin {
             .insert_resource(config::BACKGROUND)
             .init_resource::<SimulationSpeed>()
             .add_system_set(plant_system_set())
+            .add_system_set(food_system_set())
             .add_system_set(bug_serde_system_set())
             .add_fixed_timestep(Duration::from_secs(10), "family_tree")
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")

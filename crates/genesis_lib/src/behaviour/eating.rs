@@ -6,7 +6,7 @@ use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes as attributes;
 use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg};
 use genesis_config as config;
-use genesis_ecosystem::Plant;
+use genesis_ecosystem::Food;
 use genesis_maths::angle_between;
 use genesis_traits::BehaviourTracker;
 
@@ -44,7 +44,7 @@ pub fn attempted_to_eat_system(
     }
 }
 
-fn eat_plant(
+fn eat_food(
     commands: &mut Commands,
     ev_eaten: &mut EventWriter<EatenEvent>,
     bug: &mut (
@@ -54,24 +54,24 @@ fn eat_plant(
         Mut<EnergyConsumed>,
         &attributes::MouthWidth,
     ),
-    plant: &mut (Entity, Mut<Plant>, &Transform),
+    food: &mut (Entity, Mut<Food>, &Transform),
 ) {
     let (vitality, bug_transform, burnt_energy, energy_consumed, mouth_width) = bug;
-    let (plant_entity, plant_energy, plant_transform) = plant;
+    let (food_entity, food_energy, food_transform) = food;
     let angle_to_food = angle_between(
         &bug_transform.rotation,
-        plant_transform.translation - bug_transform.translation,
+        food_transform.translation - bug_transform.translation,
     );
     if angle_to_food.abs() < ***mouth_width {
-        let initial_plant_energy = plant_energy.energy().amount();
-        let leftover = vitality.eat(plant_energy);
-        let consumed = initial_plant_energy - plant_energy.energy().amount();
+        let initial_food_energy = food_energy.energy().amount();
+        let leftover = vitality.eat(food_energy);
+        let consumed = initial_food_energy - food_energy.energy().amount();
         energy_consumed.0 += consumed;
         if consumed > 0 {
-            ev_eaten.send(EatenEvent(*plant_entity));
+            ev_eaten.send(EatenEvent(*food_entity));
         }
-        if plant_energy.energy().amount() == 0 {
-            commands.entity(*plant_entity).insert(Eaten);
+        if food_energy.energy().amount() == 0 {
+            commands.entity(*food_entity).insert(Eaten);
         }
         burnt_energy.add_energy(leftover);
     }
@@ -85,28 +85,28 @@ pub type EatingBug<'a> = (
     &'a attributes::MouthWidth,
 );
 
-pub type EatenPlant<'a> = (Entity, &'a mut Plant, &'a Transform);
+pub type EatenFood<'a> = (Entity, &'a mut Food, &'a Transform);
 
 pub fn eating_system(
     mut commands: Commands,
     mut ev_eaten: EventWriter<EatenEvent>,
     rapier_context: Res<RapierContext>,
     mut bug_query: Query<EatingBug, With<TryingToEat>>,
-    mut plant_query: Query<EatenPlant>,
+    mut food_query: Query<EatenFood>,
 ) {
     for contact_pair in rapier_context.contact_pairs() {
-        if let (Ok(mut bug), Ok(mut plant)) = (
+        if let (Ok(mut bug), Ok(mut food)) = (
             bug_query.get_mut(contact_pair.collider1()),
-            plant_query.get_mut(contact_pair.collider2()),
+            food_query.get_mut(contact_pair.collider2()),
         ) {
-            eat_plant(&mut commands, &mut ev_eaten, &mut bug, &mut plant);
+            eat_food(&mut commands, &mut ev_eaten, &mut bug, &mut food);
             continue;
         }
-        if let (Ok(mut bug), Ok(mut plant)) = (
+        if let (Ok(mut bug), Ok(mut food)) = (
             bug_query.get_mut(contact_pair.collider2()),
-            plant_query.get_mut(contact_pair.collider1()),
+            food_query.get_mut(contact_pair.collider1()),
         ) {
-            eat_plant(&mut commands, &mut ev_eaten, &mut bug, &mut plant);
+            eat_food(&mut commands, &mut ev_eaten, &mut bug, &mut food);
         }
     }
 }

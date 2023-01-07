@@ -64,11 +64,11 @@ impl Energy {
 
 #[derive(Component, Debug, Constructor, Default, Reflect)]
 #[reflect(Component)]
-pub struct Plant {
+pub struct Food {
     energy: Energy,
 }
 
-impl Plant {
+impl Food {
     pub fn take_energy(&mut self, amount: usize) -> Energy {
         self.energy.take_energy(amount)
     }
@@ -199,7 +199,7 @@ impl Plugin for EcosystemPlugin {
     fn build(&self, app: &mut bevy_app::App) {
         app.register_type::<Energy>()
             .register_type::<EggEnergy>()
-            .register_type::<Plant>()
+            .register_type::<Food>()
             .register_type::<EnergyReserve>();
     }
 }

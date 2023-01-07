@@ -177,7 +177,7 @@ pub fn spawn_egg(
 pub fn nearest_spawner_system(
     mut spawners: ResMut<Spawners>,
     organisms: Query<&Transform, With<Generation>>,
-    plants: Query<(&Transform, &ecosystem::Plant)>,
+    plants: Query<(&Transform, &ecosystem::Food), With<components::Plant>>,
 ) {
     let mut organism_counts = vec![0; spawners.len()];
     for position in organisms.iter() {
@@ -215,12 +215,13 @@ pub fn nearest_spawner_system(
     }
 }
 
-pub fn plant_sprite_bundle(
+pub fn food_sprite_bundle(
     asset_server: &Res<AssetServer>,
     size: Option<Vec2>,
     location: Vec3,
+    color: Color,
 ) -> impl Bundle {
-    let original_color = body::OriginalColor(Color::GREEN);
+    let original_color = body::OriginalColor(color);
     let sprite_bundle = SpriteBundle {
         texture: asset_server.load("food.png"),
         sprite: Sprite {
@@ -240,26 +241,28 @@ fn spawn_plant(
     energy: ecosystem::Energy,
     location: Vec3,
 ) {
-    let plant = ecosystem::Plant::new(energy);
+    let food = ecosystem::Food::new(energy);
 
     commands
-        .spawn(plant_sprite_bundle(
+        .spawn(food_sprite_bundle(
             &asset_server,
-            plant.sprite_size(),
+            food.sprite_size(),
             location,
+            Color::GREEN,
         ))
         .insert(RigidBody::Dynamic)
         .insert(Damping {
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(plant.collider())
+        .insert(food.collider())
         .insert(ColliderMassProperties::Density(
             config::WorldConfig::global().plant_density,
         ))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
-        .insert(plant);
+        .insert(food)
+        .insert(components::Plant);
 }
 
 #[derive(Resource)]
@@ -297,21 +300,21 @@ pub fn spawn_plant_system(
     }
 }
 
-pub fn update_plant_size(
+pub fn update_food_size(
     mut ev_eaten: EventReader<eat::EatenEvent>,
-    mut plant_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Plant)>,
+    mut food_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Food)>,
 ) {
     for ev in ev_eaten.iter() {
-        if let Ok(plant_extract) = plant_query.get_mut(ev.0) {
-            let (mut sprite, mut collider, plant) = plant_extract;
-            sprite.custom_size = plant.sprite_size();
-            *collider = plant.collider();
+        if let Ok(food_extract) = food_query.get_mut(ev.0) {
+            let (mut sprite, mut collider, food) = food_extract;
+            sprite.custom_size = food.sprite_size();
+            *collider = food.collider();
         }
     }
 }
 
-pub fn despawn_plants_system(mut commands: Commands, plant_query: Query<Entity, With<eat::Eaten>>) {
-    for entity in plant_query.iter() {
+pub fn despawn_food_system(mut commands: Commands, food_query: Query<Entity, With<eat::Eaten>>) {
+    for entity in food_query.iter() {
         commands.entity(entity).despawn_recursive();
     }
 }

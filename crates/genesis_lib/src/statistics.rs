@@ -109,7 +109,7 @@ pub fn count_system(
 pub fn energy_stats_system(
     mut stats: ResMut<EnergyStats>,
     ecosystem: Res<ecosystem::Ecosystem>,
-    food_energy: Query<&ecosystem::Plant>,
+    food_energy: Query<&ecosystem::Food>,
 ) {
     let energy = ecosystem.available_energy();
     let total_food: usize = food_energy.into_iter().map(|x| x.energy().amount()).sum();

@@ -153,6 +153,10 @@ impl SizeMultiplier {
     }
 }
 
+#[derive(Component, Debug, Reflect, Default)]
+#[reflect(Component)]
+pub struct Plant;
+
 pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
@@ -190,6 +194,7 @@ impl Plugin for ComponentsPlugin {
             .register_type::<Generation>()
             .register_type::<Relations>()
             .register_type::<SizeMultiplier>()
+            .register_type::<Plant>()
             .register_component_as::<dyn BehaviourTracker, ThinkingSum>()
             .register_component_as::<dyn BehaviourTracker, TranslationSum>()
             .register_component_as::<dyn BehaviourTracker, RotationSum>()
