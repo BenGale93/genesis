@@ -2,7 +2,8 @@ use std::fs;
 
 use bevy::{
     log::warn,
-    prelude::{Resource, World},
+    prelude::{EventReader, Query, Res, ResMut, Resource, With, World},
+    time::Time,
 };
 use derive_getters::Getters;
 use genesis_attributes as attributes;
@@ -12,7 +13,10 @@ use genesis_ecosystem::Ecosystem;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree};
+use crate::{
+    statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree},
+    ui::{LoadBugEvent, SaveBugEvent, Selected},
+};
 
 #[derive(Debug, Error)]
 pub enum BugSerdeError {
@@ -45,7 +49,7 @@ pub struct LoadedBlueprint {
     pub blueprint: Option<BugBlueprint>,
 }
 
-pub fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
+fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
     let path = std::env::current_dir().unwrap();
     let Some(res) = rfd::FileDialog::new()
                         .set_file_name("bug.json")
@@ -64,9 +68,22 @@ pub fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
     };
 }
 
-pub fn load_bug_blueprint(
-    genome: &attributes::Genome,
-) -> Result<Option<BugBlueprint>, BugSerdeError> {
+pub fn save_bug_system(
+    mut time: ResMut<Time>,
+    bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
+    ev_save_bug: EventReader<SaveBugEvent>,
+) {
+    if ev_save_bug.is_empty() {
+        return;
+    };
+    let Ok(bug) = bug_query.get_single() else {
+        return;
+    };
+    save_bug(&bug);
+    time.update();
+}
+
+fn load_bug_blueprint(genome: &attributes::Genome) -> Result<Option<BugBlueprint>, BugSerdeError> {
     let Some(path) = rfd::FileDialog::new().pick_file() else {
         return Ok(None);
     };
@@ -74,6 +91,22 @@ pub fn load_bug_blueprint(
     let blueprint: BugBlueprint = serde_json::from_slice(&content)?;
     blueprint.validate(genome)?;
     Ok(Some(blueprint))
+}
+
+pub fn load_bug_system(
+    mut time: ResMut<Time>,
+    ev_load_bug: EventReader<LoadBugEvent>,
+    genome: Res<attributes::Genome>,
+    mut loaded_blueprint: ResMut<LoadedBlueprint>,
+) {
+    if ev_load_bug.is_empty() {
+        return;
+    };
+    match load_bug_blueprint(&genome) {
+        Ok(x) => loaded_blueprint.blueprint = x,
+        Err(e) => warn!("{e}"),
+    };
+    time.update();
 }
 
 #[derive(Serialize, Deserialize, Getters)]

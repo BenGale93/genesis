@@ -3,8 +3,8 @@ use std::time::Duration;
 use bevy::{
     input::mouse::MouseWheel,
     prelude::{
-        Camera, EventReader, GlobalTransform, Input, KeyCode, OrthographicProjection, Query, Res,
-        ResMut, Resource, Transform, Vec2, Vec3, With,
+        info, Camera, EventReader, GlobalTransform, Input, KeyCode, OrthographicProjection, Query,
+        Res, ResMut, Resource, Transform, Vec2, Vec3, With,
     },
     render::camera::RenderTarget,
     time::Time,
@@ -130,13 +130,13 @@ pub fn pause_system(speed: Res<SimulationSpeed>, mut rapier_config: ResMut<Rapie
     }
 }
 
-// TODO: This should only run if SimulationSpeed changes.
 pub fn game_time_system(
     speed: Res<SimulationSpeed>,
     mut rapier_config: ResMut<RapierConfiguration>,
     mut timesteps: ResMut<FixedTimesteps>,
     mut time: ResMut<Time>,
 ) {
+    info!("Updating game time.");
     let very_slow = timesteps.get_mut("very_slow").unwrap();
     very_slow.step = Duration::from_secs_f32(1.0 / speed.speed);
     let slow = timesteps.get_mut("slow").unwrap();

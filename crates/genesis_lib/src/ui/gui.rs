@@ -1,8 +1,7 @@
 use bevy::{
     prelude::{
-        warn, AssetServer, Camera, Color, Commands, Component, Entity, EventWriter,
-        GlobalTransform, Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3,
-        With,
+        AssetServer, Camera, Color, Commands, Component, Entity, EventWriter, GlobalTransform,
+        Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3, With,
     },
     reflect::Reflect,
     sprite::Sprite,
@@ -14,7 +13,7 @@ use bevy_trait_query::ReadTraits;
 use components::Generation;
 use genesis_attributes as attributes;
 use genesis_components as components;
-use genesis_components::{body, eat, lay, mind, see, time};
+use genesis_components::{body, eat, lay, see, time};
 use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
@@ -335,30 +334,41 @@ pub fn plant_info_panel_system(
 
 pub fn game_speed_widget(
     mut egui_ctx: ResMut<EguiContext>,
-    mut speed: ResMut<interaction::SimulationSpeed>,
+    mut sim_speed: ResMut<interaction::SimulationSpeed>,
 ) {
-    let symbol = if speed.paused { "⏵" } else { "⏸" };
+    let symbol = if sim_speed.paused { "⏵" } else { "⏸" };
+    let mut speed_copy = sim_speed.speed;
     egui::Window::new("Controls")
         .anchor(egui::Align2::RIGHT_TOP, [-5.0, 5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
             ui.horizontal(|ui| {
                 if ui.button(symbol).clicked() {
-                    speed.paused = !speed.paused;
+                    sim_speed.paused = !sim_speed.paused;
                 }
-                ui.add(egui::Slider::new(&mut speed.speed, 0.1..=3.0).text("Game Speed"))
+                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=3.0).text("Game Speed"))
             })
         });
+
+    if sim_speed.speed != speed_copy {
+        sim_speed.speed = speed_copy;
+    }
 }
 
 #[derive(Debug)]
 pub struct SaveSimulationEvent;
 
+#[derive(Debug)]
+pub struct LoadBugEvent;
+
+#[derive(Debug)]
+pub struct SaveBugEvent;
+
 pub fn bug_serde_widget(
     mut ev_save_sim: EventWriter<SaveSimulationEvent>,
+    mut ev_load_bug: EventWriter<LoadBugEvent>,
+    mut ev_save_bug: EventWriter<SaveBugEvent>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
-    genome: Res<attributes::Genome>,
-    bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
+    bug_query: Query<Entity, (With<time::Age>, With<Selected>)>,
 ) {
     egui::Window::new("Save/Load")
         .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
@@ -368,17 +378,11 @@ pub fn bug_serde_widget(
                     ev_save_sim.send(SaveSimulationEvent);
                 };
                 if ui.button("Load bug").clicked() {
-                    match genesis_serde::load_bug_blueprint(&genome) {
-                        Ok(x) => loaded_blueprint.blueprint = x,
-                        Err(e) => warn!("{e}"),
-                    };
+                    ev_load_bug.send(LoadBugEvent);
                 };
-                let Ok(bug) = bug_query.get_single() else {
-                    return;
-                };
-                if ui.button("Save bug").clicked() {
-                    genesis_serde::save_bug(&bug);
-                };
+                if bug_query.get_single().is_ok() && ui.button("Save bug").clicked() {
+                    ev_save_bug.send(SaveBugEvent);
+                }
             })
         });
 }
