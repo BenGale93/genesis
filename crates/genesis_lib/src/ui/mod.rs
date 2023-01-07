@@ -11,7 +11,7 @@ use bevy::{
     time::Time,
 };
 use genesis_config::WorldConfig;
-pub use gui::{EntityPanelState, GlobalPanelState, Selected};
+pub use gui::{EntityPanelState, GlobalPanelState, LoadBugEvent, Selected};
 pub use interaction::is_paused;
 use iyes_loopless::prelude::*;
 use serde_derive::Serialize;
@@ -186,6 +186,7 @@ impl Plugin for GenesisUiPlugin {
             .insert_resource(GlobalPanelState::default())
             .insert_resource(interaction::SimulationSpeed::default())
             .add_event::<gui::SaveSimulationEvent>()
+            .add_event::<gui::LoadBugEvent>()
             .add_system_set_to_stage(CoreStage::Last, save_on_close_set());
     }
 }

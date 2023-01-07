@@ -1,8 +1,7 @@
 use bevy::{
     prelude::{
-        warn, AssetServer, Camera, Color, Commands, Component, Entity, EventWriter,
-        GlobalTransform, Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3,
-        With,
+        AssetServer, Camera, Color, Commands, Component, Entity, EventWriter, GlobalTransform,
+        Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3, With,
     },
     reflect::Reflect,
     sprite::Sprite,
@@ -358,11 +357,13 @@ pub fn game_speed_widget(
 #[derive(Debug)]
 pub struct SaveSimulationEvent;
 
+#[derive(Debug)]
+pub struct LoadBugEvent;
+
 pub fn bug_serde_widget(
     mut ev_save_sim: EventWriter<SaveSimulationEvent>,
+    mut ev_load_bug: EventWriter<LoadBugEvent>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
-    genome: Res<attributes::Genome>,
     bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
 ) {
     egui::Window::new("Save/Load")
@@ -373,10 +374,7 @@ pub fn bug_serde_widget(
                     ev_save_sim.send(SaveSimulationEvent);
                 };
                 if ui.button("Load bug").clicked() {
-                    match genesis_serde::load_bug_blueprint(&genome) {
-                        Ok(x) => loaded_blueprint.blueprint = x,
-                        Err(e) => warn!("{e}"),
-                    };
+                    ev_load_bug.send(LoadBugEvent);
                 };
                 let Ok(bug) = bug_query.get_single() else {
                     return;

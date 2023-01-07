@@ -52,6 +52,13 @@ pub fn family_tree_system_set() -> SystemSet {
         .into()
 }
 
+pub fn bug_serde_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .with_system(genesis_serde::load_bug_system)
+        .into()
+}
+
 #[derive(Debug, Hash, PartialEq, Eq, Clone, StageLabel)]
 enum GenesisStage {
     CleanUp,
@@ -77,6 +84,7 @@ impl Plugin for SimulationPlugin {
             .init_resource::<genesis_serde::LoadedBlueprint>()
             .insert_resource(config::BACKGROUND)
             .add_system_set(plant_system_set())
+            .add_system_set(bug_serde_system_set())
             .add_fixed_timestep(Duration::from_secs(10), "family_tree")
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
             .add_fixed_timestep_system_set("family_tree", 0, family_tree_system_set())

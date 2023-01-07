@@ -2,7 +2,7 @@ use std::fs;
 
 use bevy::{
     log::warn,
-    prelude::{Resource, World},
+    prelude::{EventReader, Res, ResMut, Resource, World},
 };
 use derive_getters::Getters;
 use genesis_attributes as attributes;
@@ -12,7 +12,10 @@ use genesis_ecosystem::Ecosystem;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use crate::statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree};
+use crate::{
+    statistics::{BugPerformance, CountStats, EnergyStats, FamilyTree},
+    ui::LoadBugEvent,
+};
 
 #[derive(Debug, Error)]
 pub enum BugSerdeError {
@@ -64,9 +67,7 @@ pub fn save_bug(bug: &(&mind::Mind, &attributes::Dna)) {
     };
 }
 
-pub fn load_bug_blueprint(
-    genome: &attributes::Genome,
-) -> Result<Option<BugBlueprint>, BugSerdeError> {
+fn load_bug_blueprint(genome: &attributes::Genome) -> Result<Option<BugBlueprint>, BugSerdeError> {
     let Some(path) = rfd::FileDialog::new().pick_file() else {
         return Ok(None);
     };
@@ -74,6 +75,19 @@ pub fn load_bug_blueprint(
     let blueprint: BugBlueprint = serde_json::from_slice(&content)?;
     blueprint.validate(genome)?;
     Ok(Some(blueprint))
+}
+
+pub fn load_bug_system(
+    ev_load_bug: EventReader<LoadBugEvent>,
+    genome: Res<attributes::Genome>,
+    mut loaded_blueprint: ResMut<LoadedBlueprint>,
+) {
+    if !ev_load_bug.is_empty() {
+        match load_bug_blueprint(&genome) {
+            Ok(x) => loaded_blueprint.blueprint = x,
+            Err(e) => warn!("{e}"),
+        };
+    }
 }
 
 #[derive(Serialize, Deserialize, Getters)]
