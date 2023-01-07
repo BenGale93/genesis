@@ -3,16 +3,26 @@ use std::time::Duration;
 use bevy::{
     input::mouse::MouseWheel,
     prelude::{
-        info, Camera, EventReader, GlobalTransform, Input, KeyCode, OrthographicProjection, Query,
-        Res, ResMut, Resource, Transform, Vec2, Vec3, With,
+        info, AssetServer, Camera, Color, Commands, Component, Entity, EventReader, EventWriter,
+        GlobalTransform, Input, KeyCode, MouseButton, OrthographicProjection, Query,
+        ReflectComponent, Res, ResMut, Transform, Vec2, Vec3, With,
     },
+    reflect::Reflect,
     render::camera::RenderTarget,
+    sprite::Sprite,
     time::Time,
     window::Windows,
 };
-use bevy_rapier2d::prelude::{RapierConfiguration, TimestepMode};
+use bevy_egui::{egui, EguiContext};
+use bevy_rapier2d::prelude::{QueryFilter, RapierConfiguration, RapierContext, TimestepMode};
+use config::WorldConfig;
+use genesis_attributes as attributes;
+use genesis_components::{body, time};
 use genesis_config as config;
+use genesis_ecosystem::Ecosystem;
 use iyes_loopless::prelude::*;
+
+use crate::{genesis_serde, simulation::SimulationSpeed, spawning};
 
 pub fn move_camera_system(
     kb_input: Res<Input<KeyCode>>,
@@ -93,21 +103,6 @@ pub fn get_cursor_position(
     })
 }
 
-#[derive(Resource, Debug)]
-pub struct SimulationSpeed {
-    pub speed: f32,
-    pub paused: bool,
-}
-
-impl Default for SimulationSpeed {
-    fn default() -> Self {
-        Self {
-            speed: 1.0,
-            paused: false,
-        }
-    }
-}
-
 pub fn pause_key_system(kb_input: Res<Input<KeyCode>>, mut speed: ResMut<SimulationSpeed>) {
     if kb_input.pressed(KeyCode::P) {
         if speed.paused {
@@ -118,16 +113,47 @@ pub fn pause_key_system(kb_input: Res<Input<KeyCode>>, mut speed: ResMut<Simulat
     }
 }
 
-pub fn is_paused(speed: Res<SimulationSpeed>) -> bool {
-    speed.paused
-}
-
 pub fn pause_system(speed: Res<SimulationSpeed>, mut rapier_config: ResMut<RapierConfiguration>) {
     if speed.paused {
         rapier_config.physics_pipeline_active = false;
     } else {
         rapier_config.physics_pipeline_active = true;
     }
+}
+
+#[derive(Component, Reflect, Default)]
+#[reflect(Component)]
+pub struct Selected;
+
+pub fn select_sprite_system(
+    mut commands: Commands,
+    rapier_context: Res<RapierContext>,
+    wnds: Res<Windows>,
+    mouse_button: Res<Input<MouseButton>>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+    mut sprite_query: Query<(Entity, &mut Sprite, &body::OriginalColor)>,
+) {
+    let filter = QueryFilter::default();
+    if !mouse_button.pressed(MouseButton::Left) {
+        return;
+    }
+    // check if the cursor is inside the window and get its position
+    let Some(world_pos) = get_cursor_position(wnds, q_camera) else {
+        return;
+    };
+    for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
+        commands.entity(entity).remove::<Selected>();
+        sprite.color = original_color.0;
+    }
+    rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
+        for (entity, mut sprite, _) in sprite_query.iter_mut() {
+            if selected_entity == entity {
+                commands.entity(selected_entity).insert(Selected);
+                sprite.color = Color::RED;
+            }
+        }
+        false
+    });
 }
 
 pub fn game_time_system(
@@ -150,4 +176,113 @@ pub fn game_time_system(
     };
 
     time.set_relative_speed(speed.speed);
+}
+
+pub fn game_speed_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut sim_speed: ResMut<SimulationSpeed>,
+) {
+    let symbol = if sim_speed.paused { "⏵" } else { "⏸" };
+    let mut speed_copy = sim_speed.speed;
+    egui::Window::new("Controls")
+        .anchor(egui::Align2::RIGHT_TOP, [-5.0, 5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button(symbol).clicked() {
+                    sim_speed.paused = !sim_speed.paused;
+                }
+                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=3.0).text("Game Speed"))
+            })
+        });
+
+    if sim_speed.speed != speed_copy {
+        sim_speed.speed = speed_copy;
+    }
+}
+
+#[derive(Debug)]
+pub struct SaveSimulationEvent;
+
+#[derive(Debug)]
+pub struct LoadBugEvent;
+
+#[derive(Debug)]
+pub struct SaveBugEvent;
+
+pub fn bug_serde_widget(
+    mut ev_save_sim: EventWriter<SaveSimulationEvent>,
+    mut ev_load_bug: EventWriter<LoadBugEvent>,
+    mut ev_save_bug: EventWriter<SaveBugEvent>,
+    mut egui_ctx: ResMut<EguiContext>,
+    bug_query: Query<Entity, (With<time::Age>, With<Selected>)>,
+) {
+    egui::Window::new("Save/Load")
+        .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Save simulation").clicked() {
+                    ev_save_sim.send(SaveSimulationEvent);
+                };
+                if ui.button("Load bug").clicked() {
+                    ev_load_bug.send(LoadBugEvent);
+                };
+                if bug_query.get_single().is_ok() && ui.button("Save bug").clicked() {
+                    ev_save_bug.send(SaveBugEvent);
+                }
+            })
+        });
+}
+
+pub fn bug_spawner_widget(
+    mut egui_ctx: ResMut<EguiContext>,
+    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
+) {
+    if loaded_blueprint.blueprint.is_none() {
+        return;
+    }
+    egui::Window::new("Spawn")
+        .anchor(egui::Align2::CENTER_BOTTOM, [5.0, 0.0])
+        .show(egui_ctx.ctx_mut(), |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("Clear Bug").clicked() {
+                    loaded_blueprint.blueprint = None;
+                }
+            })
+        });
+}
+
+pub fn spawn_at_mouse(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    genome: Res<attributes::Genome>,
+    mut ecosystem: ResMut<Ecosystem>,
+    loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
+    wnds: Res<Windows>,
+    mouse_button: Res<Input<MouseButton>>,
+    q_camera: Query<(&Camera, &GlobalTransform)>,
+) {
+    if !mouse_button.just_released(MouseButton::Left) {
+        return;
+    }
+    let Some(world_pos) = get_cursor_position(wnds, q_camera) else {
+        return;
+    };
+    let Some(blueprint) = &loaded_blueprint.blueprint else {
+        return;
+    };
+    let Some(energy) = ecosystem.request_energy(WorldConfig::global().start_energy) else {
+        return;
+    };
+
+    spawning::spawn_egg(
+        &mut commands,
+        &asset_server,
+        &genome,
+        energy,
+        Vec3::new(world_pos.x, world_pos.y, 0.0),
+        blueprint.dna().to_owned(),
+        blueprint.mind().to_owned(),
+        genesis_components::Generation(0),
+        None,
+    );
 }

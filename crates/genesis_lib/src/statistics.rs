@@ -1,13 +1,21 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fs, time::Duration};
 
-use bevy::prelude::{Query, Res, ResMut, Resource};
+use bevy::{
+    app::AppExit,
+    prelude::{CoreStage, EventReader, Plugin, Query, Res, ResMut, Resource, SystemSet},
+    time::Time,
+};
 use bevy_trait_query::ReadTraits;
 use components::{eat, lay, time};
 use derive_getters::Getters;
 use genesis_components as components;
+use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
+use iyes_loopless::prelude::*;
 use serde::{Deserialize, Serialize};
+
+use crate::{conditions, SimState};
 
 fn last_element<T>(vector: &[T]) -> T
 where
@@ -191,5 +199,120 @@ pub fn family_tree_update(
 ) {
     for (relation, attrs) in relations_query.into_iter() {
         family_tree.add_active_relation(relation, attrs)
+    }
+}
+
+#[derive(Debug, Serialize)]
+struct RunInfo<'a> {
+    time_elapsed: &'a f32,
+    run_config: &'a WorldConfig,
+    count_stats: &'a CountStats,
+    energy_stats: &'a EnergyStats,
+    performance_stats: &'a BugPerformance,
+    family_tree: &'a FamilyTree,
+}
+
+impl<'a> RunInfo<'a> {
+    const fn new(
+        time_elapsed: &'a f32,
+        run_config: &'a WorldConfig,
+        count_stats: &'a CountStats,
+        energy_stats: &'a EnergyStats,
+        performance_stats: &'a BugPerformance,
+        family_tree: &'a FamilyTree,
+    ) -> Self {
+        Self {
+            time_elapsed,
+            run_config,
+            count_stats,
+            energy_stats,
+            performance_stats,
+            family_tree,
+        }
+    }
+}
+
+fn save_stats(
+    time: &Res<Time>,
+    count_stats: &Res<CountStats>,
+    energy_stats: &Res<EnergyStats>,
+    performance_stats: &Res<BugPerformance>,
+    family_tree: &Res<FamilyTree>,
+) {
+    let time = time.elapsed_seconds();
+    let run_info = RunInfo::new(
+        &time,
+        WorldConfig::global(),
+        count_stats,
+        energy_stats,
+        performance_stats,
+        family_tree,
+    );
+    let j = serde_json::to_string_pretty(&run_info).unwrap();
+    fs::write("./run_data.json", j).expect("Unable to write file.");
+}
+
+pub fn save_on_close(
+    events: EventReader<AppExit>,
+    time: Res<Time>,
+    count_stats: Res<CountStats>,
+    energy_stats: Res<EnergyStats>,
+    performance_stats: Res<BugPerformance>,
+    family_tree: Res<FamilyTree>,
+) {
+    if !events.is_empty() {
+        save_stats(
+            &time,
+            &count_stats,
+            &energy_stats,
+            &performance_stats,
+            &family_tree,
+        );
+    }
+}
+
+pub fn regular_saver(
+    time: Res<Time>,
+    count_stats: Res<CountStats>,
+    energy_stats: Res<EnergyStats>,
+    performance_stats: Res<BugPerformance>,
+    family_tree: Res<FamilyTree>,
+) {
+    save_stats(
+        &time,
+        &count_stats,
+        &energy_stats,
+        &performance_stats,
+        &family_tree,
+    );
+}
+
+pub fn global_statistics_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .run_if_not(conditions::is_paused)
+        .with_system(count_system)
+        .with_system(energy_stats_system)
+        .with_system(performance_stats_system)
+        .into()
+}
+
+pub fn save_on_close_set() -> SystemSet {
+    ConditionSet::new()
+        .run_in_state(SimState::Simulation)
+        .run_if_not(conditions::is_paused)
+        .with_system(save_on_close)
+        .into()
+}
+
+pub struct GenesisStatsPlugin;
+
+impl Plugin for GenesisStatsPlugin {
+    fn build(&self, app: &mut bevy::prelude::App) {
+        app.add_fixed_timestep(Duration::from_millis(100), "stats")
+            .add_fixed_timestep(Duration::from_secs(60), "regular_saver")
+            .add_fixed_timestep_system("regular_saver", 0, regular_saver)
+            .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
+            .add_system_set_to_stage(CoreStage::Last, save_on_close_set());
     }
 }

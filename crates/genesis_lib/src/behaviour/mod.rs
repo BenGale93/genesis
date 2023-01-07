@@ -4,7 +4,7 @@ use bevy::prelude::{App, Plugin, SystemSet};
 use genesis_components as components;
 use iyes_loopless::prelude::*;
 
-use crate::{ui, SimState};
+use crate::{conditions, SimState};
 
 pub mod eating;
 pub mod grabbing;
@@ -21,7 +21,7 @@ pub fn before_thinking_system_set() -> SystemSet {
         .label("before_thinking")
         .before("thinking")
         .run_in_state(SimState::Simulation)
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .with_system(thinking::sensory_system)
         .with_system(seeing::process_sight_system)
         .into()
@@ -31,7 +31,7 @@ pub fn thinking_system_set() -> SystemSet {
     ConditionSet::new()
         .label("thinking")
         .run_in_state(SimState::Simulation)
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .with_system(thinking::thinking_system)
         .into()
 }
@@ -41,7 +41,7 @@ pub fn after_thinking_system_set() -> SystemSet {
         .label("after_thinking")
         .after("thinking")
         .run_in_state(SimState::Simulation)
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .with_system(timing::reset_internal_timer_system)
         .with_system(moving::movement_system)
         .with_system(eating::process_eaters_system)
@@ -56,7 +56,7 @@ pub fn attempting_behaviour_system_set() -> SystemSet {
         .label("attempting")
         .after("after_thinking")
         .run_in_state(SimState::Simulation)
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .with_system(eating::attempted_to_eat_system)
         .with_system(laying::attempted_to_lay_system)
         .with_system(growing::attempted_to_grow_system)
@@ -67,7 +67,7 @@ pub fn attempting_behaviour_system_set() -> SystemSet {
 pub fn other_behaviour_system_set() -> SystemSet {
     ConditionSet::new()
         .label("other")
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(growing::existence_system)
         .with_system(eating::eating_system)
@@ -77,7 +77,7 @@ pub fn other_behaviour_system_set() -> SystemSet {
 
 pub fn slow_behaviour_system_set() -> SystemSet {
     ConditionSet::new()
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(laying::lay_egg_system)
         .with_system(growing::grow_bug_system)
@@ -86,7 +86,7 @@ pub fn slow_behaviour_system_set() -> SystemSet {
 
 pub fn very_slow_system_set() -> SystemSet {
     ConditionSet::new()
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(metabolism::energy_return_system)
         .with_system(laying::spawn_egg_system)
@@ -96,7 +96,7 @@ pub fn very_slow_system_set() -> SystemSet {
 pub fn timers_system_set() -> SystemSet {
     ConditionSet::new()
         .run_in_state(SimState::Simulation)
-        .run_if_not(ui::is_paused)
+        .run_if_not(conditions::is_paused)
         .with_system(timing::progress_simulation_timer)
         .with_system(timing::progress_age_system)
         .with_system(timing::progress_timers_system)

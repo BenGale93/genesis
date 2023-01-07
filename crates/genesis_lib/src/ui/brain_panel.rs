@@ -1,11 +1,7 @@
 use bevy_egui::egui;
-use genesis_components::mind::{self, GuiNeuron};
+use genesis_components::mind::*;
 
-pub(super) type BugBrainInfo<'a> = (
-    &'a mind::MindInput,
-    &'a mind::MindLayout,
-    &'a mind::MindOutput,
-);
+pub(super) type BugBrainInfo<'a> = (&'a MindInput, &'a MindLayout, &'a MindOutput);
 
 const NEURON_NAMES: [&str; 21] = [
     "Constant",
@@ -31,7 +27,7 @@ const NEURON_NAMES: [&str; 21] = [
     "Want to grab",
 ];
 
-fn paint_synapses(ui: &mut egui::Ui, synapses: &[mind::PaintedSynapse]) {
+fn paint_synapses(ui: &mut egui::Ui, synapses: &[PaintedSynapse]) {
     for syn in synapses {
         ui.painter()
             .line_segment([syn.start, syn.end], egui::Stroke::new(5.0, syn.color));
@@ -61,7 +57,7 @@ fn paint_neuron_labels(ui: &mut egui::Ui, response: &egui::Response, neuron: &Gu
         return;
     };
     let dist = (neuron_pos - hover_pos).length();
-    if dist >= mind::RADIUS {
+    if dist >= RADIUS {
         return;
     }
     let label = NEURON_NAMES
@@ -80,7 +76,7 @@ fn paint_neuron_labels(ui: &mut egui::Ui, response: &egui::Response, neuron: &Gu
 fn paint_neurons(
     ui: &mut egui::Ui,
     response: &egui::Response,
-    neuron_layout: &[mind::GuiNeuron],
+    neuron_layout: &[GuiNeuron],
     mind_values: &[f32],
 ) {
     for gui_neuron in neuron_layout {
@@ -89,7 +85,7 @@ fn paint_neurons(
         };
 
         ui.painter()
-            .circle_filled(neuron_position, mind::RADIUS, gui_neuron.color);
+            .circle_filled(neuron_position, RADIUS, gui_neuron.color);
 
         paint_neuron_values(ui, gui_neuron.index, neuron_position, mind_values);
         paint_neuron_labels(ui, response, gui_neuron);

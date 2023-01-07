@@ -1,8 +1,10 @@
-use std::fs;
+use std::{fs, io::Write};
 
 use bevy::{
-    log::warn,
-    prelude::{EventReader, Query, Res, ResMut, Resource, With, World},
+    log::{info, warn},
+    prelude::{AppTypeRegistry, EventReader, Query, Res, ResMut, Resource, With, World},
+    scene::DynamicScene,
+    tasks::IoTaskPool,
     time::Time,
 };
 use derive_getters::Getters;
@@ -141,10 +143,41 @@ impl SimulationSerializer {
     }
 }
 
-pub fn serialize_simulation(world: &World) -> String {
+fn serialize_simulation(world: &World) -> String {
     let simulation = SimulationSerializer::new(world);
     let pretty_config = ron::ser::PrettyConfig::default()
         .indentor("  ".to_string())
         .new_line("\n".to_string());
     ron::ser::to_string_pretty(&simulation, pretty_config).unwrap()
+}
+
+pub fn save_simulation_system(world: &World) {
+    let type_registry = world.resource::<AppTypeRegistry>();
+    let scene = DynamicScene::from_world(world, type_registry);
+    let serialized_scene = scene.serialize_ron(type_registry).unwrap();
+    let serialized_sim = serialize_simulation(world);
+    let path = std::env::current_dir().unwrap();
+    let Some(res) = rfd::FileDialog::new()
+                        .set_directory(path)
+                        .pick_folder() else
+                    {
+                        return;
+                    };
+
+    IoTaskPool::get()
+        .spawn(async move {
+            match fs::File::create(res.join("scene.scn.ron"))
+                .and_then(|mut file| file.write(serialized_scene.as_bytes()))
+            {
+                Ok(_) => info!("Saved simulation."),
+                Err(e) => warn!("Could not save simulation. Please try again: {e}."),
+            };
+            match fs::File::create(res.join("resources.ron"))
+                .and_then(|mut file| file.write(serialized_sim.as_bytes()))
+            {
+                Ok(_) => info!("Saved simulation resources."),
+                Err(e) => warn!("Could not save simulation. Please try again: {e}."),
+            };
+        })
+        .detach();
 }
