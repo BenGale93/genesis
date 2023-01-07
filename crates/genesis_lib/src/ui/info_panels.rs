@@ -1,25 +1,15 @@
-use bevy::{
-    prelude::{
-        AssetServer, Camera, Color, Commands, Component, Entity, EventWriter, GlobalTransform,
-        Input, MouseButton, Query, ReflectComponent, Res, ResMut, Resource, Vec3, With,
-    },
-    reflect::Reflect,
-    sprite::Sprite,
-    window::Windows,
-};
+use bevy::prelude::{Query, Res, ResMut, Resource, With};
 use bevy_egui::{egui, EguiContext};
-use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use bevy_trait_query::ReadTraits;
-use components::Generation;
-use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{body, eat, lay, see, time};
-use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
-use super::{brain_panel, interaction, statistics};
-use crate::{genesis_serde, spawning};
+use crate::{
+    statistics,
+    ui::{brain_panel, interaction::Selected},
+};
 
 #[derive(Debug, Default, Resource)]
 pub struct GlobalPanelState(pub GlobalPanel);
@@ -103,46 +93,6 @@ fn population_sub_panel(ui: &mut egui::Ui, performance_stats: &statistics::BugPe
         "Oldest bug age: {:.2}",
         performance_stats.current_oldest_bug()
     ));
-}
-
-pub fn using_ui(mut egui_context: ResMut<EguiContext>) -> bool {
-    let ctx = egui_context.ctx_mut();
-    ctx.is_using_pointer() || ctx.is_pointer_over_area()
-}
-
-#[derive(Component, Reflect, Default)]
-#[reflect(Component)]
-pub struct Selected;
-
-pub fn select_sprite_system(
-    mut commands: Commands,
-    rapier_context: Res<RapierContext>,
-    wnds: Res<Windows>,
-    mouse_button: Res<Input<MouseButton>>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
-    mut sprite_query: Query<(Entity, &mut Sprite, &body::OriginalColor)>,
-) {
-    let filter = QueryFilter::default();
-    if !mouse_button.pressed(MouseButton::Left) {
-        return;
-    }
-    // check if the cursor is inside the window and get its position
-    let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) else {
-        return;
-    };
-    for (entity, mut sprite, original_color) in sprite_query.iter_mut() {
-        commands.entity(entity).remove::<Selected>();
-        sprite.color = original_color.0;
-    }
-    rapier_context.intersections_with_point(world_pos, filter, |selected_entity| {
-        for (entity, mut sprite, _) in sprite_query.iter_mut() {
-            if selected_entity == entity {
-                commands.entity(selected_entity).insert(Selected);
-                sprite.color = Color::RED;
-            }
-        }
-        false
-    });
 }
 
 #[derive(Debug, Default, Resource)]
@@ -330,113 +280,4 @@ pub fn plant_info_panel_system(
     top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
         ui.label(format!("Energy: {}", &plant_info.energy()));
     });
-}
-
-pub fn game_speed_widget(
-    mut egui_ctx: ResMut<EguiContext>,
-    mut sim_speed: ResMut<interaction::SimulationSpeed>,
-) {
-    let symbol = if sim_speed.paused { "⏵" } else { "⏸" };
-    let mut speed_copy = sim_speed.speed;
-    egui::Window::new("Controls")
-        .anchor(egui::Align2::RIGHT_TOP, [-5.0, 5.0])
-        .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal(|ui| {
-                if ui.button(symbol).clicked() {
-                    sim_speed.paused = !sim_speed.paused;
-                }
-                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=3.0).text("Game Speed"))
-            })
-        });
-
-    if sim_speed.speed != speed_copy {
-        sim_speed.speed = speed_copy;
-    }
-}
-
-#[derive(Debug)]
-pub struct SaveSimulationEvent;
-
-#[derive(Debug)]
-pub struct LoadBugEvent;
-
-#[derive(Debug)]
-pub struct SaveBugEvent;
-
-pub fn bug_serde_widget(
-    mut ev_save_sim: EventWriter<SaveSimulationEvent>,
-    mut ev_load_bug: EventWriter<LoadBugEvent>,
-    mut ev_save_bug: EventWriter<SaveBugEvent>,
-    mut egui_ctx: ResMut<EguiContext>,
-    bug_query: Query<Entity, (With<time::Age>, With<Selected>)>,
-) {
-    egui::Window::new("Save/Load")
-        .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
-        .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal(|ui| {
-                if ui.button("Save simulation").clicked() {
-                    ev_save_sim.send(SaveSimulationEvent);
-                };
-                if ui.button("Load bug").clicked() {
-                    ev_load_bug.send(LoadBugEvent);
-                };
-                if bug_query.get_single().is_ok() && ui.button("Save bug").clicked() {
-                    ev_save_bug.send(SaveBugEvent);
-                }
-            })
-        });
-}
-
-pub fn bug_spawner_widget(
-    mut egui_ctx: ResMut<EguiContext>,
-    mut loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
-) {
-    if loaded_blueprint.blueprint.is_none() {
-        return;
-    }
-    egui::Window::new("Spawn")
-        .anchor(egui::Align2::CENTER_BOTTOM, [5.0, 0.0])
-        .show(egui_ctx.ctx_mut(), |ui| {
-            ui.horizontal(|ui| {
-                if ui.button("Clear Bug").clicked() {
-                    loaded_blueprint.blueprint = None;
-                }
-            })
-        });
-}
-
-pub fn spawn_at_mouse(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    genome: Res<attributes::Genome>,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    loaded_blueprint: ResMut<genesis_serde::LoadedBlueprint>,
-    wnds: Res<Windows>,
-    mouse_button: Res<Input<MouseButton>>,
-    q_camera: Query<(&Camera, &GlobalTransform)>,
-) {
-    if !mouse_button.just_released(MouseButton::Left) {
-        return;
-    }
-    let Some(world_pos) = interaction::get_cursor_position(wnds, q_camera) else {
-        return;
-    };
-    let Some(blueprint) = &loaded_blueprint.blueprint else {
-        return;
-    };
-    let Some(energy) = ecosystem.request_energy(WorldConfig::global().start_energy) else {
-        return;
-    };
-
-    spawning::spawn_egg(
-        &mut commands,
-        &asset_server,
-        &genome,
-        energy,
-        Vec3::new(world_pos.x, world_pos.y, 0.0),
-        blueprint.dna().to_owned(),
-        blueprint.mind().to_owned(),
-        Generation(0),
-        None,
-    );
 }

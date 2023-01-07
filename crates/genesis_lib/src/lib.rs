@@ -15,6 +15,7 @@ use iyes_loopless::prelude::*;
 use simulation::SimulationPlugin;
 
 mod behaviour;
+mod conditions;
 mod genesis_serde;
 mod lifecycle;
 mod setup;
@@ -37,7 +38,6 @@ impl Plugin for GenesisPlugin {
     fn build(&self, app: &mut App) {
         app.add_loopless_state(SimState::MainMenu)
             .add_plugin(SimulationPlugin)
-            .add_plugin(genesis_ecosystem::EcosystemPlugin)
             .add_plugin(ui::menus::MenusPlugin);
     }
 }
