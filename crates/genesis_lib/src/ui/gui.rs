@@ -13,7 +13,7 @@ use bevy_trait_query::ReadTraits;
 use components::Generation;
 use genesis_attributes as attributes;
 use genesis_components as components;
-use genesis_components::{body, eat, lay, mind, see, time};
+use genesis_components::{body, eat, lay, see, time};
 use genesis_config::WorldConfig;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
@@ -360,11 +360,15 @@ pub struct SaveSimulationEvent;
 #[derive(Debug)]
 pub struct LoadBugEvent;
 
+#[derive(Debug)]
+pub struct SaveBugEvent;
+
 pub fn bug_serde_widget(
     mut ev_save_sim: EventWriter<SaveSimulationEvent>,
     mut ev_load_bug: EventWriter<LoadBugEvent>,
+    mut ev_save_bug: EventWriter<SaveBugEvent>,
     mut egui_ctx: ResMut<EguiContext>,
-    bug_query: Query<(&mind::Mind, &attributes::Dna), With<Selected>>,
+    bug_query: Query<Entity, (With<time::Age>, With<Selected>)>,
 ) {
     egui::Window::new("Save/Load")
         .anchor(egui::Align2::LEFT_BOTTOM, [5.0, -5.0])
@@ -376,12 +380,9 @@ pub fn bug_serde_widget(
                 if ui.button("Load bug").clicked() {
                     ev_load_bug.send(LoadBugEvent);
                 };
-                let Ok(bug) = bug_query.get_single() else {
-                    return;
-                };
-                if ui.button("Save bug").clicked() {
-                    genesis_serde::save_bug(&bug);
-                };
+                if bug_query.get_single().is_ok() && ui.button("Save bug").clicked() {
+                    ev_save_bug.send(SaveBugEvent);
+                }
             })
         });
 }

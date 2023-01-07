@@ -56,6 +56,7 @@ pub fn bug_serde_system_set() -> SystemSet {
     ConditionSet::new()
         .run_in_state(SimState::Simulation)
         .with_system(genesis_serde::load_bug_system)
+        .with_system(genesis_serde::save_bug_system)
         .into()
 }
 
