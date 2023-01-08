@@ -46,7 +46,6 @@ pub fn despawn_system_set() -> SystemSet {
         .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(lifecycle::kill_bug_system)
-        .with_system(behaviour::laying::hatch_egg_system)
         .with_system(spawning::despawn_food_system)
         .into()
 }
@@ -57,7 +56,7 @@ pub fn lifecycle_system_set() -> SystemSet {
         .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
         .with_system(lifecycle::transition_to_adult_system)
-        .with_system(lifecycle::transition_to_hatching_system)
+        .with_system(lifecycle::hatch_egg_system)
         .into()
 }
 

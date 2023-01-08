@@ -481,6 +481,7 @@ impl Plugin for AttributesPlugin {
             .register_type::<CostOfEating>()
             .register_type::<OffspringEnergy>()
             .register_type::<MouthWidth>()
+            .register_type::<HatchSize>()
             .register_type::<MaxSize>()
             .register_type::<GrowthRate>()
             .register_type::<GrabAngle>()
