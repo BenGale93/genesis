@@ -241,7 +241,8 @@ fn spawn_plant(
     energy: ecosystem::Energy,
     location: Vec3,
 ) {
-    let food = ecosystem::Food::new(energy);
+    let plant_config = &config::WorldConfig::global().plant;
+    let food = ecosystem::Food::new(energy, plant_config.energy_density, plant_config.toughness);
 
     commands
         .spawn(food_sprite_bundle(
@@ -256,13 +257,40 @@ fn spawn_plant(
             angular_damping: 1.0,
         })
         .insert(food.collider())
-        .insert(ColliderMassProperties::Density(
-            config::WorldConfig::global().plant_density,
-        ))
+        .insert(ColliderMassProperties::Density(plant_config.density))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
         .insert(components::Plant);
+}
+
+pub fn spawn_meat(
+    commands: &mut Commands,
+    asset_server: &Res<AssetServer>,
+    energy: ecosystem::Energy,
+    location: Vec3,
+) {
+    let meat_config = &config::WorldConfig::global().meat;
+    let food = ecosystem::Food::new(energy, meat_config.energy_density, meat_config.toughness);
+
+    commands
+        .spawn(food_sprite_bundle(
+            asset_server,
+            food.sprite_size(),
+            location,
+            Color::MAROON,
+        ))
+        .insert(RigidBody::Dynamic)
+        .insert(Damping {
+            linear_damping: 1.0,
+            angular_damping: 1.0,
+        })
+        .insert(food.collider())
+        .insert(ColliderMassProperties::Density(meat_config.density))
+        .insert(Velocity::zero())
+        .insert(ExternalImpulse::default())
+        .insert(food)
+        .insert(components::Meat);
 }
 
 #[derive(Resource)]
@@ -294,7 +322,7 @@ pub fn spawn_plant_system(
         let mut rng = rand::thread_rng();
         let size = plant_size_randomiser.random_size(&mut rng);
         let Some(energy) =
-            ecosystem.request_energy(size as usize * config_instance.plant_energy_per_unit) else {return};
+            ecosystem.request_energy(size as usize * config_instance.plant.energy_density) else {return};
         let location = spawners.random_food_position(&mut rng);
         spawn_plant(&mut commands, asset_server, energy, location);
     }

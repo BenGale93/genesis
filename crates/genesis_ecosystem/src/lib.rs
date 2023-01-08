@@ -10,8 +10,8 @@ use bevy_ecs::{
 };
 use bevy_rapier2d::prelude::Collider;
 use bevy_reflect::Reflect;
+use derive_getters::Getters;
 use derive_more::{Add, Constructor, Display, Sub};
-use genesis_config as config;
 use glam::Vec2;
 use serde::{Deserialize, Serialize};
 
@@ -62,10 +62,12 @@ impl Energy {
     }
 }
 
-#[derive(Component, Debug, Constructor, Default, Reflect)]
+#[derive(Component, Debug, Constructor, Default, Reflect, Getters)]
 #[reflect(Component)]
 pub struct Food {
     energy: Energy,
+    energy_density: usize,
+    toughness: f32,
 }
 
 impl Food {
@@ -73,16 +75,11 @@ impl Food {
         self.energy.take_energy(amount)
     }
 
-    pub const fn energy(&self) -> &Energy {
-        &self.energy
+    pub const fn size(&self) -> f32 {
+        (self.energy.amount() / self.energy_density) as f32
     }
 
-    pub fn size(&self) -> f32 {
-        let config_instance = config::WorldConfig::global();
-        (self.energy.amount() / config_instance.plant_energy_per_unit) as f32
-    }
-
-    pub fn sprite_size(&self) -> Option<Vec2> {
+    pub const fn sprite_size(&self) -> Option<Vec2> {
         Some(Vec2::splat(self.size()))
     }
 

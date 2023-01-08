@@ -18,9 +18,9 @@ pub const ZOOM_SPEED: f32 = 0.1;
 // Bugs
 pub const INPUT_NEURONS: usize = 14;
 pub const OUTPUT_NEURONS: usize = 7;
-pub const EATING_RATIO: usize = 5;
-pub const CORE_MULTIPLIER: usize = 2;
-pub const HEALTH_MULTIPLIER: usize = 3;
+pub const EATING_MULTIPLIER: f32 = 20.0;
+pub const CORE_MULTIPLIER: usize = 200;
+pub const HEALTH_MULTIPLIER: usize = 300;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
@@ -95,13 +95,12 @@ pub struct WorldConfig {
     pub translation_cost: f32,
     pub unit_size_cost: f32,
     pub world_energy: usize,
-    pub plant_energy_per_unit: usize,
-    pub plant_size_range: (f32, f32),
-    pub plant_density: f32,
     pub mutation_probability: f32,
     pub cost_of_thought: f32,
     pub cost_of_grab: f32,
     pub cost_of_lay: f32,
+    pub plant: PlantConfig,
+    pub meat: MeatConfig,
     pub spawners: Vec<SpawnerConfig>,
     pub attributes: attr_config::AttributeConfig,
     pub dependent_attributes: attr_config::DependentAttributeConfig,
@@ -124,16 +123,13 @@ impl WorldConfig {
     fn validate(&self) -> Result<(), Vec<String>> {
         let mut messages = vec![
             validators::min_value(0.0, self.unit_size_cost, "unit_size_cost"),
-            validators::min_value(1, self.plant_energy_per_unit, "plant_energy_per_unit"),
-            validators::between(self.mutation_probability, 0.0, 1.0, "mutation_probability"),
             validators::between(self.max_rotation, 5.0, 40.0, "max_rotation"),
-            validators::between(self.rotation_cost, 0.0, 1.0, "rotation_cost"),
             validators::between(self.max_translation, 100.0, 1000.0, "max_translation"),
-            validators::between(self.translation_cost, 0.0, 1.0, "translation_cost"),
-            validators::between(self.cost_of_thought, 0.0, 0.1, "cost_of_thought"),
-            validators::between(self.cost_of_grab, 0.0, 0.1, "cost_of_grab"),
-            validators::between(self.cost_of_lay, 0.0, 0.1, "cost_of_lay"),
-            validators::between(self.plant_density, 1.0, 100.0, "plant_density"),
+            validators::between(self.rotation_cost, 0.0, 10.0, "rotation_cost"),
+            validators::between(self.translation_cost, 0.0, 10.0, "translation_cost"),
+            validators::between(self.cost_of_thought, 0.0, 10.0, "cost_of_thought"),
+            validators::between(self.cost_of_grab, 0.0, 10.0, "cost_of_grab"),
+            validators::between(self.cost_of_lay, 0.0, 10.0, "cost_of_lay"),
             validators::low_high(
                 self.minimum_number,
                 self.start_num,
@@ -141,10 +137,8 @@ impl WorldConfig {
                 "start_num",
             ),
         ];
-        messages.push(validators::low_high_tuple(
-            self.plant_size_range,
-            "plant_size_range",
-        ));
+        messages.extend(self.plant.validate());
+        messages.extend(self.meat.validate());
         messages.extend(self.attributes.validate());
         messages.extend(self.dependent_attributes.validate());
         messages.extend(self.brain_mutations.validate());
@@ -164,24 +158,23 @@ impl Default for WorldConfig {
         Self {
             start_num: 0,
             minimum_number: 0,
-            energy_floor: 2000,
+            energy_floor: 200000,
             initial_synapse_count: 3,
             mutations: 3,
-            start_energy: 300,
-            lowest_energy_limit: 600,
+            start_energy: 30000,
+            lowest_energy_limit: 60000,
             max_rotation: 15.0,
-            rotation_cost: 0.015,
+            rotation_cost: 1.5,
             max_translation: 400.0,
-            translation_cost: 0.015,
-            unit_size_cost: 0.02,
-            world_energy: 10000,
-            plant_energy_per_unit: 2,
-            plant_size_range: (10.0, 30.0),
-            plant_density: 10.0,
+            translation_cost: 1.5,
+            unit_size_cost: 2.00,
+            world_energy: 1000000,
             mutation_probability: 0.1,
-            cost_of_thought: 0.008,
-            cost_of_grab: 0.02,
-            cost_of_lay: 0.05,
+            cost_of_thought: 0.8,
+            cost_of_grab: 2.0,
+            cost_of_lay: 5.0,
+            plant: PlantConfig::default(),
+            meat: MeatConfig::default(),
             spawners: vec![spawner],
             attributes: attr_config::AttributeConfig::default(),
             dependent_attributes: attr_config::DependentAttributeConfig::default(),
@@ -303,5 +296,66 @@ impl BrainMutationConfig {
         ));
 
         messages
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Getters, Clone)]
+pub struct PlantConfig {
+    pub energy_density: usize,
+    pub toughness: f32,
+    pub size_range: (f32, f32),
+    pub density: f32,
+}
+
+impl Default for PlantConfig {
+    fn default() -> Self {
+        Self {
+            energy_density: 200,
+            toughness: 5.0,
+            size_range: (10.0, 30.0),
+            density: 10.0,
+        }
+    }
+}
+
+impl PlantConfig {
+    pub fn validate(&self) -> Vec<Option<String>> {
+        let mut messages = vec![
+            validators::min_value(1, self.energy_density, "plant.energy_density"),
+            validators::between(self.toughness, 1.0, 100.0, "plant.toughness"),
+            validators::between(self.density, 1.0, 100.0, "plant.density"),
+        ];
+        messages.push(validators::low_high_tuple(
+            self.size_range,
+            "plant.size_range",
+        ));
+        messages
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Getters, Clone)]
+pub struct MeatConfig {
+    pub energy_density: usize,
+    pub toughness: f32,
+    pub density: f32,
+}
+
+impl Default for MeatConfig {
+    fn default() -> Self {
+        Self {
+            energy_density: 400,
+            toughness: 2.0,
+            density: 5.0,
+        }
+    }
+}
+
+impl MeatConfig {
+    pub fn validate(&self) -> Vec<Option<String>> {
+        vec![
+            validators::min_value(1, self.energy_density, "meat.energy_density"),
+            validators::between(self.toughness, 1.0, 100.0, "meat.toughness"),
+            validators::between(self.density, 1.0, 100.0, "meat.density"),
+        ]
     }
 }

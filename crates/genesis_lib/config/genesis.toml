@@ -1,26 +1,34 @@
 start_num = 0
 minimum_number = 0
-energy_floor = 2000
+energy_floor = 200000
 initial_synapse_count = 3
 mutations = 3
-start_energy = 300
-lowest_energy_limit = 600
+start_energy = 30000
+lowest_energy_limit = 60000
 max_rotation = 15.0
-rotation_cost = 0.015
+rotation_cost = 1.5
 max_translation = 400.0
-translation_cost = 0.015
-unit_size_cost = 0.02
-world_energy = 10000
-plant_energy_per_unit = 2
-plant_size_range = [
+translation_cost = 1.5
+unit_size_cost = 2.0
+world_energy = 1000000
+mutation_probability = 0.1
+cost_of_thought = 0.8
+cost_of_grab = 2.0
+cost_of_lay = 5.0
+
+[plant]
+energy_density = 200
+toughness = 5.0
+size_range = [
     10.0,
     30.0,
 ]
-plant_density = 10.0
-mutation_probability = 0.1
-cost_of_thought = 0.008
-cost_of_grab = 0.02
-cost_of_lay = 0.05
+density = 10.0
+
+[meat]
+energy_density = 400
+toughness = 2.0
+density = 5.0
 
 [[spawners]]
 centre = [

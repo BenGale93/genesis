@@ -35,7 +35,7 @@ fn resource_setup(mut commands: Commands) {
     let config_instance = config::WorldConfig::global();
 
     let spawners = Spawners::from_configs(&config_instance.spawners).unwrap();
-    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
+    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant.size_range);
     let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 
     commands.insert_resource(spawners);
@@ -81,7 +81,7 @@ fn load_simulation_system(world: &mut World) {
     let config_instance = genesis_config::WorldConfig::global();
 
     let spawners = Spawners::from_configs(&config_instance.spawners).unwrap();
-    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
+    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant.size_range);
 
     world.insert_resource(spawners);
     world.insert_resource(plant_spawn_size);
