@@ -338,6 +338,7 @@ pub struct MeatConfig {
     pub energy_density: usize,
     pub toughness: f32,
     pub density: f32,
+    pub rot_rate: usize,
 }
 
 impl Default for MeatConfig {
@@ -346,6 +347,7 @@ impl Default for MeatConfig {
             energy_density: 400,
             toughness: 2.0,
             density: 5.0,
+            rot_rate: 20,
         }
     }
 }
@@ -356,6 +358,7 @@ impl MeatConfig {
             validators::min_value(1, self.energy_density, "meat.energy_density"),
             validators::between(self.toughness, 1.0, 100.0, "meat.toughness"),
             validators::between(self.density, 1.0, 100.0, "meat.density"),
+            validators::min_value(1, self.rot_rate, "meat.rot_rate"),
         ]
     }
 }

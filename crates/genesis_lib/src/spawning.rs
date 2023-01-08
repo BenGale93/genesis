@@ -328,7 +328,7 @@ pub fn spawn_plant_system(
     }
 }
 
-pub fn update_food_size(
+pub fn update_food_size_system(
     mut ev_eaten: EventReader<eat::EatenEvent>,
     mut food_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Food)>,
 ) {

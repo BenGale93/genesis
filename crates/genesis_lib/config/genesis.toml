@@ -29,6 +29,7 @@ density = 10.0
 energy_density = 400
 toughness = 2.0
 density = 5.0
+rot_rate = 20
 
 [[spawners]]
 centre = [

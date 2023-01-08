@@ -37,7 +37,7 @@ pub fn food_system_set() -> SystemSet {
     ConditionSet::new()
         .run_if_not(conditions::is_paused)
         .run_in_state(SimState::Simulation)
-        .with_system(spawning::update_food_size)
+        .with_system(spawning::update_food_size_system)
         .into()
 }
 
@@ -58,6 +58,14 @@ pub fn lifecycle_system_set() -> SystemSet {
         .run_in_state(SimState::Simulation)
         .with_system(lifecycle::transition_to_adult_system)
         .with_system(lifecycle::transition_to_hatching_system)
+        .into()
+}
+
+pub fn rot_meat_system_set() -> SystemSet {
+    ConditionSet::new()
+        .run_if_not(conditions::is_paused)
+        .run_in_state(SimState::Simulation)
+        .with_system(lifecycle::rot_meat_system)
         .into()
 }
 
@@ -119,6 +127,7 @@ impl Plugin for SimulationPlugin {
             .add_fixed_timestep(Duration::from_millis(100), "spawner_stats")
             .add_fixed_timestep_system_set("family_tree", 0, family_tree_system_set())
             .add_fixed_timestep_system_set("spawner_stats", 0, nearest_spawner_system_set())
+            .add_fixed_timestep_system_set("very_slow", 0, rot_meat_system_set())
             .add_fixed_timestep_system_set("standard", 0, lifecycle_system_set());
     }
 }
