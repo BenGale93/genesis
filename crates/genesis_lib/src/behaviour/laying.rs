@@ -1,6 +1,5 @@
 use bevy::{
     prelude::{AssetServer, Commands, Entity, Query, Res, ResMut, Transform, Vec3, With, Without},
-    sprite::Sprite,
     time::{Stopwatch, Time},
 };
 use genesis_attributes as attributes;
@@ -157,36 +156,5 @@ pub fn spawn_egg_system(
             components::Generation(0),
             None,
         );
-    }
-}
-
-type EggQuery<'a> = (
-    Entity,
-    &'a mut ecosystem::EggEnergy,
-    &'a mind::Mind,
-    &'a Sprite,
-    &'a attributes::HatchSize,
-    &'a attributes::MaxSize,
-);
-
-pub fn hatch_egg_system(
-    mut commands: Commands,
-    asset_server: Res<AssetServer>,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut hatch_query: Query<EggQuery, With<components::Hatching>>,
-) {
-    for (entity, mut egg_energy, mind, sprite, hatch_size, max_size) in hatch_query.iter_mut() {
-        commands
-            .entity(entity)
-            .remove::<spawning::EggBundle>()
-            .remove::<components::Hatching>();
-        let hatching_entity = commands.entity(entity);
-        let leftover_energy = spawning::spawn_bug(
-            &asset_server,
-            egg_energy.move_all_energy(),
-            (mind.clone(), &sprite.color, hatch_size, max_size),
-            hatching_entity,
-        );
-        ecosystem.return_energy(leftover_energy);
     }
 }

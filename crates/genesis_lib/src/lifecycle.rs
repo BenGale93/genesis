@@ -1,7 +1,6 @@
 use bevy::{
     prelude::{
         AssetServer, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Transform, With,
-        Without,
     },
     sprite::Sprite,
 };
@@ -25,14 +24,38 @@ pub fn transition_to_adult_system(
     }
 }
 
-pub fn transition_to_hatching_system(
+type EggQuery<'a> = (
+    Entity,
+    &'a time::Age,
+    &'a attributes::HatchAge,
+    &'a mut ecosystem::EggEnergy,
+    &'a mind::Mind,
+    &'a Sprite,
+    &'a attributes::HatchSize,
+    &'a attributes::MaxSize,
+);
+
+pub fn hatch_egg_system(
     mut commands: Commands,
-    egg_query: Query<(Entity, &time::Age, &attributes::HatchAge), (With<Egg>, Without<Hatching>)>,
+    asset_server: Res<AssetServer>,
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    mut hatch_query: Query<EggQuery, With<Egg>>,
 ) {
-    for (entity, age, hatch_age) in egg_query.iter() {
-        if age.elapsed_secs() > **hatch_age {
-            commands.entity(entity).insert(Hatching);
+    for (entity, age, hatch_age, mut egg_energy, mind, sprite, hatch_size, max_size) in
+        hatch_query.iter_mut()
+    {
+        if age.elapsed_secs() < **hatch_age {
+            continue;
         }
+        commands.entity(entity).remove::<spawning::EggBundle>();
+        let hatching_entity = commands.entity(entity);
+        let leftover_energy = spawning::spawn_bug(
+            &asset_server,
+            egg_energy.move_all_energy(),
+            (mind.clone(), &sprite.color, hatch_size, max_size),
+            hatching_entity,
+        );
+        ecosystem.return_energy(leftover_energy);
     }
 }
 

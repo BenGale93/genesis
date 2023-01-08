@@ -61,10 +61,6 @@ pub struct Egg;
 
 #[derive(Component, Debug, Reflect, Default)]
 #[reflect(Component)]
-pub struct Hatching;
-
-#[derive(Component, Debug, Reflect, Default)]
-#[reflect(Component)]
 pub struct Juvenile;
 
 #[derive(Component, Debug, Reflect, Default)]
@@ -192,7 +188,6 @@ impl Plugin for ComponentsPlugin {
             .register_type::<RotationSum>()
             .register_type::<ThinkingSum>()
             .register_type::<Egg>()
-            .register_type::<Hatching>()
             .register_type::<Juvenile>()
             .register_type::<Adult>()
             .register_type::<Generation>()
