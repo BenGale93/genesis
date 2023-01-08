@@ -69,7 +69,6 @@ impl Plugin for GenesisUiPlugin {
             .add_system_set(game_time_system_set())
             .add_system_set(info_panels_system_set())
             .insert_resource(info_panels::EntityPanelState::default())
-            .insert_resource(info_panels::GlobalPanelState::default())
             .add_event::<interaction::SaveSimulationEvent>()
             .add_event::<interaction::LoadBugEvent>()
             .add_event::<interaction::SaveBugEvent>();
