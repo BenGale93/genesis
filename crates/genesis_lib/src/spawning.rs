@@ -115,20 +115,28 @@ pub struct EggBundle {
 
 pub fn egg_sprite_bundle(
     asset_server: &Res<AssetServer>,
-    size: f32,
+    size: &Size,
     original_color: &body::OriginalColor,
     location: Vec3,
 ) -> impl Bundle {
     SpriteBundle {
         texture: asset_server.load("egg.png"),
         sprite: Sprite {
-            custom_size: Some(Vec2::new(size, size)),
+            custom_size: Some(egg_sprite_size(size)),
             color: original_color.0,
             ..default()
         },
         transform: Transform::from_translation(location),
         ..default()
     }
+}
+
+pub fn egg_collider(size: &Size) -> Collider {
+    Collider::ball(**size / 2.0)
+}
+
+pub fn egg_sprite_size(size: &Size) -> Vec2 {
+    Vec2::splat(**size)
 }
 
 pub fn spawn_egg(
@@ -142,14 +150,14 @@ pub fn spawn_egg(
     generation: components::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
-    let size = 16.0;
+    let size = Size::new(16.0);
 
     let attribute_bundle = attributes::AttributeBundle::new(&dna, genome);
     let original_color = body::OriginalColor(Color::WHITE);
 
     let mut egg_entity = commands.spawn(egg_sprite_bundle(
         asset_server,
-        size,
+        &size,
         &original_color,
         location,
     ));
@@ -163,7 +171,8 @@ pub fn spawn_egg(
         })
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
-        .insert(Collider::ball(size / 2.0))
+        .insert(egg_collider(&size))
+        .insert(size)
         .insert(components::Egg)
         .insert(attribute_bundle)
         .insert(ecosystem::EggEnergy(energy))
@@ -224,7 +233,7 @@ pub fn nearest_spawner_system(
 
 pub fn food_sprite_bundle(
     asset_server: &Res<AssetServer>,
-    size: Option<Vec2>,
+    size: &Size,
     location: Vec3,
     color: Color,
 ) -> impl Bundle {
@@ -232,7 +241,7 @@ pub fn food_sprite_bundle(
     let sprite_bundle = SpriteBundle {
         texture: asset_server.load("food.png"),
         sprite: Sprite {
-            custom_size: size,
+            custom_size: Some(food_sprite_size(size)),
             color: original_color.0,
             ..default()
         },
@@ -240,6 +249,14 @@ pub fn food_sprite_bundle(
         ..default()
     };
     (original_color, sprite_bundle)
+}
+
+pub fn food_collider(size: &Size) -> Collider {
+    Collider::ball(**size / 2.0)
+}
+
+pub fn food_sprite_size(size: &Size) -> Vec2 {
+    Vec2::splat(**size)
 }
 
 fn spawn_plant(
@@ -250,11 +267,12 @@ fn spawn_plant(
 ) {
     let plant_config = &config::WorldConfig::global().plant;
     let food = ecosystem::Food::new(energy, plant_config.energy_density, plant_config.toughness);
+    let size = Size::new(food.size());
 
     commands
         .spawn(food_sprite_bundle(
             &asset_server,
-            food.sprite_size(),
+            &size,
             location,
             Color::GREEN,
         ))
@@ -263,11 +281,12 @@ fn spawn_plant(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(food.collider())
+        .insert(food_collider(&size))
         .insert(ColliderMassProperties::Density(plant_config.density))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
+        .insert(size)
         .insert(components::Plant);
 }
 
@@ -279,11 +298,12 @@ pub fn spawn_meat(
 ) {
     let meat_config = &config::WorldConfig::global().meat;
     let food = ecosystem::Food::new(energy, meat_config.energy_density, meat_config.toughness);
+    let size = Size::new(food.size());
 
     commands
         .spawn(food_sprite_bundle(
             asset_server,
-            food.sprite_size(),
+            &size,
             location,
             Color::MAROON,
         ))
@@ -292,11 +312,12 @@ pub fn spawn_meat(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(food.collider())
+        .insert(food_collider(&size))
         .insert(ColliderMassProperties::Density(meat_config.density))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
+        .insert(size)
         .insert(components::Meat);
 }
 
@@ -337,13 +358,14 @@ pub fn spawn_plant_system(
 
 pub fn update_food_size_system(
     mut ev_eaten: EventReader<eat::EatenEvent>,
-    mut food_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Food)>,
+    mut food_query: Query<(&mut Sprite, &mut Collider, &mut Size, &ecosystem::Food)>,
 ) {
     for ev in ev_eaten.iter() {
         if let Ok(food_extract) = food_query.get_mut(ev.0) {
-            let (mut sprite, mut collider, food) = food_extract;
-            sprite.custom_size = food.sprite_size();
-            *collider = food.collider();
+            let (mut sprite, mut collider, mut size, food) = food_extract;
+            **size = food.size();
+            sprite.custom_size = Some(food_sprite_size(&size));
+            *collider = food_collider(&size);
         }
     }
 }

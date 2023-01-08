@@ -8,11 +8,9 @@ use bevy_ecs::{
     prelude::{Component, Resource},
     reflect::ReflectComponent,
 };
-use bevy_rapier2d::prelude::Collider;
 use bevy_reflect::Reflect;
 use derive_getters::Getters;
 use derive_more::{Add, Constructor, Display, Sub};
-use glam::Vec2;
 use serde::{Deserialize, Serialize};
 
 #[derive(
@@ -77,14 +75,6 @@ impl Food {
 
     pub const fn size(&self) -> f32 {
         (self.energy.amount() / self.energy_density) as f32
-    }
-
-    pub const fn sprite_size(&self) -> Option<Vec2> {
-        Some(Vec2::splat(self.size()))
-    }
-
-    pub fn collider(&self) -> Collider {
-        Collider::ball(self.size() / 2.0)
     }
 }
 

@@ -122,7 +122,7 @@ impl Relations {
     }
 }
 
-#[derive(Component, Debug, Deref, Reflect, Default, Constructor)]
+#[derive(Component, Debug, Deref, DerefMut, Reflect, Default, Constructor)]
 #[reflect(Component)]
 pub struct Size(f32);
 

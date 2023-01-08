@@ -88,13 +88,17 @@ pub fn kill_bug_system(
 
 pub fn rot_meat_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut meat_query: Query<(&mut Sprite, &mut Collider, &mut ecosystem::Food), With<Meat>>,
+    mut meat_query: Query<
+        (&mut Sprite, &mut Collider, &mut Size, &mut ecosystem::Food),
+        With<Meat>,
+    >,
 ) {
     let rot_rate = config::WorldConfig::global().meat.rot_rate;
-    for (mut sprite, mut collider, mut meat) in meat_query.iter_mut() {
+    for (mut sprite, mut collider, mut size, mut meat) in meat_query.iter_mut() {
         let rotting_energy = meat.take_energy(rot_rate);
-        sprite.custom_size = meat.sprite_size();
-        *collider = meat.collider();
+        **size = meat.size();
+        sprite.custom_size = Some(spawning::food_sprite_size(&size));
+        *collider = spawning::food_collider(&size);
         ecosystem.return_energy(rotting_energy);
     }
 }

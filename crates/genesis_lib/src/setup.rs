@@ -3,16 +3,15 @@ use std::fs;
 use bevy::{
     prelude::{
         default, info, AssetServer, Camera2dBundle, Color, Commands, Entity, Query, Res, ResMut,
-        SystemSet, Transform, Vec2, With, World,
+        SystemSet, Transform, Vec2, With, Without, World,
     },
     scene::DynamicSceneBundle,
 };
-use bevy_rapier2d::prelude::{Collider, RapierConfiguration};
+use bevy_rapier2d::prelude::RapierConfiguration;
 use genesis_attributes::Genome;
 use genesis_components::{body::OriginalColor, mind, time, Egg, Plant, Size};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
-use genesis_ecosystem::Food;
 use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
@@ -101,27 +100,26 @@ fn mind_layout_system(mut commands: Commands, mind_query: Query<(Entity, &mind::
 fn add_missing_components_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    plant_query: Query<(Entity, &Food, &Transform), With<Plant>>,
-    egg_query: Query<(Entity, &OriginalColor, &Transform), With<Egg>>,
-    bug_query: Query<(Entity, &Size, &mind::Mind)>,
+    plant_query: Query<(Entity, &Size, &Transform), With<Plant>>,
+    egg_query: Query<(Entity, &OriginalColor, &Transform, &Size), With<Egg>>,
+    bug_query: Query<(Entity, &Size, &mind::Mind), Without<Egg>>,
 ) {
-    for (entity, plant_food, transform) in &plant_query {
+    for (entity, size, transform) in &plant_query {
         commands
             .entity(entity)
-            .insert(plant_food.collider())
+            .insert(spawning::food_collider(size))
             .insert(spawning::food_sprite_bundle(
                 &asset_server,
-                plant_food.sprite_size(),
+                size,
                 transform.translation,
                 Color::GREEN,
             ));
     }
 
-    let size = 16.0;
-    for (entity, color, transform) in &egg_query {
+    for (entity, color, transform, size) in &egg_query {
         commands
             .entity(entity)
-            .insert(Collider::ball(size / 2.0))
+            .insert(spawning::egg_collider(size))
             .insert(spawning::egg_sprite_bundle(
                 &asset_server,
                 size,
