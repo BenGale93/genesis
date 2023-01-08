@@ -21,6 +21,7 @@ pub const OUTPUT_NEURONS: usize = 7;
 pub const EATING_MULTIPLIER: f32 = 20.0;
 pub const CORE_MULTIPLIER: usize = 200;
 pub const HEALTH_MULTIPLIER: usize = 300;
+pub const GRAB_SIZE_THRESHOLD: f32 = 10.0;
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;

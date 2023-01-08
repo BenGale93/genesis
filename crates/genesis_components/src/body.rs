@@ -1,12 +1,12 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use bevy_ecs::{prelude::Component, reflect::ReflectComponent};
-use bevy_rapier2d::prelude::Collider;
 use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use derive_more::{Deref, DerefMut};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
-use glam::Vec2;
+
+use crate::Size;
 
 #[derive(Component, Debug, Deref, DerefMut, Default, Reflect)]
 #[reflect(Component)]
@@ -24,14 +24,13 @@ pub struct CoreReserve(ecosystem::Energy);
 #[derive(Component, Debug, Default, Reflect)]
 #[reflect(Component)]
 pub struct Vitality {
-    size: Size,
     energy_store: EnergyStore,
     health: Health,
     core_reserve: CoreReserve,
 }
 
 impl Vitality {
-    pub fn new(size: Size, mut total_energy: ecosystem::Energy) -> (Self, ecosystem::Energy) {
+    pub fn new(size: &Size, mut total_energy: ecosystem::Energy) -> (Self, ecosystem::Energy) {
         let size_uint = size.as_uint();
         let core_energy = total_energy.take_energy(config::CORE_MULTIPLIER * size_uint);
         let core_reserve = CoreReserve(core_energy);
@@ -50,7 +49,6 @@ impl Vitality {
 
         (
             Self {
-                size,
                 energy_store,
                 health,
                 core_reserve,
@@ -89,25 +87,14 @@ impl Vitality {
     }
 
     #[must_use]
-    pub fn eat(&mut self, food: &mut ecosystem::Food) -> ecosystem::Energy {
-        let energy_bite =
-            ((self.size().current_size() / food.toughness()) * config::EATING_MULTIPLIER).ceil();
+    pub fn eat(&mut self, food: &mut ecosystem::Food, size: &Size) -> ecosystem::Energy {
+        let energy_bite = ((**size / food.toughness()) * config::EATING_MULTIPLIER).ceil();
         let requested_energy = self.available_space().min(energy_bite as usize);
         let extracted_energy = food.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
 
-    pub const fn size(&self) -> &Size {
-        &self.size
-    }
-
-    pub fn grow(&mut self, amount: usize) -> Result<()> {
-        if self.size.at_max_size()
-            || (self.energy_store().amount()
-                < amount * (config::CORE_MULTIPLIER + config::HEALTH_MULTIPLIER))
-        {
-            return Err(anyhow!("Can't grow."));
-        }
+    pub fn grow(&mut self, amount: usize, new_size: usize) {
         let core_growing_energy = self
             .energy_store
             .take_energy(amount * config::CORE_MULTIPLIER);
@@ -124,12 +111,8 @@ impl Vitality {
             "Tried to grow and couldn't add all the energy to health."
         );
 
-        self.size.grow(amount as f32);
-
-        self.energy_store.set_energy_limit(
-            config::EnergyLimitConfig::global().energy_limit(self.size.as_uint()),
-        );
-        Ok(())
+        self.energy_store
+            .set_energy_limit(config::EnergyLimitConfig::global().energy_limit(new_size));
     }
 
     #[must_use]
@@ -138,54 +121,6 @@ impl Vitality {
         returning_energy = returning_energy + self.health.0.take_all_energy();
         returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
         returning_energy
-    }
-
-    #[must_use]
-    pub fn metabolism_rate(&self) -> f32 {
-        self.size.current_size * config::WorldConfig::global().unit_size_cost
-    }
-}
-
-#[derive(Debug, Default, Reflect)]
-pub struct Size {
-    current_size: f32,
-    max_size: f32,
-}
-
-impl Size {
-    pub const fn new(size: f32, max_size: f32) -> Self {
-        Self {
-            current_size: size,
-            max_size,
-        }
-    }
-
-    pub const fn current_size(&self) -> f32 {
-        self.current_size
-    }
-
-    pub fn grow(&mut self, increment: f32) {
-        self.current_size = (self.current_size + increment).min(self.max_size);
-    }
-
-    pub const fn sprite(&self) -> Vec2 {
-        Vec2::splat(self.current_size)
-    }
-
-    pub fn collider(&self) -> Collider {
-        Collider::capsule(
-            Vec2::new(0.0, -self.current_size / 5.5),
-            Vec2::new(0.0, self.current_size / 5.5),
-            self.current_size / 3.5,
-        )
-    }
-
-    pub const fn as_uint(&self) -> usize {
-        self.current_size as usize
-    }
-
-    pub fn at_max_size(&self) -> bool {
-        (self.current_size - self.max_size).abs() < f32::EPSILON
     }
 }
 
@@ -197,7 +132,6 @@ impl bevy_app::Plugin for BodyComponentPlugin {
             .register_type::<EnergyStore>()
             .register_type::<Health>()
             .register_type::<CoreReserve>()
-            .register_type::<Vitality>()
-            .register_type::<Size>();
+            .register_type::<Vitality>();
     }
 }

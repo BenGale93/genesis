@@ -32,7 +32,6 @@ type EggQuery<'a> = (
     &'a mind::Mind,
     &'a Sprite,
     &'a attributes::HatchSize,
-    &'a attributes::MaxSize,
 );
 
 pub fn hatch_egg_system(
@@ -41,8 +40,7 @@ pub fn hatch_egg_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
     mut hatch_query: Query<EggQuery, With<Egg>>,
 ) {
-    for (entity, age, hatch_age, mut egg_energy, mind, sprite, hatch_size, max_size) in
-        hatch_query.iter_mut()
+    for (entity, age, hatch_age, mut egg_energy, mind, sprite, hatch_size) in hatch_query.iter_mut()
     {
         if age.elapsed_secs() < **hatch_age {
             continue;
@@ -52,7 +50,7 @@ pub fn hatch_egg_system(
         let leftover_energy = spawning::spawn_bug(
             &asset_server,
             egg_energy.move_all_energy(),
-            (mind.clone(), &sprite.color, hatch_size, max_size),
+            (mind.clone(), &sprite.color, hatch_size),
             hatching_entity,
         );
         ecosystem.return_energy(leftover_energy);
@@ -90,13 +88,17 @@ pub fn kill_bug_system(
 
 pub fn rot_meat_system(
     mut ecosystem: ResMut<ecosystem::Ecosystem>,
-    mut meat_query: Query<(&mut Sprite, &mut Collider, &mut ecosystem::Food), With<Meat>>,
+    mut meat_query: Query<
+        (&mut Sprite, &mut Collider, &mut Size, &mut ecosystem::Food),
+        With<Meat>,
+    >,
 ) {
     let rot_rate = config::WorldConfig::global().meat.rot_rate;
-    for (mut sprite, mut collider, mut meat) in meat_query.iter_mut() {
+    for (mut sprite, mut collider, mut size, mut meat) in meat_query.iter_mut() {
         let rotting_energy = meat.take_energy(rot_rate);
-        sprite.custom_size = meat.sprite_size();
-        *collider = meat.collider();
+        **size = meat.size();
+        sprite.custom_size = Some(spawning::food_sprite_size(&size));
+        *collider = spawning::food_collider(&size);
         ecosystem.return_energy(rotting_energy);
     }
 }

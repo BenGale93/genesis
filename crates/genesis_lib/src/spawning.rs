@@ -9,11 +9,10 @@ use bevy::{
 use bevy_rapier2d::prelude::{
     ActiveEvents, Collider, ColliderMassProperties, Damping, ExternalImpulse, RigidBody, Velocity,
 };
-use components::body::{OriginalColor, Size};
 use genesis_attributes as attributes;
 use genesis_components as components;
 use genesis_components::{
-    body, eat, grab, grow, lay, mind, see, time, BurntEnergy, Generation, SizeMultiplier,
+    body, eat, grab, grow, lay, mind, see, time, BurntEnergy, Generation, Size, SizeMultiplier,
 };
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
@@ -21,12 +20,7 @@ use genesis_spawners::Spawners;
 use genesis_traits::BehaviourTracker;
 use rand_distr::{Distribution, Uniform};
 
-type BugParts<'a> = (
-    mind::Mind,
-    &'a Color,
-    &'a attributes::HatchSize,
-    &'a attributes::MaxSize,
-);
+type BugParts<'a> = (mind::Mind, &'a Color, &'a attributes::HatchSize);
 
 pub fn bug_sprite_bundle(
     asset_server: &Res<AssetServer>,
@@ -44,12 +38,24 @@ pub fn bug_sprite_bundle(
 
     let texture: Handle<Image> = asset_server.load("sprite.png");
     let sprite = Sprite {
-        custom_size: Some(size.sprite()),
+        custom_size: Some(bug_sprite_size(size)),
         color: current_color,
         ..default()
     };
 
     (texture, sprite, original_color)
+}
+
+pub fn bug_collider(size: &Size) -> Collider {
+    Collider::capsule(
+        Vec2::new(0.0, -**size / 5.5),
+        Vec2::new(0.0, **size / 5.5),
+        **size / 3.5,
+    )
+}
+
+pub fn bug_sprite_size(size: &Size) -> Vec2 {
+    Vec2::splat(**size)
 }
 
 pub fn spawn_bug(
@@ -58,25 +64,26 @@ pub fn spawn_bug(
     bug_parts: BugParts,
     mut hatching_entity: EntityCommands,
 ) -> ecosystem::Energy {
-    let (mind, egg_color, hatch_size, max_size) = bug_parts;
+    let (mind, egg_color, hatch_size) = bug_parts;
     let mind_bundle = mind::MindBundle::new(&mind);
 
-    let size = body::Size::new(**hatch_size, **max_size);
-    let (vitality, leftover_energy) = body::Vitality::new(size, energy);
+    let size = Size::new(**hatch_size);
+    let (vitality, leftover_energy) = body::Vitality::new(&size, energy);
 
     hatching_entity
         .insert(bug_sprite_bundle(
             asset_server,
-            vitality.size(),
+            &size,
             egg_color,
             mind.color(),
         ))
         .insert(ActiveEvents::COLLISION_EVENTS)
-        .insert(vitality.size().collider())
-        .insert(SizeMultiplier::new(vitality.size().current_size()))
+        .insert(bug_collider(&size))
+        .insert(SizeMultiplier::new(&size))
         .insert(components::Juvenile)
         .insert(vitality)
         .insert(mind_bundle)
+        .insert(size)
         .insert(see::Vision::new())
         .insert(time::Age::default())
         .insert(time::Heart::new())
@@ -108,20 +115,28 @@ pub struct EggBundle {
 
 pub fn egg_sprite_bundle(
     asset_server: &Res<AssetServer>,
-    size: f32,
-    original_color: &OriginalColor,
+    size: &Size,
+    original_color: &body::OriginalColor,
     location: Vec3,
 ) -> impl Bundle {
     SpriteBundle {
         texture: asset_server.load("egg.png"),
         sprite: Sprite {
-            custom_size: Some(Vec2::new(size, size)),
+            custom_size: Some(egg_sprite_size(size)),
             color: original_color.0,
             ..default()
         },
         transform: Transform::from_translation(location),
         ..default()
     }
+}
+
+pub fn egg_collider(size: &Size) -> Collider {
+    Collider::ball(**size / 2.0)
+}
+
+pub fn egg_sprite_size(size: &Size) -> Vec2 {
+    Vec2::splat(**size)
 }
 
 pub fn spawn_egg(
@@ -135,14 +150,14 @@ pub fn spawn_egg(
     generation: components::Generation,
     parent_id: Option<Entity>,
 ) -> Entity {
-    let size = 16.0;
+    let size = Size::new(16.0);
 
     let attribute_bundle = attributes::AttributeBundle::new(&dna, genome);
     let original_color = body::OriginalColor(Color::WHITE);
 
     let mut egg_entity = commands.spawn(egg_sprite_bundle(
         asset_server,
-        size,
+        &size,
         &original_color,
         location,
     ));
@@ -156,7 +171,8 @@ pub fn spawn_egg(
         })
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
-        .insert(Collider::ball(size / 2.0))
+        .insert(egg_collider(&size))
+        .insert(size)
         .insert(components::Egg)
         .insert(attribute_bundle)
         .insert(ecosystem::EggEnergy(energy))
@@ -217,7 +233,7 @@ pub fn nearest_spawner_system(
 
 pub fn food_sprite_bundle(
     asset_server: &Res<AssetServer>,
-    size: Option<Vec2>,
+    size: &Size,
     location: Vec3,
     color: Color,
 ) -> impl Bundle {
@@ -225,7 +241,7 @@ pub fn food_sprite_bundle(
     let sprite_bundle = SpriteBundle {
         texture: asset_server.load("food.png"),
         sprite: Sprite {
-            custom_size: size,
+            custom_size: Some(food_sprite_size(size)),
             color: original_color.0,
             ..default()
         },
@@ -233,6 +249,14 @@ pub fn food_sprite_bundle(
         ..default()
     };
     (original_color, sprite_bundle)
+}
+
+pub fn food_collider(size: &Size) -> Collider {
+    Collider::ball(**size / 2.0)
+}
+
+pub fn food_sprite_size(size: &Size) -> Vec2 {
+    Vec2::splat(**size)
 }
 
 fn spawn_plant(
@@ -243,11 +267,12 @@ fn spawn_plant(
 ) {
     let plant_config = &config::WorldConfig::global().plant;
     let food = ecosystem::Food::new(energy, plant_config.energy_density, plant_config.toughness);
+    let size = Size::new(food.size());
 
     commands
         .spawn(food_sprite_bundle(
             &asset_server,
-            food.sprite_size(),
+            &size,
             location,
             Color::GREEN,
         ))
@@ -256,11 +281,12 @@ fn spawn_plant(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(food.collider())
+        .insert(food_collider(&size))
         .insert(ColliderMassProperties::Density(plant_config.density))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
+        .insert(size)
         .insert(components::Plant);
 }
 
@@ -272,11 +298,12 @@ pub fn spawn_meat(
 ) {
     let meat_config = &config::WorldConfig::global().meat;
     let food = ecosystem::Food::new(energy, meat_config.energy_density, meat_config.toughness);
+    let size = Size::new(food.size());
 
     commands
         .spawn(food_sprite_bundle(
             asset_server,
-            food.sprite_size(),
+            &size,
             location,
             Color::MAROON,
         ))
@@ -285,11 +312,12 @@ pub fn spawn_meat(
             linear_damping: 1.0,
             angular_damping: 1.0,
         })
-        .insert(food.collider())
+        .insert(food_collider(&size))
         .insert(ColliderMassProperties::Density(meat_config.density))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
+        .insert(size)
         .insert(components::Meat);
 }
 
@@ -330,13 +358,14 @@ pub fn spawn_plant_system(
 
 pub fn update_food_size_system(
     mut ev_eaten: EventReader<eat::EatenEvent>,
-    mut food_query: Query<(&mut Sprite, &mut Collider, &ecosystem::Food)>,
+    mut food_query: Query<(&mut Sprite, &mut Collider, &mut Size, &ecosystem::Food)>,
 ) {
     for ev in ev_eaten.iter() {
         if let Ok(food_extract) = food_query.get_mut(ev.0) {
-            let (mut sprite, mut collider, food) = food_extract;
-            sprite.custom_size = food.sprite_size();
-            *collider = food.collider();
+            let (mut sprite, mut collider, mut size, food) = food_extract;
+            **size = food.size();
+            sprite.custom_size = Some(food_sprite_size(&size));
+            *collider = food_collider(&size);
         }
     }
 }
