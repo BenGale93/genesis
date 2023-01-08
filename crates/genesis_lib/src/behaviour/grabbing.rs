@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{ExternalImpulse, RapierContext};
 use genesis_attributes as attributes;
-use genesis_components::{grab::*, mind, Egg};
+use genesis_components::{grab::*, mind, Egg, Size};
 use genesis_config as config;
 use genesis_maths::angle_between;
 use genesis_traits::BehaviourTracker;
@@ -52,9 +52,12 @@ pub type GrabbingBug<'a> = (
     &'a attributes::GrabStrength,
 );
 
-fn apply_grab(bug: &GrabbingBug, other: &mut (&Transform, Mut<ExternalImpulse>)) {
+fn apply_grab(bug: &GrabbingBug, other: &mut (&Transform, &Size, Mut<ExternalImpulse>)) {
     let (bug_transform, grab_angle, grab_strength) = bug;
-    let (other_transform, ext_impulse) = other;
+    let (other_transform, size, ext_impulse) = other;
+    if ***size < config::GRAB_SIZE_THRESHOLD {
+        return;
+    }
     let translation_between = other_transform.translation - bug_transform.translation;
     let angle_to_other = angle_between(&bug_transform.rotation, translation_between);
     if angle_to_other.abs() < ***grab_angle {
@@ -65,7 +68,7 @@ fn apply_grab(bug: &GrabbingBug, other: &mut (&Transform, Mut<ExternalImpulse>))
 pub fn grabbing_system(
     rapier_context: Res<RapierContext>,
     bug_query: Query<GrabbingBug, With<TryingToGrab>>,
-    mut other_query: Query<(&Transform, &mut ExternalImpulse)>,
+    mut other_query: Query<(&Transform, &Size, &mut ExternalImpulse)>,
 ) {
     for contact_pair in rapier_context.contact_pairs() {
         if let (Ok(bug), Ok(mut other)) = (
