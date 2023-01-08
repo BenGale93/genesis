@@ -1,4 +1,4 @@
-use bevy::prelude::{Query, Res, ResMut, Resource, With};
+use bevy::prelude::{Local, Query, Res, ResMut, Resource, With};
 use bevy_egui::{egui, EguiContext};
 use bevy_trait_query::ReadTraits;
 use genesis_components as components;
@@ -10,9 +10,6 @@ use crate::{
     statistics,
     ui::{brain_panel, interaction::Selected},
 };
-
-#[derive(Debug, Default, Resource)]
-pub struct GlobalPanelState(pub GlobalPanel);
 
 #[derive(Debug, PartialEq, Eq, Default)]
 pub enum GlobalPanel {
@@ -35,13 +32,13 @@ pub fn global_ui_update_system(
     energy_stats: Res<statistics::EnergyStats>,
     performance_stats: Res<statistics::BugPerformance>,
     mut egui_ctx: ResMut<EguiContext>,
-    mut panel_state: ResMut<GlobalPanelState>,
+    mut panel_state: Local<GlobalPanel>,
 ) {
     egui::Window::new("Global Info")
         .anchor(egui::Align2::RIGHT_BOTTOM, [-5.0, -5.0])
         .show(egui_ctx.ctx_mut(), |ui| {
-            global_panel_buttons(ui, &mut panel_state.0);
-            match panel_state.0 {
+            global_panel_buttons(ui, &mut panel_state);
+            match *panel_state {
                 GlobalPanel::Environment => {
                     environment_sub_panel(ui, &time, &energy_stats, &count_stats);
                 }
