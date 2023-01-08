@@ -2012,8 +2012,8 @@ dependencies = [
  "bevy_ecs",
  "bevy_rapier2d",
  "bevy_reflect",
+ "derive-getters",
  "derive_more",
- "genesis_config",
  "glam",
  "serde",
 ]

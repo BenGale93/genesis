@@ -3,7 +3,7 @@ use std::f32::consts::PI;
 use bevy::prelude::{Query, Transform, With};
 use genesis_attributes::{EyeAngle, EyeRange};
 use genesis_components::{mind::Mind, see::Vision};
-use genesis_ecosystem::Plant;
+use genesis_ecosystem::Food;
 use genesis_maths::{angle_between, Cone};
 
 fn dist_angle_score(
@@ -21,7 +21,7 @@ fn dist_angle_score(
 pub fn process_sight_system(
     mut eye_query: Query<(&EyeRange, &EyeAngle, &Transform, &mut Vision)>,
     bug_query: Query<&Transform, With<Mind>>,
-    food_query: Query<&Transform, With<Plant>>,
+    food_query: Query<&Transform, With<Food>>,
 ) {
     for (eye_range, eye_angle, transform, mut vision) in eye_query.iter_mut() {
         let cone = Cone::new(

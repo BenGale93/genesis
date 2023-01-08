@@ -89,11 +89,11 @@ impl Vitality {
     }
 
     #[must_use]
-    pub fn eat(&mut self, plant: &mut ecosystem::Plant) -> ecosystem::Energy {
-        let requested_energy = self
-            .available_space()
-            .min(self.size.as_uint() / config::EATING_RATIO);
-        let extracted_energy = plant.take_energy(requested_energy);
+    pub fn eat(&mut self, food: &mut ecosystem::Food) -> ecosystem::Energy {
+        let energy_bite =
+            ((self.size().current_size() / food.toughness()) * config::EATING_MULTIPLIER).ceil();
+        let requested_energy = self.available_space().min(energy_bite as usize);
+        let extracted_energy = food.take_energy(requested_energy);
         self.add_energy(extracted_energy)
     }
 

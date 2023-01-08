@@ -28,7 +28,7 @@ pub fn info_panels_system_set() -> SystemSet {
         .with_system(info_panels::bug_live_info_system)
         .with_system(info_panels::attribute_info_system)
         .with_system(info_panels::egg_live_info_panel_system)
-        .with_system(info_panels::plant_info_panel_system)
+        .with_system(info_panels::food_info_panel_system)
         .with_system(info_panels::global_ui_update_system)
         .with_system(info_panels::bug_brain_info_system)
         .with_system(info_panels::bug_stats_info_system)

@@ -268,16 +268,16 @@ fn egg_live_sub_panel(ui: &mut egui::Ui, egg_info: &EggLiveInfo) {
     ui.label(format!("Generation: {}", &egg_info.1 .0));
 }
 
-type PlantInfo<'a> = &'a ecosystem::Plant;
+type FoodInfo<'a> = &'a ecosystem::Food;
 
-pub fn plant_info_panel_system(
-    plant_query: Query<PlantInfo, With<Selected>>,
+pub fn food_info_panel_system(
+    food_query: Query<FoodInfo, With<Selected>>,
     mut egui_ctx: ResMut<EguiContext>,
 ) {
-    let Ok(plant_info) = plant_query.get_single() else {
+    let Ok(food_info) = food_query.get_single() else {
         return;
     };
-    top_left_info_window("Plant Info").show(egui_ctx.ctx_mut(), |ui| {
-        ui.label(format!("Energy: {}", &plant_info.energy()));
+    top_left_info_window("Food Info").show(egui_ctx.ctx_mut(), |ui| {
+        ui.label(format!("Energy: {}", &food_info.energy()));
     });
 }

@@ -153,6 +153,14 @@ impl SizeMultiplier {
     }
 }
 
+#[derive(Component, Debug, Reflect, Default)]
+#[reflect(Component)]
+pub struct Plant;
+
+#[derive(Component, Debug, Reflect, Default)]
+#[reflect(Component)]
+pub struct Meat;
+
 pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
@@ -190,6 +198,8 @@ impl Plugin for ComponentsPlugin {
             .register_type::<Generation>()
             .register_type::<Relations>()
             .register_type::<SizeMultiplier>()
+            .register_type::<Plant>()
+            .register_type::<Meat>()
             .register_component_as::<dyn BehaviourTracker, ThinkingSum>()
             .register_component_as::<dyn BehaviourTracker, TranslationSum>()
             .register_component_as::<dyn BehaviourTracker, RotationSum>()

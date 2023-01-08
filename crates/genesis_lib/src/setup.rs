@@ -11,11 +11,11 @@ use bevy_rapier2d::prelude::{Collider, RapierConfiguration};
 use genesis_attributes::Genome;
 use genesis_components::{
     body::{OriginalColor, Vitality},
-    mind, time, Egg,
+    mind, time, Egg, Plant,
 };
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
-use genesis_ecosystem::Plant;
+use genesis_ecosystem::Food;
 use genesis_spawners::Spawners;
 use iyes_loopless::prelude::*;
 
@@ -35,7 +35,7 @@ fn resource_setup(mut commands: Commands) {
     let config_instance = config::WorldConfig::global();
 
     let spawners = Spawners::from_configs(&config_instance.spawners).unwrap();
-    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
+    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant.size_range);
     let ecosystem = ecosystem::Ecosystem::new(config_instance.world_energy);
 
     commands.insert_resource(spawners);
@@ -81,7 +81,7 @@ fn load_simulation_system(world: &mut World) {
     let config_instance = genesis_config::WorldConfig::global();
 
     let spawners = Spawners::from_configs(&config_instance.spawners).unwrap();
-    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant_size_range);
+    let plant_spawn_size = spawning::PlantSizeRandomiser::new(config_instance.plant.size_range);
 
     world.insert_resource(spawners);
     world.insert_resource(plant_spawn_size);
@@ -104,18 +104,19 @@ fn mind_layout_system(mut commands: Commands, mind_query: Query<(Entity, &mind::
 fn add_missing_components_system(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
-    plant_query: Query<(Entity, &Plant, &Transform)>,
+    plant_query: Query<(Entity, &Food, &Transform), With<Plant>>,
     egg_query: Query<(Entity, &OriginalColor, &Transform), With<Egg>>,
     bug_query: Query<(Entity, &Vitality, &mind::Mind)>,
 ) {
-    for (entity, plant, transform) in &plant_query {
+    for (entity, plant_food, transform) in &plant_query {
         commands
             .entity(entity)
-            .insert(plant.collider())
-            .insert(spawning::plant_sprite_bundle(
+            .insert(plant_food.collider())
+            .insert(spawning::food_sprite_bundle(
                 &asset_server,
-                plant.sprite_size(),
+                plant_food.sprite_size(),
                 transform.translation,
+                Color::GREEN,
             ));
     }
 

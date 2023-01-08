@@ -1,10 +1,18 @@
-use bevy::prelude::{Commands, DespawnRecursiveExt, Entity, Query, ResMut, With, Without};
+use bevy::{
+    prelude::{
+        AssetServer, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Transform, With,
+        Without,
+    },
+    sprite::Sprite,
+};
+use bevy_rapier2d::prelude::Collider;
 use genesis_attributes as attributes;
 use genesis_components::*;
+use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
-use crate::statistics;
+use crate::{spawning, statistics};
 
 pub fn transition_to_adult_system(
     mut commands: Commands,
@@ -29,8 +37,8 @@ pub fn transition_to_hatching_system(
 }
 
 pub fn kill_bug_system(
+    asset_server: Res<AssetServer>,
     mut commands: Commands,
-    mut ecosystem: ResMut<ecosystem::Ecosystem>,
     mut family_tree: ResMut<statistics::FamilyTree>,
     mut query: Query<(
         Entity,
@@ -38,14 +46,34 @@ pub fn kill_bug_system(
         &attributes::DeathAge,
         &time::Age,
         &Relations,
+        &Transform,
         &dyn AttributeDisplay,
     )>,
 ) {
-    for (entity, mut vitality, death_age, age, relation, attrs) in query.iter_mut() {
+    for (entity, mut vitality, death_age, age, relation, transform, attrs) in query.iter_mut() {
         if vitality.health().amount() == 0 || **death_age < age.elapsed_secs() {
-            ecosystem.return_energy(vitality.take_all_energy());
+            let meat_energy = vitality.take_all_energy();
+            spawning::spawn_meat(
+                &mut commands,
+                &asset_server,
+                meat_energy,
+                transform.translation,
+            );
             family_tree.add_dead_relation(relation, attrs);
             commands.entity(entity).despawn_recursive();
         }
+    }
+}
+
+pub fn rot_meat_system(
+    mut ecosystem: ResMut<ecosystem::Ecosystem>,
+    mut meat_query: Query<(&mut Sprite, &mut Collider, &mut ecosystem::Food), With<Meat>>,
+) {
+    let rot_rate = config::WorldConfig::global().meat.rot_rate;
+    for (mut sprite, mut collider, mut meat) in meat_query.iter_mut() {
+        let rotting_energy = meat.take_energy(rot_rate);
+        sprite.custom_size = meat.sprite_size();
+        *collider = meat.collider();
+        ecosystem.return_energy(rotting_energy);
     }
 }
