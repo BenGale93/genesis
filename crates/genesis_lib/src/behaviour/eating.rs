@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes as attributes;
-use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg};
+use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg, Size};
 use genesis_config as config;
 use genesis_ecosystem::Food;
 use genesis_maths::angle_between;
@@ -50,13 +50,14 @@ fn eat_food(
     bug: &mut (
         Mut<Vitality>,
         &Transform,
+        &Size,
         Mut<BurntEnergy>,
         Mut<EnergyConsumed>,
         &attributes::MouthWidth,
     ),
     food: &mut (Entity, Mut<Food>, &Transform),
 ) {
-    let (vitality, bug_transform, burnt_energy, energy_consumed, mouth_width) = bug;
+    let (vitality, bug_transform, bug_size, burnt_energy, energy_consumed, mouth_width) = bug;
     let (food_entity, food_energy, food_transform) = food;
     let angle_to_food = angle_between(
         &bug_transform.rotation,
@@ -64,7 +65,7 @@ fn eat_food(
     );
     if angle_to_food.abs() < ***mouth_width {
         let initial_food_energy = food_energy.energy().amount();
-        let leftover = vitality.eat(food_energy);
+        let leftover = vitality.eat(food_energy, bug_size);
         let consumed = initial_food_energy - food_energy.energy().amount();
         energy_consumed.0 += consumed;
         if consumed > 0 {
@@ -80,6 +81,7 @@ fn eat_food(
 pub type EatingBug<'a> = (
     &'a mut Vitality,
     &'a Transform,
+    &'a Size,
     &'a mut BurntEnergy,
     &'a mut EnergyConsumed,
     &'a attributes::MouthWidth,

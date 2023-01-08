@@ -6,7 +6,7 @@ use bevy_ecs::{
 use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use bevy_trait_query::RegisterExt;
-use derive_more::{Add, Deref, DerefMut, From};
+use derive_more::{Add, Constructor, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_config as config;
 use genesis_derive::BehaviourTracker;
@@ -122,13 +122,27 @@ impl Relations {
     }
 }
 
+#[derive(Component, Debug, Deref, Reflect, Default, Constructor)]
+#[reflect(Component)]
+pub struct Size(f32);
+
+impl Size {
+    pub const fn as_uint(&self) -> usize {
+        self.0 as usize
+    }
+
+    pub fn grow(&mut self, increment: f32) {
+        self.0 += increment;
+    }
+}
+
 #[derive(Component, Debug, Deref, Reflect, Default)]
 #[reflect(Component)]
 pub struct SizeMultiplier(Weight);
 
 impl SizeMultiplier {
-    pub fn new(size: f32) -> Self {
-        Self(Self::compute_multiplier(size))
+    pub fn new(size: &Size) -> Self {
+        Self(Self::compute_multiplier(size.0))
     }
 
     pub fn update(&mut self, size: f32) {
@@ -193,6 +207,7 @@ impl Plugin for ComponentsPlugin {
             .register_type::<Generation>()
             .register_type::<Relations>()
             .register_type::<SizeMultiplier>()
+            .register_type::<Size>()
             .register_type::<Plant>()
             .register_type::<Meat>()
             .register_component_as::<dyn BehaviourTracker, ThinkingSum>()

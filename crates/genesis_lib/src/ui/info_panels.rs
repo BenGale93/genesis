@@ -2,7 +2,7 @@ use bevy::prelude::{Local, Query, Res, ResMut, Resource, With};
 use bevy_egui::{egui, EguiContext};
 use bevy_trait_query::ReadTraits;
 use genesis_components as components;
-use genesis_components::{body, eat, lay, see, time};
+use genesis_components::{body, eat, lay, see, time, Size};
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
@@ -124,6 +124,7 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
 type BugLiveInfo<'a> = (
     &'a time::Age,
     &'a body::Vitality,
+    &'a Size,
     &'a see::Vision,
     &'a time::InternalTimer,
     &'a components::Generation,
@@ -150,12 +151,12 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Age: {:.2}", &bug_info.0.elapsed_secs()));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
-    ui.label(format!("Size: {}", &bug_info.1.size().current_size()));
-    ui.label(format!("Visible Bugs: {}", &bug_info.2.visible_bugs()));
-    ui.label(format!("Visible Food: {}", &bug_info.2.visible_food()));
-    ui.label(format!("Internal timer: {:.2}", &bug_info.3.elapsed_secs()));
-    ui.label(format!("Generation: {}", &bug_info.4 .0));
-    ui.label(format!("Size Multiplier: {:.2}", &bug_info.5.as_float()));
+    ui.label(format!("Size: {}", **bug_info.2));
+    ui.label(format!("Visible Bugs: {}", &bug_info.3.visible_bugs()));
+    ui.label(format!("Visible Food: {}", &bug_info.3.visible_food()));
+    ui.label(format!("Internal timer: {:.2}", &bug_info.4.elapsed_secs()));
+    ui.label(format!("Generation: {}", &bug_info.5 .0));
+    ui.label(format!("Size Multiplier: {:.2}", &bug_info.6.as_float()));
 }
 
 pub fn attribute_info_system(

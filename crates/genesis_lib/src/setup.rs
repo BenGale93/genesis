@@ -9,10 +9,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{Collider, RapierConfiguration};
 use genesis_attributes::Genome;
-use genesis_components::{
-    body::{OriginalColor, Vitality},
-    mind, time, Egg, Plant,
-};
+use genesis_components::{body::OriginalColor, mind, time, Egg, Plant, Size};
 use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_ecosystem::Food;
@@ -106,7 +103,7 @@ fn add_missing_components_system(
     asset_server: Res<AssetServer>,
     plant_query: Query<(Entity, &Food, &Transform), With<Plant>>,
     egg_query: Query<(Entity, &OriginalColor, &Transform), With<Egg>>,
-    bug_query: Query<(Entity, &Vitality, &mind::Mind)>,
+    bug_query: Query<(Entity, &Size, &mind::Mind)>,
 ) {
     for (entity, plant_food, transform) in &plant_query {
         commands
@@ -134,13 +131,13 @@ fn add_missing_components_system(
     }
 
     let basic_color = Color::WHITE;
-    for (entity, vitality, mind) in &bug_query {
+    for (entity, size, mind) in &bug_query {
         commands
             .entity(entity)
-            .insert(vitality.size().collider())
+            .insert(spawning::bug_collider(size))
             .insert(spawning::bug_sprite_bundle(
                 &asset_server,
-                vitality.size(),
+                size,
                 &basic_color,
                 mind.color(),
             ));
