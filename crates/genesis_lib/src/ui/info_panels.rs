@@ -1,8 +1,8 @@
 use bevy::prelude::{Local, Query, Res, ResMut, Resource, With};
 use bevy_egui::{egui, EguiContext};
 use bevy_trait_query::ReadTraits;
+use components::{body, eat, grab, grow, lay, see, time, Size};
 use genesis_components as components;
-use genesis_components::{body, eat, lay, see, time, Size};
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
@@ -109,6 +109,7 @@ pub enum BugInfoPanel {
     Attributes,
     Brain,
     Stats,
+    EnergyFlow,
 }
 
 fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel) {
@@ -117,6 +118,11 @@ fn bug_panel_buttons(ui: &mut egui::Ui, bug_info_panel_state: &mut BugInfoPanel)
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Attributes, "Attributes");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Brain, "Brain");
         ui.selectable_value(bug_info_panel_state, BugInfoPanel::Stats, "Statistics");
+        ui.selectable_value(
+            bug_info_panel_state,
+            BugInfoPanel::EnergyFlow,
+            "Energy Flow",
+        );
     });
     ui.end_row();
 }
@@ -151,7 +157,7 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Age: {:.2}", &bug_info.0.elapsed_secs()));
     ui.label(format!("Energy: {}", &bug_info.1.energy_store()));
     ui.label(format!("Health: {}", &bug_info.1.health()));
-    ui.label(format!("Size: {}", **bug_info.2));
+    ui.label(format!("Size: {:.2}", **bug_info.2));
     ui.label(format!("Visible Bugs: {}", &bug_info.3.visible_bugs()));
     ui.label(format!("Visible Food: {}", &bug_info.3.visible_food()));
     ui.label(format!("Internal timer: {:.2}", &bug_info.4.elapsed_secs()));
@@ -226,6 +232,80 @@ pub fn bug_stats_info_system(
 fn bug_stat_sub_panel(ui: &mut egui::Ui, bug_stats: &BugStatsInfo) {
     ui.label(format!("Energy consumed: {}", **bug_stats.0));
     ui.label(format!("Eggs laid: {}", **bug_stats.1));
+}
+
+type EnergyFlowInfo<'a> = (
+    &'a eat::EatingSum,
+    &'a grab::GrabbingSum,
+    &'a grow::GrowingSum,
+    &'a grow::SizeSum,
+    &'a lay::LayingSum,
+    &'a components::TranslationSum,
+    &'a components::RotationSum,
+    &'a components::ThinkingSum,
+);
+
+pub fn energy_flow_info_system(
+    bug_query: Query<EnergyFlowInfo, With<Selected>>,
+    mut egui_ctx: ResMut<EguiContext>,
+    mut panel_state: ResMut<EntityPanelState>,
+) {
+    let Ok(bug_info) = bug_query.get_single() else {
+        return;
+    };
+    if panel_state.bug_info_panel_state == BugInfoPanel::EnergyFlow {
+        top_left_info_window("Bug Statistics").show(egui_ctx.ctx_mut(), |ui| {
+            bug_panel_buttons(ui, &mut panel_state.bug_info_panel_state);
+            energy_flow_sub_panel(ui, &bug_info);
+        });
+    }
+}
+
+const MULTIPLIER: f32 = 20.0;
+
+fn energy_flow_sub_panel(ui: &mut egui::Ui, energy_flow_info: &EnergyFlowInfo) {
+    let total = (energy_flow_info.0.rate()
+        + energy_flow_info.1.rate()
+        + energy_flow_info.2.rate()
+        + energy_flow_info.3.rate()
+        + energy_flow_info.4.rate()
+        + energy_flow_info.5.rate()
+        + energy_flow_info.6.rate()
+        + energy_flow_info.7.rate())
+        * MULTIPLIER;
+    ui.label(format!(
+        "Eating: {:.2}",
+        energy_flow_info.0.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Grabbing: {:.2}",
+        energy_flow_info.1.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Growing: {:.2}",
+        energy_flow_info.2.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Metabolism: {:.2}",
+        energy_flow_info.3.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Laying: {:.2}",
+        energy_flow_info.4.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Moving: {:.2}",
+        energy_flow_info.5.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Rotating: {:.2}",
+        energy_flow_info.6.rate() * MULTIPLIER
+    ));
+    ui.label(format!(
+        "Thinking: {:.2}",
+        energy_flow_info.7.rate() * MULTIPLIER
+    ));
+    ui.label(format!("Total: {total:.2}"));
 }
 
 #[derive(Debug, PartialEq, Eq, Default)]

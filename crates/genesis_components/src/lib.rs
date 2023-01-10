@@ -6,6 +6,7 @@ use bevy_ecs::{
 use bevy_reflect::Reflect;
 use bevy_render::color::Color;
 use bevy_trait_query::RegisterExt;
+use derive_getters::Getters;
 use derive_more::{Add, Constructor, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_config as config;
@@ -43,17 +44,26 @@ impl BurntEnergy {
     }
 }
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct TranslationSum(f32);
+pub struct TranslationSum {
+    sum: f32,
+    rate: f32,
+}
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct RotationSum(f32);
+pub struct RotationSum {
+    sum: f32,
+    rate: f32,
+}
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct ThinkingSum(f32);
+pub struct ThinkingSum {
+    sum: f32,
+    rate: f32,
+}
 
 #[derive(Component, Debug, Reflect, Default)]
 #[reflect(Component)]

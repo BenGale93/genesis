@@ -51,7 +51,10 @@ pub fn thinking_system(
         result[config::MOVEMENT_INDEX] = result[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
         result[config::ROTATE_INDEX] = result[config::ROTATE_INDEX].clamp(-1.0, 1.0);
         output.0 = result;
-        thoughts.add_time(bug_brain.synapses().len() as f32, cost);
+        thoughts.add_time(
+            config::BEHAVIOUR_TICK.as_secs_f32(),
+            bug_brain.synapses().len() as f32 * cost,
+        );
     }
 }
 

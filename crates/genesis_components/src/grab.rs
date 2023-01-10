@@ -1,6 +1,7 @@
 use bevy_ecs::{prelude::Component, reflect::ReflectComponent};
 use bevy_reflect::Reflect;
 use bevy_time::Stopwatch;
+use derive_getters::Getters;
 use derive_more::{Deref, DerefMut};
 use genesis_derive::BehaviourTracker;
 
@@ -8,9 +9,12 @@ use genesis_derive::BehaviourTracker;
 #[reflect(Component)]
 pub struct TryingToGrab(pub Stopwatch);
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct GrabbingSum(f32);
+pub struct GrabbingSum {
+    sum: f32,
+    rate: f32,
+}
 
 pub struct GrabComponentPlugin;
 

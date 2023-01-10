@@ -1,11 +1,12 @@
 use bevy::{
     prelude::{Commands, Entity, EventWriter, Mut, Query, Res, Transform, With, Without},
-    time::{Stopwatch, Time},
+    time::Stopwatch,
 };
 use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes as attributes;
 use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg, Size};
 use genesis_config as config;
+use genesis_config::BEHAVIOUR_TICK;
 use genesis_ecosystem::Food;
 use genesis_maths::angle_between;
 use genesis_traits::BehaviourTracker;
@@ -31,11 +32,10 @@ pub fn process_eaters_system(
 }
 
 pub fn attempted_to_eat_system(
-    time: Res<Time>,
     mut bug_query: Query<(&mut TryingToEat, &mut EatingSum, &attributes::CostOfEating)>,
 ) {
     for (mut trying_to_eat, mut eating_sum, cost) in bug_query.iter_mut() {
-        trying_to_eat.tick(time.delta());
+        trying_to_eat.tick(BEHAVIOUR_TICK);
         let time_spent = trying_to_eat.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             eating_sum.add_time(time_spent, **cost);

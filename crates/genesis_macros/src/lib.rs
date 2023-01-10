@@ -11,16 +11,20 @@ pub fn derive_behaviour_tracker(input: TokenStream2) -> TokenStream2 {
     quote! {
         impl #impl_generics genesis_traits::BehaviourTracker for #struct_name #type_generics #where_clause {
             fn new() -> Self where Self: Sized {
-                Self(0.0)
+                Self {
+                    sum: 0.0,
+                    rate: 0.0,
+                }
             }
 
             fn add_time(&mut self, time: f32, cost: f32) {
-                self.0 += time * cost
+                self.rate = (time * cost).abs();
+                self.sum += self.rate;
             }
 
             fn uint_portion(&mut self) -> usize {
-                let floor = self.0.floor();
-                self.0 -= floor;
+                let floor = self.sum.floor();
+                self.sum -= floor;
                 floor as usize
             }
         }
@@ -71,22 +75,29 @@ mod tests {
     #[test]
     fn derive_behaviour_tracker_trait() {
         let before = quote! {
-            pub struct EatingSum(f32);
+            pub struct EatingSum {
+                sum: f32,
+                rate: f32,
+            }
         };
 
         let expected = quote! {
             impl genesis_traits::BehaviourTracker for EatingSum {
                 fn new() -> Self where Self: Sized {
-                    Self(0.0)
+                    Self {
+                        sum: 0.0,
+                        rate: 0.0,
+                    }
                 }
 
                 fn add_time(&mut self, time: f32, cost: f32) {
-                    self.0 += time * cost
+                    self.rate = (time * cost).abs();
+                    self.sum += self.rate;
                 }
 
                 fn uint_portion(&mut self) -> usize {
-                    let floor = self.0.floor();
-                    self.0 -= floor;
+                    let floor = self.sum.floor();
+                    self.sum -= floor;
                     floor as usize
                 }
             }

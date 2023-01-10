@@ -1,4 +1,6 @@
 #![warn(clippy::all, clippy::nursery)]
+#![feature(duration_consts_float)]
+use std::time::Duration;
 mod attr_config;
 mod validators;
 
@@ -22,6 +24,7 @@ pub const EATING_MULTIPLIER: f32 = 20.0;
 pub const CORE_MULTIPLIER: usize = 200;
 pub const HEALTH_MULTIPLIER: usize = 300;
 pub const GRAB_SIZE_THRESHOLD: f32 = 10.0;
+pub const BEHAVIOUR_TICK: Duration = Duration::from_secs_f32(0.05);
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
