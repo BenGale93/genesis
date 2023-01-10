@@ -1,11 +1,12 @@
 use bevy::{
     prelude::{Commands, Entity, Mut, Query, Res, Transform, With, Without},
-    time::{Stopwatch, Time},
+    time::Stopwatch,
 };
 use bevy_rapier2d::prelude::{ExternalImpulse, RapierContext};
 use genesis_attributes as attributes;
 use genesis_components::{grab::*, mind, Egg, Size};
 use genesis_config as config;
+use genesis_config::BEHAVIOUR_TICK;
 use genesis_maths::angle_between;
 use genesis_traits::BehaviourTracker;
 
@@ -31,13 +32,10 @@ pub fn process_grabbers_system(
     }
 }
 
-pub fn attempted_to_grab_system(
-    time: Res<Time>,
-    mut bug_query: Query<(&mut TryingToGrab, &mut GrabbingSum)>,
-) {
+pub fn attempted_to_grab_system(mut bug_query: Query<(&mut TryingToGrab, &mut GrabbingSum)>) {
     let grab_cost = config::WorldConfig::global().cost_of_grab;
     for (mut trying_to_grab, mut grow_sum) in bug_query.iter_mut() {
-        trying_to_grab.tick(time.delta());
+        trying_to_grab.tick(BEHAVIOUR_TICK);
         let time_spent = trying_to_grab.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             grow_sum.add_time(time_spent, grab_cost);

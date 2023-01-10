@@ -32,6 +32,7 @@ pub fn info_panels_system_set() -> SystemSet {
         .with_system(info_panels::global_ui_update_system)
         .with_system(info_panels::bug_brain_info_system)
         .with_system(info_panels::bug_stats_info_system)
+        .with_system(info_panels::energy_flow_info_system)
         .into()
 }
 

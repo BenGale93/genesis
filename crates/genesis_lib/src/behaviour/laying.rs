@@ -1,6 +1,6 @@
 use bevy::{
     prelude::{AssetServer, Commands, Entity, Query, Res, ResMut, Transform, Vec3, With, Without},
-    time::{Stopwatch, Time},
+    time::Stopwatch,
 };
 use genesis_attributes as attributes;
 use genesis_components as components;
@@ -35,13 +35,10 @@ pub fn process_layers_system(
     }
 }
 
-pub fn attempted_to_lay_system(
-    time: Res<Time>,
-    mut bug_query: Query<(&mut TryingToLay, &mut LayingSum)>,
-) {
+pub fn attempted_to_lay_system(mut bug_query: Query<(&mut TryingToLay, &mut LayingSum)>) {
     let world_config = config::WorldConfig::global();
     for (mut trying_to_lay, mut laying_sum) in bug_query.iter_mut() {
-        trying_to_lay.tick(time.delta());
+        trying_to_lay.tick(config::BEHAVIOUR_TICK);
         let time_spent = trying_to_lay.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             laying_sum.add_time(time_spent, world_config.cost_of_lay);

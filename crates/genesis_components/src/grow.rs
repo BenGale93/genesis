@@ -1,6 +1,7 @@
 use bevy_ecs::{prelude::Component, reflect::ReflectComponent};
 use bevy_reflect::Reflect;
 use bevy_time::Stopwatch;
+use derive_getters::Getters;
 use derive_more::{Deref, DerefMut};
 use genesis_derive::BehaviourTracker;
 
@@ -8,13 +9,19 @@ use genesis_derive::BehaviourTracker;
 #[reflect(Component)]
 pub struct TryingToGrow(pub Stopwatch);
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct GrowingSum(f32);
+pub struct GrowingSum {
+    sum: f32,
+    rate: f32,
+}
 
-#[derive(Component, Debug, BehaviourTracker, Reflect, Default)]
+#[derive(Component, Debug, BehaviourTracker, Reflect, Default, Getters)]
 #[reflect(Component)]
-pub struct SizeSum(f32);
+pub struct SizeSum {
+    sum: f32,
+    rate: f32,
+}
 
 pub struct GrowComponentPlugin;
 

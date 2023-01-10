@@ -2,6 +2,7 @@ use std::time::Duration;
 
 use bevy::prelude::{App, Plugin, SystemSet};
 use genesis_components as components;
+use genesis_config::BEHAVIOUR_TICK;
 use iyes_loopless::prelude::*;
 
 use crate::{conditions, SimState};
@@ -110,7 +111,7 @@ impl Plugin for GenesisBehaviourPlugin {
         app.add_plugin(components::ComponentsPlugin)
             .add_fixed_timestep(Duration::from_secs_f32(1.0), "very_slow")
             .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
-            .add_fixed_timestep(Duration::from_secs_f32(0.05), "standard")
+            .add_fixed_timestep(BEHAVIOUR_TICK, "standard")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())
             .add_fixed_timestep_system_set("slow", 0, slow_behaviour_system_set())
             .add_fixed_timestep_system_set("standard", 0, before_thinking_system_set())

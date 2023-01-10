@@ -25,11 +25,17 @@ pub fn movement_system(
     ) in query.iter_mut()
     {
         let rotation_factor = outputs[config::ROTATE_INDEX];
-        rotation_sum.add_time(rotation_factor, world_config.rotation_cost);
+        rotation_sum.add_time(
+            config::BEHAVIOUR_TICK.as_secs_f32(),
+            rotation_factor * world_config.rotation_cost,
+        );
         velocity.angvel = size_multiplier.as_float() * rotation_factor * world_config.max_rotation;
 
         let movement_factor = outputs[config::MOVEMENT_INDEX];
-        translation_sum.add_time(movement_factor, world_config.translation_cost);
+        translation_sum.add_time(
+            config::BEHAVIOUR_TICK.as_secs_f32(),
+            movement_factor * world_config.translation_cost,
+        );
         let speed = size_multiplier.as_float() * movement_factor * world_config.max_translation;
         velocity.linvel = (speed * transform.local_y()).truncate();
     }

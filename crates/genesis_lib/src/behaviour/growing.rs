@@ -1,7 +1,7 @@
 use bevy::{
-    prelude::{Commands, Entity, Query, Res, With, Without},
+    prelude::{Commands, Entity, Query, With, Without},
     sprite::Sprite,
-    time::{Stopwatch, Time},
+    time::Stopwatch,
 };
 use bevy_rapier2d::prelude::Collider;
 use genesis_attributes as attributes;
@@ -34,11 +34,10 @@ pub fn process_growers_system(
 }
 
 pub fn attempted_to_grow_system(
-    time: Res<Time>,
     mut bug_query: Query<(&mut TryingToGrow, &mut GrowingSum, &attributes::GrowthRate)>,
 ) {
     for (mut trying_to_grow, mut grow_sum, growth_rate) in bug_query.iter_mut() {
-        trying_to_grow.tick(time.delta());
+        trying_to_grow.tick(config::BEHAVIOUR_TICK);
         let time_spent = trying_to_grow.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             grow_sum.add_time(time_spent, **growth_rate);
@@ -86,9 +85,12 @@ pub fn grow_bug_system(
     }
 }
 
-pub fn existence_system(time: Res<Time>, mut bug_query: Query<(&Size, &mut SizeSum)>) {
+pub fn existence_system(mut bug_query: Query<(&Size, &mut SizeSum)>) {
     let unit_size_cost = config::WorldConfig::global().unit_size_cost;
     for (size, mut size_sum) in bug_query.iter_mut() {
-        size_sum.add_time(time.delta_seconds(), **size * unit_size_cost);
+        size_sum.add_time(
+            config::BEHAVIOUR_TICK.as_secs_f32(),
+            **size * unit_size_cost,
+        );
     }
 }
