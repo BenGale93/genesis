@@ -10,29 +10,30 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  cargo-build:
-    name: "cargo build"
+  build-test:
+    name: "build & test"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@lastest
+      - uses: actions-rs/toolchain@lastest
         with:
           profile: minimal
           toolchain: nightly
           override: true
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@lastest
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
           version: 1.0
       - run: cargo build --all
+      - run: cargo test --all
 
   cargo-fmt:
     name: "cargo fmt"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@lastest
+      - uses: actions-rs/toolchain@latest
         with:
           profile: minimal
           toolchain: nightly
@@ -44,33 +45,16 @@ jobs:
     name: "cargo clippy"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@latest
+      - uses: actions-rs/toolchain@lastest
         with:
           profile: minimal
           toolchain: nightly
           override: true
           components: clippy
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@lastest
       - uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
           version: 1.0
       - run: cargo clippy --all --all-targets --all-features
-
-  cargo-test:
-    name: "cargo test"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly-2022-11-01
-          override: true
-      - uses: Swatinem/rust-cache@v1
-      - uses: awalsh128/cache-apt-pkgs-action@latest
-        with:
-          packages: g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
-          version: 1.0
-      - run: cargo test --verbose
