@@ -10,24 +10,57 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  full:
+  cargo-build:
+    name: "cargo build"
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-      - name: AptUpdate
-        run: sudo apt update && sudo apt upgrade -y
-      - name: Dependencies
-        run: sudo apt install g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
-      - name: Update
-        run: rustup update nightly && rustup default nightly
-      - name: Add components
-        run: rustup component add rustfmt clippy
-      - name: Run fmt
-        run: cargo fmt --all -- --check
-      - name: Run clippy
-        run: cargo clippy --all --all-targets --all-features
-      - name: Build
-        run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - run: sudo apt update && sudo apt upgrade -y
+      - run: sudo apt install g++ pkg-config libx11-dev libasound2-dev libudev-dev libgtk-3-dev
+      - run: cargo build --all
+
+  cargo-fmt:
+    name: "cargo fmt"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  cargo_clippy:
+    name: "cargo clippy"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+          components: clippy
+      - uses: Swatinem/rust-cache@v1
+      - run: cargo clippy --all --all-targets --all-features
+
+  cargo-test:
+    name: "cargo test"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly-2022-11-01
+          override: true
+      - uses: Swatinem/rust-cache@v1
+      - run: cargo test --verbose
