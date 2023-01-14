@@ -19,6 +19,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(interaction::game_speed_widget)
         .with_system(interaction::bug_serde_widget)
         .with_system(interaction::bug_spawner_widget)
+        .with_system(interaction::kill_selected_system)
         .into()
 }
 
