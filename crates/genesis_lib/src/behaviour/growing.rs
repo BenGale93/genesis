@@ -5,7 +5,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::Collider;
 use genesis_attributes as attributes;
-use genesis_components::{body, grow::*, mind, Egg, Size, SizeMultiplier};
+use genesis_components::{body, eat::Stomach, grow::*, mind, Egg, Size, SizeMultiplier};
 use genesis_config as config;
 use genesis_traits::BehaviourTracker;
 
@@ -56,6 +56,7 @@ pub fn grow_bug_system(
             &mut Collider,
             &mut GrowingSum,
             &mut SizeMultiplier,
+            &mut Stomach,
         ),
         With<TryingToGrow>,
     >,
@@ -68,6 +69,7 @@ pub fn grow_bug_system(
         mut collider,
         mut growing_sum,
         mut size_multiplier,
+        mut stomach,
     ) in grower_query.iter_mut()
     {
         let grow_amount = growing_sum.uint_portion();
@@ -81,7 +83,8 @@ pub fn grow_bug_system(
         vitality.grow(grow_amount, size.as_uint());
         sprite.custom_size = Some(spawning::bug_sprite_size(&size));
         *collider = spawning::bug_collider(&size);
-        size_multiplier.update(**size)
+        size_multiplier.update(**size);
+        stomach.update_capacity(**size);
     }
 }
 

@@ -11,7 +11,7 @@ use derive_more::{Add, Constructor, Deref, DerefMut, From};
 use genesis_color::rgb_to_hex;
 use genesis_config as config;
 use genesis_derive::BehaviourTracker;
-use genesis_ecosystem::Energy;
+use genesis_ecosystem::{Energy, Food};
 use genesis_maths::cantor_pairing;
 use genesis_newtype::{Probability, Weight};
 use genesis_traits::BehaviourTracker;
@@ -177,9 +177,18 @@ impl SizeMultiplier {
 #[reflect(Component)]
 pub struct Plant;
 
+pub fn plant_as_food(energy: Energy) -> Food {
+    let plant_config = &config::WorldConfig::global().plant;
+    Food::new(energy, plant_config.energy_density, plant_config.toughness)
+}
 #[derive(Component, Debug, Reflect, Default)]
 #[reflect(Component)]
 pub struct Meat;
+
+pub fn meat_as_food(energy: Energy) -> Food {
+    let meat_config = &config::WorldConfig::global().meat;
+    Food::new(energy, meat_config.energy_density, meat_config.toughness)
+}
 
 pub struct ComponentsPlugin;
 

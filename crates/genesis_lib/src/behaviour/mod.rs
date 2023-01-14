@@ -1,8 +1,6 @@
-use std::time::Duration;
-
 use bevy::prelude::{App, Plugin, SystemSet};
 use genesis_components as components;
-use genesis_config::BEHAVIOUR_TICK;
+use genesis_config::{BEHAVIOUR_TICK, SLOW_BEHAVIOUR_TICK, VERY_SLOW_BEHAVIOUR_TICK};
 use iyes_loopless::prelude::*;
 
 use crate::{conditions, SimState};
@@ -25,6 +23,7 @@ pub fn before_thinking_system_set() -> SystemSet {
         .run_if_not(conditions::is_paused)
         .with_system(thinking::sensory_system)
         .with_system(seeing::process_sight_system)
+        .with_system(eating::update_fullness_system)
         .into()
 }
 
@@ -49,6 +48,7 @@ pub fn after_thinking_system_set() -> SystemSet {
         .with_system(laying::process_layers_system)
         .with_system(growing::process_growers_system)
         .with_system(grabbing::process_grabbers_system)
+        .with_system(eating::digestion_intensity_system)
         .into()
 }
 
@@ -91,6 +91,7 @@ pub fn very_slow_system_set() -> SystemSet {
         .run_in_state(SimState::Simulation)
         .with_system(metabolism::energy_return_system)
         .with_system(laying::spawn_egg_system)
+        .with_system(eating::digest_food_system)
         .into()
 }
 
@@ -109,8 +110,8 @@ pub struct GenesisBehaviourPlugin;
 impl Plugin for GenesisBehaviourPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugin(components::ComponentsPlugin)
-            .add_fixed_timestep(Duration::from_secs_f32(1.0), "very_slow")
-            .add_fixed_timestep(Duration::from_secs_f32(0.1), "slow")
+            .add_fixed_timestep(VERY_SLOW_BEHAVIOUR_TICK, "very_slow")
+            .add_fixed_timestep(SLOW_BEHAVIOUR_TICK, "slow")
             .add_fixed_timestep(BEHAVIOUR_TICK, "standard")
             .add_fixed_timestep_system_set("very_slow", 0, very_slow_system_set())
             .add_fixed_timestep_system_set("slow", 0, slow_behaviour_system_set())

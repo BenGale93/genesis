@@ -72,6 +72,11 @@
         "bias": 0.0
       },
       {
+        "kind": "Input",
+        "activation": "Identity",
+        "bias": 0.0
+      },
+      {
         "kind": "Output",
         "activation": "Tanh",
         "bias": 0.3
@@ -99,12 +104,17 @@
       {
         "kind": "Output",
         "activation": "Tanh",
-        "bias": 0.0
+        "bias": 1.0
       },
       {
         "kind": "Output",
         "activation": "Tanh",
         "bias": 1.0
+      },
+      {
+        "kind": "Output",
+        "activation": "Tanh",
+        "bias": 0.0
       },
       {
         "kind": "Hidden",
@@ -125,49 +135,55 @@
     "synapses": [
         {
           "from": 0,
-          "to": 14,
-          "weight": 1.0,
-          "active": true
-        },
-        {
-          "from": 10,
           "to": 15,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 9,
-          "to": 21,
-          "weight": -1.0,
-          "active": true
-        },
-        {
-          "from": 21,
+          "from": 0,
           "to": 22,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 22,
-          "to": 15,
+          "from": 10,
+          "to": 16,
+          "weight": 1.0,
+          "active": true
+        },
+        {
+          "from": 9,
+          "to": 23,
+          "weight": -1.0,
+          "active": true
+        },
+        {
+          "from": 23,
+          "to": 24,
+          "weight": 1.0,
+          "active": true
+        },
+        {
+          "from": 24,
+          "to": 16,
           "weight": 0.05,
           "active": true
         },
         {
           "from": 11,
-          "to": 17,
+          "to": 18,
           "weight": -1.0,
           "active": true
         },
         {
           "from": 11,
-          "to": 23,
+          "to": 25,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 23,
-          "to": 14,
+          "from": 25,
+          "to": 15,
           "weight": -1.0,
           "active": true
         }
@@ -180,6 +196,7 @@
     "offspring_energy": 0.5858586,
     "max_size": 80.0,
     "growth_rate": 0.1,
-    "grab_angle": 40.0
+    "grab_angle": 40.0,
+    "food_preference": 0.0
   }
 }

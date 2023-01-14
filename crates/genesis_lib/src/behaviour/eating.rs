@@ -4,7 +4,12 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes as attributes;
-use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg, Size};
+use genesis_components::{
+    body::Vitality,
+    eat::*,
+    mind::{MindInput, MindOutput},
+    BurntEnergy, Egg, Size,
+};
 use genesis_config as config;
 use genesis_config::BEHAVIOUR_TICK;
 use genesis_ecosystem::Food;
@@ -48,16 +53,15 @@ fn eat_food(
     commands: &mut Commands,
     ev_eaten: &mut EventWriter<EatenEvent>,
     bug: &mut (
-        Mut<Vitality>,
+        Mut<Stomach>,
         &Transform,
         &Size,
-        Mut<BurntEnergy>,
         Mut<EnergyConsumed>,
         &attributes::MouthWidth,
     ),
     food: &mut (Entity, Mut<Food>, &Transform),
 ) {
-    let (vitality, bug_transform, bug_size, burnt_energy, energy_consumed, mouth_width) = bug;
+    let (stomach, bug_transform, bug_size, energy_consumed, mouth_width) = bug;
     let (food_entity, food_energy, food_transform) = food;
     let angle_to_food = angle_between(
         &bug_transform.rotation,
@@ -65,7 +69,7 @@ fn eat_food(
     );
     if angle_to_food.abs() < ***mouth_width {
         let initial_food_energy = food_energy.energy().amount();
-        let leftover = vitality.eat(food_energy, bug_size);
+        stomach.eat(food_energy, bug_size);
         let consumed = initial_food_energy - food_energy.energy().amount();
         energy_consumed.0 += consumed;
         if consumed > 0 {
@@ -74,15 +78,13 @@ fn eat_food(
         if food_energy.energy().amount() == 0 {
             commands.entity(*food_entity).insert(Eaten);
         }
-        burnt_energy.add_energy(leftover);
     }
 }
 
 pub type EatingBug<'a> = (
-    &'a mut Vitality,
+    &'a mut Stomach,
     &'a Transform,
     &'a Size,
-    &'a mut BurntEnergy,
     &'a mut EnergyConsumed,
     &'a attributes::MouthWidth,
 );
@@ -110,5 +112,46 @@ pub fn eating_system(
         ) {
             eat_food(&mut commands, &mut ev_eaten, &mut bug, &mut food);
         }
+    }
+}
+
+pub fn digestion_intensity_system(mut bug_query: Query<(&MindOutput, &mut Stomach)>) {
+    for (mind_out, mut stomach) in bug_query.iter_mut() {
+        stomach.set_intensity(mind_out[config::DIGEST_FOOD_INDEX]);
+    }
+}
+
+pub fn update_fullness_system(mut bug_query: Query<(&mut MindInput, &Stomach)>) {
+    for (mut mind_in, stomach) in bug_query.iter_mut() {
+        mind_in[config::FULLNESS_INDEX] = stomach.fullness();
+    }
+}
+
+pub fn digest_food_system(
+    mut bug_query: Query<(
+        &attributes::FoodPreference,
+        &mut Stomach,
+        &mut Vitality,
+        &mut BurntEnergy,
+        &mut EnergyDigested,
+        &mut DigestionCost,
+    )>,
+) {
+    for (
+        food_preference,
+        mut stomach,
+        mut vitality,
+        mut burnt_energy,
+        mut energy_used,
+        mut energy_wasted,
+    ) in bug_query.iter_mut()
+    {
+        let (usable_energy, mut waste_energy) = stomach.digest(food_preference, &mut vitality);
+        let usable_energy_amount = usable_energy.amount();
+        let more_waste_energy = vitality.add_energy(usable_energy);
+        energy_used.0 = usable_energy_amount - more_waste_energy.amount();
+        waste_energy.add_energy(more_waste_energy);
+        energy_wasted.0 = stomach.digestion_cost();
+        burnt_energy.add_energy(waste_energy);
     }
 }
