@@ -156,6 +156,21 @@ pub fn select_sprite_system(
     });
 }
 
+pub fn kill_selected_system(
+    kb_input: Res<Input<KeyCode>>,
+    mut ecosystem: ResMut<Ecosystem>,
+    mut bug_query: Query<&mut body::Vitality, With<Selected>>,
+) {
+    if !kb_input.pressed(KeyCode::Delete) {
+        return;
+    }
+    let Ok(mut vitality) = bug_query.get_single_mut() else {
+        return;
+    };
+    let energy_extract = vitality.health_mut().take_all_energy();
+    ecosystem.return_energy(energy_extract);
+}
+
 pub fn game_time_system(
     speed: Res<SimulationSpeed>,
     mut rapier_config: ResMut<RapierConfiguration>,

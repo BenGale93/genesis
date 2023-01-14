@@ -65,6 +65,10 @@ impl Vitality {
         &self.health
     }
 
+    pub fn health_mut(&mut self) -> &mut ecosystem::EnergyReserve {
+        &mut self.health.0
+    }
+
     #[must_use]
     pub fn available_space(&self) -> usize {
         self.health().available_space() + self.energy_store().available_space()
