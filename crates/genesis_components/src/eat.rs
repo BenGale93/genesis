@@ -77,7 +77,7 @@ impl Stomach {
     }
 
     pub fn update_capacity(&mut self, size: f32) {
-        self.capacity = size * 10.0
+        self.capacity = size
     }
 
     pub fn fullness(&self) -> f32 {
@@ -121,7 +121,7 @@ impl Stomach {
     }
 
     pub fn digestion_cost(&self) -> usize {
-        ((self.capacity / 50.0) * (1.0 + (self.intensity - self.fullness() - 0.5).clamp(0.0, 0.3)))
+        ((self.capacity / 5.0) * (1.0 + (self.intensity - self.fullness() - 0.5).clamp(0.0, 0.3)))
             .round() as usize
     }
 
@@ -135,7 +135,7 @@ impl Stomach {
 
         let mut energy_extract = self
             .plant_matter
-            .take_energy((self.intensity * self.capacity * 2.0) as usize);
+            .take_energy((self.intensity * self.capacity * 10.0) as usize);
         let usable_plant_energy =
             (preference.plant_digestion_efficiency() * energy_extract.amount() as f32) as isize;
 
@@ -149,7 +149,7 @@ impl Stomach {
 
         let mut energy_extract = self
             .meat_matter
-            .take_energy((self.intensity * (self.capacity / 10.0)) as usize);
+            .take_energy((self.intensity * self.capacity * 10.0) as usize);
         let usable_meat_energy =
             (preference.meat_digestion_efficiency() * energy_extract.amount() as f32) as isize;
 
