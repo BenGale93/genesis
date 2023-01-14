@@ -14,12 +14,12 @@ genesis_color = { workspace = true }
 genesis_ecosystem = { workspace = true }
 genesis_derive = { workspace = true }
 genesis_traits = { workspace = true }
+genesis_attributes = { workspace = true }
 bevy_ecs = { workspace = true }
 bevy_app = {workspace = true}
 bevy_time = { workspace = true }
 bevy_reflect = {workspace = true}
 bevy_render = { workspace = true }
-bevy_rapier2d = {workspace = true}
 bevy_egui = { workspace = true }
 bevy-trait-query = { workspace = true }
 anyhow = {workspace = true}

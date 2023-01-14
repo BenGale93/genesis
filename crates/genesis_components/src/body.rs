@@ -86,14 +86,6 @@ impl Vitality {
         taken_energy
     }
 
-    #[must_use]
-    pub fn eat(&mut self, food: &mut ecosystem::Food, size: &Size) -> ecosystem::Energy {
-        let energy_bite = ((**size / food.toughness()) * config::EATING_MULTIPLIER).ceil();
-        let requested_energy = self.available_space().min(energy_bite as usize);
-        let extracted_energy = food.take_energy(requested_energy);
-        self.add_energy(extracted_energy)
-    }
-
     pub fn grow(&mut self, amount: usize, new_size: usize) {
         let core_growing_energy = self
             .energy_store

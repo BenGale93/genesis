@@ -66,7 +66,7 @@ pub fn attribute_limit(
     let (lower, upper) = validator;
 
     if let Some(v) = lower {
-        if floor <= v {
+        if floor < v {
             let message = Some(format!(
                 "The lowest value of '{name}' must be higher than {v}."
             ));

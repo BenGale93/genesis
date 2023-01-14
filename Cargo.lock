@@ -1960,12 +1960,12 @@ dependencies = [
  "bevy_app",
  "bevy_ecs",
  "bevy_egui",
- "bevy_rapier2d",
  "bevy_reflect",
  "bevy_render",
  "bevy_time",
  "derive-getters",
  "derive_more",
+ "genesis_attributes",
  "genesis_brain",
  "genesis_color",
  "genesis_config",
@@ -2010,9 +2010,7 @@ dependencies = [
  "anyhow",
  "bevy_app",
  "bevy_ecs",
- "bevy_rapier2d",
  "bevy_reflect",
- "derive-getters",
  "derive_more",
  "glam",
  "serde",
@@ -2065,7 +2063,6 @@ dependencies = [
 name = "genesis_macros"
 version = "0.1.0"
 dependencies = [
- "genesis_traits",
  "proc-macro2",
  "quote",
  "syn",

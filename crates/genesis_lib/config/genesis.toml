@@ -1,10 +1,10 @@
 start_num = 0
 minimum_number = 0
-energy_floor = 200000
+energy_floor = 100000
 initial_synapse_count = 3
 mutations = 3
-start_energy = 30000
-lowest_energy_limit = 60000
+start_energy = 10000
+lowest_energy_limit = 20000
 max_rotation = 15.0
 rotation_cost = 1.5
 max_translation = 400.0
@@ -17,7 +17,7 @@ cost_of_grab = 2.0
 cost_of_lay = 5.0
 
 [plant]
-energy_density = 200
+energy_density = 400
 toughness = 5.0
 size_range = [
     10.0,
@@ -26,7 +26,7 @@ size_range = [
 density = 10.0
 
 [meat]
-energy_density = 400
+energy_density = 700
 toughness = 2.0
 density = 5.0
 rot_rate = 20
@@ -78,6 +78,11 @@ grab_angle = [
     30.0,
     60.0,
     10,
+]
+food_preference = [
+    0.0,
+    1.0,
+    100,
 ]
 
 [dependent_attributes]

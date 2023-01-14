@@ -18,13 +18,19 @@ pub const PAN_SPEED: f32 = 1000.0;
 pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
-pub const INPUT_NEURONS: usize = 14;
-pub const OUTPUT_NEURONS: usize = 7;
+pub const INPUT_NEURONS: usize = 15;
+pub const OUTPUT_NEURONS: usize = 8;
 pub const EATING_MULTIPLIER: f32 = 20.0;
-pub const CORE_MULTIPLIER: usize = 200;
-pub const HEALTH_MULTIPLIER: usize = 300;
+pub const CORE_MULTIPLIER: usize = 100;
+pub const HEALTH_MULTIPLIER: usize = 200;
 pub const GRAB_SIZE_THRESHOLD: f32 = 10.0;
-pub const BEHAVIOUR_TICK: Duration = Duration::from_secs_f32(0.05);
+pub const BEHAVIOUR_TICK_LENGTH: f32 = 0.05;
+pub const BEHAVIOUR_TICK: Duration = Duration::from_secs_f32(BEHAVIOUR_TICK_LENGTH);
+pub const SLOW_BEHAVIOUR_TICK_LENGTH: f32 = 0.1;
+pub const SLOW_BEHAVIOUR_TICK: Duration = Duration::from_secs_f32(SLOW_BEHAVIOUR_TICK_LENGTH);
+pub const VERY_SLOW_BEHAVIOUR_TICK_LENGTH: f32 = 1.0;
+pub const VERY_SLOW_BEHAVIOUR_TICK: Duration =
+    Duration::from_secs_f32(VERY_SLOW_BEHAVIOUR_TICK_LENGTH);
 
 // Outputs
 pub const MOVEMENT_INDEX: usize = 0;
@@ -34,6 +40,7 @@ pub const EAT_INDEX: usize = 3;
 pub const RESET_TIMER_INDEX: usize = 4;
 pub const WANT_TO_GROWN_INDEX: usize = 5;
 pub const WANT_TO_GRAB_INDEX: usize = 6;
+pub const DIGEST_FOOD_INDEX: usize = 7;
 
 // Inputs
 pub const CONSTANT_INDEX: usize = 0;
@@ -50,6 +57,7 @@ pub const FOOD_ANGLE_SCORE_INDEX: usize = 10;
 pub const FOOD_DIST_SCORE_INDEX: usize = 11;
 pub const HEARTBEAT_INDEX: usize = 12;
 pub const INTERNAL_TIMER_INDEX: usize = 13;
+pub const FULLNESS_INDEX: usize = 14;
 
 // Other
 pub const GENERATION_SWITCH: usize = 5;
@@ -162,11 +170,11 @@ impl Default for WorldConfig {
         Self {
             start_num: 0,
             minimum_number: 0,
-            energy_floor: 200000,
+            energy_floor: 100000,
             initial_synapse_count: 3,
             mutations: 3,
-            start_energy: 30000,
-            lowest_energy_limit: 60000,
+            start_energy: 10000,
+            lowest_energy_limit: 20000,
             max_rotation: 15.0,
             rotation_cost: 1.5,
             max_translation: 400.0,
@@ -314,7 +322,7 @@ pub struct PlantConfig {
 impl Default for PlantConfig {
     fn default() -> Self {
         Self {
-            energy_density: 200,
+            energy_density: 400,
             toughness: 5.0,
             size_range: (10.0, 30.0),
             density: 10.0,
@@ -348,7 +356,7 @@ pub struct MeatConfig {
 impl Default for MeatConfig {
     fn default() -> Self {
         Self {
-            energy_density: 400,
+            energy_density: 700,
             toughness: 2.0,
             density: 5.0,
             rot_rate: 20,

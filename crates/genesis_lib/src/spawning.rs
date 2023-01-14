@@ -69,6 +69,7 @@ pub fn spawn_bug(
 
     let size = Size::new(**hatch_size);
     let (vitality, leftover_energy) = body::Vitality::new(&size, energy);
+    let stomach = eat::Stomach::new(*size);
 
     hatching_entity
         .insert(bug_sprite_bundle(
@@ -84,6 +85,9 @@ pub fn spawn_bug(
         .insert(vitality)
         .insert(mind_bundle)
         .insert(size)
+        .insert(stomach)
+        .insert(eat::EnergyDigested(0))
+        .insert(eat::DigestionCost(0))
         .insert(see::Vision::new())
         .insert(time::Age::default())
         .insert(time::Heart::new())
@@ -265,8 +269,7 @@ fn spawn_plant(
     energy: ecosystem::Energy,
     location: Vec3,
 ) {
-    let plant_config = &config::WorldConfig::global().plant;
-    let food = ecosystem::Food::new(energy, plant_config.energy_density, plant_config.toughness);
+    let food = components::plant_as_food(energy);
     let size = Size::new(food.size());
 
     commands
@@ -282,7 +285,9 @@ fn spawn_plant(
             angular_damping: 1.0,
         })
         .insert(food_collider(&size))
-        .insert(ColliderMassProperties::Density(plant_config.density))
+        .insert(ColliderMassProperties::Density(
+            config::WorldConfig::global().plant.density,
+        ))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)
@@ -296,8 +301,7 @@ pub fn spawn_meat(
     energy: ecosystem::Energy,
     location: Vec3,
 ) {
-    let meat_config = &config::WorldConfig::global().meat;
-    let food = ecosystem::Food::new(energy, meat_config.energy_density, meat_config.toughness);
+    let food = components::meat_as_food(energy);
     let size = Size::new(food.size());
 
     commands
@@ -313,7 +317,9 @@ pub fn spawn_meat(
             angular_damping: 1.0,
         })
         .insert(food_collider(&size))
-        .insert(ColliderMassProperties::Density(meat_config.density))
+        .insert(ColliderMassProperties::Density(
+            config::WorldConfig::global().meat.density,
+        ))
         .insert(Velocity::zero())
         .insert(ExternalImpulse::default())
         .insert(food)

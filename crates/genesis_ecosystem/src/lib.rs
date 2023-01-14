@@ -9,7 +9,6 @@ use bevy_ecs::{
     reflect::ReflectComponent,
 };
 use bevy_reflect::Reflect;
-use derive_getters::Getters;
 use derive_more::{Add, Constructor, Display, Sub};
 use serde::{Deserialize, Serialize};
 
@@ -60,7 +59,7 @@ impl Energy {
     }
 }
 
-#[derive(Component, Debug, Constructor, Default, Reflect, Getters)]
+#[derive(Component, Debug, Constructor, Default, Reflect)]
 #[reflect(Component)]
 pub struct Food {
     energy: Energy,
@@ -69,12 +68,28 @@ pub struct Food {
 }
 
 impl Food {
+    pub const fn energy(&self) -> &Energy {
+        &self.energy
+    }
+
+    pub const fn energy_density(&self) -> usize {
+        self.energy_density
+    }
+
+    pub const fn toughness(&self) -> f32 {
+        self.toughness
+    }
+
     pub fn take_energy(&mut self, amount: usize) -> Energy {
         self.energy.take_energy(amount)
     }
 
     pub const fn size(&self) -> f32 {
         (self.energy.amount() / self.energy_density) as f32
+    }
+
+    pub fn add_energy(&mut self, energy: Energy) {
+        self.energy.add_energy(energy);
     }
 }
 

@@ -166,9 +166,9 @@ pub fn game_time_system(
     let very_slow = timesteps.get_mut("very_slow").unwrap();
     very_slow.step = Duration::from_secs_f32(1.0 / speed.speed);
     let slow = timesteps.get_mut("slow").unwrap();
-    slow.step = Duration::from_secs_f32(0.1 / speed.speed);
+    slow.step = Duration::from_secs_f32(config::SLOW_BEHAVIOUR_TICK_LENGTH / speed.speed);
     let standard = timesteps.get_mut("standard").unwrap();
-    standard.step = Duration::from_secs_f32(0.05 / speed.speed);
+    standard.step = Duration::from_secs_f32(config::BEHAVIOUR_TICK_LENGTH / speed.speed);
 
     rapier_config.timestep_mode = TimestepMode::Fixed {
         dt: speed.speed / 60.0,

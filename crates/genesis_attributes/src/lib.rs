@@ -87,6 +87,7 @@ pub struct Genome {
     pub max_size: Chromosome,
     pub growth_rate: Chromosome,
     pub grab_angle: Chromosome,
+    pub food_preference: Chromosome,
 }
 
 impl Genome {
@@ -109,7 +110,8 @@ impl Genome {
             offspring_energy,
             max_size,
             growth_rate,
-            grab_angle
+            grab_angle,
+            food_preference
         );
         Self {
             hatch_age,
@@ -119,6 +121,7 @@ impl Genome {
             max_size,
             growth_rate,
             grab_angle,
+            food_preference,
         }
     }
 
@@ -145,7 +148,8 @@ impl Genome {
             offspring_energy,
             max_size,
             growth_rate,
-            grab_angle
+            grab_angle,
+            food_preference
         );
         output_dna
     }
@@ -173,6 +177,7 @@ pub struct Dna {
     pub max_size: f32,
     pub growth_rate: f32,
     pub grab_angle: f32,
+    pub food_preference: f32,
 }
 
 impl Dna {
@@ -185,6 +190,7 @@ impl Dna {
             max_size: genome.max_size.random(rng),
             growth_rate: genome.growth_rate.random(rng),
             grab_angle: genome.grab_angle.random(rng),
+            food_preference: genome.food_preference.random(rng),
         }
     }
 
@@ -211,7 +217,8 @@ impl Dna {
             offspring_energy,
             max_size,
             growth_rate,
-            grab_angle
+            grab_angle,
+            food_preference
         );
         Ok(())
     }
@@ -431,6 +438,23 @@ impl GrabStrength {
     }
 }
 
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
+pub struct FoodPreference(f32);
+
+impl FoodPreference {
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
+    pub fn plant_digestion_efficiency(&self) -> f32 {
+        (-1.0f32).mul_add(self.0, 0.8)
+    }
+
+    pub fn meat_digestion_efficiency(&self) -> f32 {
+        0.8f32.mul_add(self.0, 0.1)
+    }
+}
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub hatch_age: HatchAge,
@@ -446,6 +470,7 @@ pub struct AttributeBundle {
     pub growth_rate: GrowthRate,
     pub grab_angle: GrabAngle,
     pub grab_strength: GrabStrength,
+    pub food_preference: FoodPreference,
 }
 
 impl AttributeBundle {
@@ -464,6 +489,7 @@ impl AttributeBundle {
             growth_rate: GrowthRate::new(dna.growth_rate),
             grab_angle: GrabAngle::new(dna.grab_angle),
             grab_strength: GrabStrength::new(dna.grab_angle, &genome.grab_angle),
+            food_preference: FoodPreference::new(dna.food_preference),
         }
     }
 }
@@ -486,6 +512,7 @@ impl Plugin for AttributesPlugin {
             .register_type::<GrowthRate>()
             .register_type::<GrabAngle>()
             .register_type::<GrabStrength>()
+            .register_type::<FoodPreference>()
             .register_component_as::<dyn AttributeDisplay, HatchAge>()
             .register_component_as::<dyn AttributeDisplay, AdultAge>()
             .register_component_as::<dyn AttributeDisplay, DeathAge>()
@@ -498,6 +525,7 @@ impl Plugin for AttributesPlugin {
             .register_component_as::<dyn AttributeDisplay, MaxSize>()
             .register_component_as::<dyn AttributeDisplay, GrowthRate>()
             .register_component_as::<dyn AttributeDisplay, GrabAngle>()
-            .register_component_as::<dyn AttributeDisplay, GrabStrength>();
+            .register_component_as::<dyn AttributeDisplay, GrabStrength>()
+            .register_component_as::<dyn AttributeDisplay, FoodPreference>();
     }
 }

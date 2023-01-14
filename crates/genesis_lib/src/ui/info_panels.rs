@@ -3,6 +3,7 @@ use bevy_egui::{egui, EguiContext};
 use bevy_trait_query::ReadTraits;
 use components::{body, eat, grab, grow, lay, see, time, Size};
 use genesis_components as components;
+use genesis_config as config;
 use genesis_ecosystem as ecosystem;
 use genesis_traits::AttributeDisplay;
 
@@ -243,6 +244,9 @@ type EnergyFlowInfo<'a> = (
     &'a components::TranslationSum,
     &'a components::RotationSum,
     &'a components::ThinkingSum,
+    &'a eat::DigestionCost,
+    &'a eat::EnergyDigested,
+    &'a body::Vitality,
 );
 
 pub fn energy_flow_info_system(
@@ -261,10 +265,10 @@ pub fn energy_flow_info_system(
     }
 }
 
-const MULTIPLIER: f32 = 20.0;
+const MULTIPLIER: f32 = 1.0 / config::BEHAVIOUR_TICK_LENGTH;
 
 fn energy_flow_sub_panel(ui: &mut egui::Ui, energy_flow_info: &EnergyFlowInfo) {
-    let total = (energy_flow_info.0.rate()
+    let mut total = -(energy_flow_info.0.rate()
         + energy_flow_info.1.rate()
         + energy_flow_info.2.rate()
         + energy_flow_info.3.rate()
@@ -273,38 +277,44 @@ fn energy_flow_sub_panel(ui: &mut egui::Ui, energy_flow_info: &EnergyFlowInfo) {
         + energy_flow_info.6.rate()
         + energy_flow_info.7.rate())
         * MULTIPLIER;
+    let digestion_cost = **energy_flow_info.8 as f32;
+    total -= digestion_cost;
+    let energy_digested = **energy_flow_info.9 as f32;
+    total += energy_digested;
     ui.label(format!(
         "Eating: {:.2}",
-        energy_flow_info.0.rate() * MULTIPLIER
+        -energy_flow_info.0.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Grabbing: {:.2}",
-        energy_flow_info.1.rate() * MULTIPLIER
+        -energy_flow_info.1.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Growing: {:.2}",
-        energy_flow_info.2.rate() * MULTIPLIER
+        -energy_flow_info.2.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Metabolism: {:.2}",
-        energy_flow_info.3.rate() * MULTIPLIER
+        -energy_flow_info.3.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Laying: {:.2}",
-        energy_flow_info.4.rate() * MULTIPLIER
+        -energy_flow_info.4.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Moving: {:.2}",
-        energy_flow_info.5.rate() * MULTIPLIER
+        -energy_flow_info.5.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Rotating: {:.2}",
-        energy_flow_info.6.rate() * MULTIPLIER
+        -energy_flow_info.6.rate() * MULTIPLIER
     ));
     ui.label(format!(
         "Thinking: {:.2}",
-        energy_flow_info.7.rate() * MULTIPLIER
+        -energy_flow_info.7.rate() * MULTIPLIER
     ));
+    ui.label(format!("Digestion waste: {}", -digestion_cost));
+    ui.label(format!("Digestion energy: {energy_digested}"));
     ui.label(format!("Total: {total:.2}"));
 }
 

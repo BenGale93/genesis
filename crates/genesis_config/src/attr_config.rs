@@ -12,6 +12,7 @@ struct AttributeConfigValidator {
     max_size: MinMax,
     growth_rate: MinMax,
     grab_angle: MinMax,
+    food_preference: MinMax,
 }
 
 impl Default for AttributeConfigValidator {
@@ -24,6 +25,7 @@ impl Default for AttributeConfigValidator {
             max_size: (Some(50.0), Some(150.0)),
             growth_rate: (Some(0.0), Some(1.0)),
             grab_angle: (Some(20.0), Some(90.0)),
+            food_preference: (Some(0.0), Some(1.0)),
         }
     }
 }
@@ -39,6 +41,7 @@ pub struct AttributeConfig {
     pub max_size: MinMaxLen,
     pub growth_rate: MinMaxLen,
     pub grab_angle: MinMaxLen,
+    pub food_preference: MinMaxLen,
 }
 
 impl Default for AttributeConfig {
@@ -51,6 +54,7 @@ impl Default for AttributeConfig {
             max_size: (80.0, 100.0, 20),
             growth_rate: (0.05, 0.1, 20),
             grab_angle: (30.0, 60.0, 10),
+            food_preference: (0.0, 1.0, 100),
         }
     }
 }
@@ -82,7 +86,8 @@ impl AttributeConfig {
             offspring_energy,
             max_size,
             growth_rate,
-            grab_angle
+            grab_angle,
+            food_preference
         );
         messages
     }
