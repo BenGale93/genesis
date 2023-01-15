@@ -4,12 +4,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes as attributes;
-use genesis_components::{
-    body::Vitality,
-    eat::*,
-    mind::{MindInput, MindOutput},
-    BurntEnergy, Egg, Size,
-};
+use genesis_components::{body::Vitality, eat::*, mind::MindOutput, BurntEnergy, Egg, Size};
 use genesis_config as config;
 use genesis_config::BEHAVIOUR_TICK;
 use genesis_ecosystem::Food;
@@ -118,12 +113,6 @@ pub fn eating_system(
 pub fn digestion_intensity_system(mut bug_query: Query<(&MindOutput, &mut Stomach)>) {
     for (mind_out, mut stomach) in bug_query.iter_mut() {
         stomach.set_intensity(mind_out[config::DIGEST_FOOD_INDEX]);
-    }
-}
-
-pub fn update_fullness_system(mut bug_query: Query<(&mut MindInput, &Stomach)>) {
-    for (mut mind_in, stomach) in bug_query.iter_mut() {
-        mind_in[config::FULLNESS_INDEX] = stomach.fullness();
     }
 }
 

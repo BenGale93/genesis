@@ -3,7 +3,7 @@ use genesis_components::mind::*;
 
 pub(super) type BugBrainInfo<'a> = (&'a MindInput, &'a MindLayout, &'a MindOutput);
 
-const NEURON_NAMES: [&str; 23] = [
+const NEURON_NAMES: [&str; 26] = [
     "Constant",
     "Movement",
     "Rotation",
@@ -13,9 +13,12 @@ const NEURON_NAMES: [&str; 23] = [
     "Visible bugs",
     "Bug angle",
     "Bug distance",
-    "Visible food",
-    "Food angle",
-    "Food distance",
+    "Visible plants",
+    "Plant angle",
+    "Plant distance",
+    "Visible meat",
+    "Meat angle",
+    "Meat distance",
     "Heartbeat",
     "Internal timer",
     "Fullness",
@@ -101,7 +104,7 @@ pub(super) fn bug_brain_sub_panel(ui: &mut egui::Ui, brain_info: &BugBrainInfo) 
     mind_values.extend(&mind_out.0);
 
     let (_rect, response) =
-        ui.allocate_exact_size(egui::Vec2::new(1000.0, 680.0), egui::Sense::hover());
+        ui.allocate_exact_size(egui::Vec2::new(1400.0, 680.0), egui::Sense::hover());
 
     paint_synapses(ui, mind_layout.synapses());
     paint_neurons(ui, &response, mind_layout.neurons(), &mind_values);

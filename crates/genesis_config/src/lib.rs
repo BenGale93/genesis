@@ -18,7 +18,7 @@ pub const PAN_SPEED: f32 = 1000.0;
 pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
-pub const INPUT_NEURONS: usize = 15;
+pub const INPUT_NEURONS: usize = 18;
 pub const OUTPUT_NEURONS: usize = 8;
 pub const EATING_MULTIPLIER: f32 = 20.0;
 pub const CORE_MULTIPLIER: usize = 100;
@@ -52,12 +52,15 @@ pub const AGE_INDEX: usize = 5;
 pub const VISIBLE_BUGS_INDEX: usize = 6;
 pub const BUG_ANGLE_SCORE_INDEX: usize = 7;
 pub const BUG_DIST_SCORE_INDEX: usize = 8;
-pub const VISIBLE_FOOD_INDEX: usize = 9;
-pub const FOOD_ANGLE_SCORE_INDEX: usize = 10;
-pub const FOOD_DIST_SCORE_INDEX: usize = 11;
-pub const HEARTBEAT_INDEX: usize = 12;
-pub const INTERNAL_TIMER_INDEX: usize = 13;
-pub const FULLNESS_INDEX: usize = 14;
+pub const VISIBLE_PLANT_INDEX: usize = 9;
+pub const PLANT_ANGLE_SCORE_INDEX: usize = 10;
+pub const PLANT_DIST_SCORE_INDEX: usize = 11;
+pub const VISIBLE_MEAT_INDEX: usize = 12;
+pub const MEAT_ANGLE_SCORE_INDEX: usize = 13;
+pub const MEAT_DIST_SCORE_INDEX: usize = 14;
+pub const HEARTBEAT_INDEX: usize = 15;
+pub const INTERNAL_TIMER_INDEX: usize = 16;
+pub const FULLNESS_INDEX: usize = 17;
 
 // Other
 pub const GENERATION_SWITCH: usize = 5;
@@ -171,7 +174,7 @@ impl Default for WorldConfig {
             start_num: 0,
             minimum_number: 0,
             energy_floor: 100000,
-            starting_synapses: vec![(0, 15), (10, 16), (14, 22)],
+            starting_synapses: vec![(0, 18), (10, 19), (17, 25)],
             mutations: 3,
             start_energy: 10000,
             lowest_energy_limit: 20000,

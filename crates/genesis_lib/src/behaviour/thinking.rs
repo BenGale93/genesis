@@ -1,5 +1,5 @@
 use bevy::prelude::{Query, Without};
-use genesis_components::{body, mind, see::Vision, time, Egg, ThinkingSum};
+use genesis_components::{body, eat, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
 use genesis_traits::BehaviourTracker;
 
@@ -15,11 +15,14 @@ pub fn sensory_system(
             &Vision,
             &time::Heart,
             &time::InternalTimer,
+            &eat::Stomach,
         ),
         Without<Egg>,
     >,
 ) {
-    for (mut input, output, vitality, age, vision, heart, internal_timer) in query.iter_mut() {
+    for (mut input, output, vitality, age, vision, heart, internal_timer, stomach) in
+        query.iter_mut()
+    {
         input[config::CONSTANT_INDEX] = CONST;
         input[config::PREV_MOVEMENT_INDEX] = output[config::MOVEMENT_INDEX];
         input[config::PREV_ROTATE_INDEX] = output[config::ROTATE_INDEX];
@@ -29,11 +32,15 @@ pub fn sensory_system(
         input[config::VISIBLE_BUGS_INDEX] = *vision.visible_bugs() as f32;
         input[config::BUG_ANGLE_SCORE_INDEX] = *vision.bug_angle_score();
         input[config::BUG_DIST_SCORE_INDEX] = *vision.bug_dist_score();
-        input[config::VISIBLE_FOOD_INDEX] = *vision.visible_food() as f32;
-        input[config::FOOD_ANGLE_SCORE_INDEX] = *vision.food_angle_score();
-        input[config::FOOD_DIST_SCORE_INDEX] = *vision.food_dist_score();
+        input[config::VISIBLE_PLANT_INDEX] = *vision.visible_plant() as f32;
+        input[config::PLANT_ANGLE_SCORE_INDEX] = *vision.plant_angle_score();
+        input[config::PLANT_DIST_SCORE_INDEX] = *vision.plant_dist_score();
+        input[config::VISIBLE_MEAT_INDEX] = *vision.visible_meat() as f32;
+        input[config::MEAT_ANGLE_SCORE_INDEX] = *vision.meat_angle_score();
+        input[config::MEAT_DIST_SCORE_INDEX] = *vision.meat_dist_score();
         input[config::HEARTBEAT_INDEX] = heart.pulse();
         input[config::INTERNAL_TIMER_INDEX] = internal_timer.elapsed_secs();
+        input[config::FULLNESS_INDEX] = stomach.fullness();
     }
 }
 
