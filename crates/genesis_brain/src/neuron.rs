@@ -38,8 +38,8 @@ impl Neuron {
         };
 
         let bias = match kind {
-            NeuronKind::Input => Bias::new(0.).unwrap(),
-            _ => Bias::random(),
+            NeuronKind::Input | NeuronKind::Output => Bias::new(0.).unwrap(),
+            NeuronKind::Hidden => Bias::random(),
         };
 
         Self {

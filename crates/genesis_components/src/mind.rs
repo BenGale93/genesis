@@ -13,6 +13,7 @@ use genesis_brain::{
 };
 use genesis_color as color;
 use genesis_config as config;
+use genesis_newtype::Weight;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -55,13 +56,13 @@ pub enum MindValidationError {
 pub struct Mind(pub Brain);
 
 impl Mind {
-    pub fn random(input: usize, output: usize) -> Self {
+    pub fn minimal(input: usize, output: usize, starting_synapses: &[(usize, usize)]) -> Self {
         let mut brain = Brain::new(input, output);
-
-        for _ in 0..config::WorldConfig::global().initial_synapse_count {
-            brain.add_random_synapse();
+        for (start, end) in starting_synapses.iter() {
+            brain
+                .add_synapse(*start, *end, Weight::random())
+                .expect("Expected to be able to add a synapse here.");
         }
-
         Self(brain)
     }
 

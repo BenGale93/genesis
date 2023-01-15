@@ -101,7 +101,8 @@ mod tests {
         let mut app = App::new();
 
         app.add_system(thinking_system);
-        let mind = Mind::random(3, 2);
+        let starting_synapses: &[(usize, usize)] = &[];
+        let mind = Mind::minimal(3, 2, starting_synapses);
 
         let bug_id = app.world.spawn(MindBundle::new(&mind)).id();
 
