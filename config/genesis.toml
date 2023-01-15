@@ -1,21 +1,21 @@
-start_num = 20
+start_num = 0
 minimum_number = 0
 energy_floor = 100000
 starting_synapses = [
     [
     0,
-    15,
+    18,
 ],
     [
     10,
-    16,
+    19,
 ],
     [
-    14,
-    22,
+    17,
+    25,
 ],
 ]
-mutations = 10
+mutations = 3
 start_energy = 10000
 lowest_energy_limit = 20000
 max_rotation = 15.0

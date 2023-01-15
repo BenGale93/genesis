@@ -2,8 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::{Query, Transform, With};
 use genesis_attributes::{EyeAngle, EyeRange};
-use genesis_components::{mind::Mind, see::Vision};
-use genesis_ecosystem::Food;
+use genesis_components::{mind::Mind, see::Vision, Meat, Plant};
 use genesis_maths::{angle_between, Cone};
 
 fn dist_angle_score(
@@ -21,7 +20,8 @@ fn dist_angle_score(
 pub fn process_sight_system(
     mut eye_query: Query<(&EyeRange, &EyeAngle, &Transform, &mut Vision)>,
     bug_query: Query<&Transform, With<Mind>>,
-    food_query: Query<&Transform, With<Food>>,
+    plant_query: Query<&Transform, With<Plant>>,
+    meat_query: Query<&Transform, With<Meat>>,
 ) {
     for (eye_range, eye_angle, transform, mut vision) in eye_query.iter_mut() {
         let cone = Cone::new(
@@ -46,12 +46,21 @@ pub fn process_sight_system(
             }
         }
 
-        for food_transform in food_query.iter() {
-            if cone.is_within_cone(food_transform.translation) {
-                vision.increment_food();
+        for plant_transform in plant_query.iter() {
+            if cone.is_within_cone(plant_transform.translation) {
+                vision.increment_plant();
 
-                let scores = dist_angle_score(transform, food_transform, **eye_range);
-                vision.set_food_score(scores);
+                let scores = dist_angle_score(transform, plant_transform, **eye_range);
+                vision.set_plant_score(scores);
+            }
+        }
+
+        for meat_transform in meat_query.iter() {
+            if cone.is_within_cone(meat_transform.translation) {
+                vision.increment_meat();
+
+                let scores = dist_angle_score(transform, meat_transform, **eye_range);
+                vision.set_meat_score(scores);
             }
         }
     }

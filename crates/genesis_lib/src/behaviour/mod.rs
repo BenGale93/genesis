@@ -23,7 +23,6 @@ pub fn before_thinking_system_set() -> SystemSet {
         .run_if_not(conditions::is_paused)
         .with_system(thinking::sensory_system)
         .with_system(seeing::process_sight_system)
-        .with_system(eating::update_fullness_system)
         .into()
 }
 

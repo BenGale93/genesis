@@ -160,7 +160,8 @@ fn bug_live_sub_panel(ui: &mut egui::Ui, bug_info: &BugLiveInfo) {
     ui.label(format!("Health: {}", &bug_info.1.health()));
     ui.label(format!("Size: {:.2}", **bug_info.2));
     ui.label(format!("Visible Bugs: {}", &bug_info.3.visible_bugs()));
-    ui.label(format!("Visible Food: {}", &bug_info.3.visible_food()));
+    ui.label(format!("Visible Plants: {}", &bug_info.3.visible_plant()));
+    ui.label(format!("Visible Meat: {}", &bug_info.3.visible_meat()));
     ui.label(format!("Internal timer: {:.2}", &bug_info.4.elapsed_secs()));
     ui.label(format!("Generation: {}", &bug_info.5 .0));
     ui.label(format!("Size Multiplier: {:.2}", &bug_info.6.as_float()));
