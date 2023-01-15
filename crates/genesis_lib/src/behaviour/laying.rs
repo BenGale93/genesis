@@ -136,7 +136,11 @@ pub fn spawn_egg_system(
         let mut rng = rand::thread_rng();
         let location = spawners.random_organism_position(&mut rng);
         let dna = attributes::Dna::new(&genome, &mut rng);
-        let mut mind = mind::Mind::random(config::INPUT_NEURONS, config::OUTPUT_NEURONS);
+        let mut mind = mind::Mind::minimal(
+            config::INPUT_NEURONS,
+            config::OUTPUT_NEURONS,
+            &config_instance.starting_synapses,
+        );
         for _ in 0..config_instance.mutations {
             mind = mind
                 .mutate(&mut rng, &Probability::new(1.0).unwrap(), &mind_thresholds)

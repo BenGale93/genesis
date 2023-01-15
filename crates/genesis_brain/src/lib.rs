@@ -304,7 +304,22 @@ impl Brain {
     }
 
     pub fn mutate_neuron_bias(&mut self) {
-        let random_neuron = self.neurons.choose_mut(&mut rand::thread_rng()).unwrap();
+        let mut connected_neurons: Vec<&mut Neuron> = self
+            .neurons
+            .iter_mut()
+            .enumerate()
+            .filter(|(i, _)| {
+                let outgoing_count = self.synapses.num_outgoing_synapses(*i);
+                let incoming_count = self.synapses.num_incoming_synapses(*i);
+
+                incoming_count > 0 || outgoing_count > 0
+            })
+            .map(|(_, n)| n)
+            .collect();
+
+        let Some(random_neuron) = connected_neurons.choose_mut(&mut rand::thread_rng()) else {
+            return;
+        };
 
         let offset: f32 = thread_rng().sample(StandardNormal);
         let new_bias =
@@ -904,6 +919,7 @@ mod tests {
     #[test]
     fn mutate_neuron_bias_success() {
         let mut test_brain = super::Brain::new(1, 1);
+        test_brain.add_synapse(0, 1, Weight::random()).unwrap();
         let starting_bias_in = test_brain.neurons()[0].bias();
         let starting_bias_out = test_brain.neurons()[1].bias();
         test_brain.mutate_neuron_bias();
