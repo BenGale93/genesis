@@ -188,6 +188,7 @@ pub fn spawn_egg(
         ))
         .insert(mind)
         .insert(time::Age::default())
+        .insert(time::AgeEfficiency::default())
         .insert(generation)
         .insert(BurntEnergy::new());
 

@@ -2,7 +2,7 @@ use std::f32::consts::PI;
 
 use bevy::prelude::{Query, Transform, With};
 use genesis_attributes::{EyeAngle, EyeRange};
-use genesis_components::{mind::Mind, see::Vision, Meat, Plant};
+use genesis_components::{mind::Mind, see::Vision, time::AgeEfficiency, Meat, Plant};
 use genesis_maths::{angle_between, Cone};
 
 fn dist_angle_score(
@@ -18,17 +18,24 @@ fn dist_angle_score(
 }
 
 pub fn process_sight_system(
-    mut eye_query: Query<(&EyeRange, &EyeAngle, &Transform, &mut Vision)>,
+    mut eye_query: Query<(
+        &EyeRange,
+        &EyeAngle,
+        &Transform,
+        &mut Vision,
+        &AgeEfficiency,
+    )>,
     bug_query: Query<&Transform, With<Mind>>,
     plant_query: Query<&Transform, With<Plant>>,
     meat_query: Query<&Transform, With<Meat>>,
 ) {
-    for (eye_range, eye_angle, transform, mut vision) in eye_query.iter_mut() {
+    for (eye_range, eye_angle, transform, mut vision, age_efficiency) in eye_query.iter_mut() {
+        let range = **eye_range * **age_efficiency;
         let cone = Cone::new(
             transform.translation,
             transform.rotation,
             **eye_angle,
-            **eye_range,
+            range,
         )
         .unwrap();
 
@@ -41,7 +48,7 @@ pub fn process_sight_system(
             if cone.is_within_cone(bug_transform.translation) {
                 vision.increment_bugs();
 
-                let scores = dist_angle_score(transform, bug_transform, **eye_range);
+                let scores = dist_angle_score(transform, bug_transform, range);
                 vision.set_bug_score(scores);
             }
         }
@@ -50,7 +57,7 @@ pub fn process_sight_system(
             if cone.is_within_cone(plant_transform.translation) {
                 vision.increment_plant();
 
-                let scores = dist_angle_score(transform, plant_transform, **eye_range);
+                let scores = dist_angle_score(transform, plant_transform, range);
                 vision.set_plant_score(scores);
             }
         }
@@ -59,7 +66,7 @@ pub fn process_sight_system(
             if cone.is_within_cone(meat_transform.translation) {
                 vision.increment_meat();
 
-                let scores = dist_angle_score(transform, meat_transform, **eye_range);
+                let scores = dist_angle_score(transform, meat_transform, range);
                 vision.set_meat_score(scores);
             }
         }

@@ -4,7 +4,7 @@ use bevy::{
 };
 use bevy_rapier2d::prelude::{ExternalImpulse, RapierContext};
 use genesis_attributes as attributes;
-use genesis_components::{grab::*, mind, Egg, Size};
+use genesis_components::{grab::*, mind, time::AgeEfficiency, Egg, Size};
 use genesis_config as config;
 use genesis_config::BEHAVIOUR_TICK;
 use genesis_maths::angle_between;
@@ -48,10 +48,11 @@ pub type GrabbingBug<'a> = (
     &'a Transform,
     &'a attributes::GrabAngle,
     &'a attributes::GrabStrength,
+    &'a AgeEfficiency,
 );
 
 fn apply_grab(bug: &GrabbingBug, other: &mut (&Transform, &Size, Mut<ExternalImpulse>)) {
-    let (bug_transform, grab_angle, grab_strength) = bug;
+    let (bug_transform, grab_angle, grab_strength, age_efficiency) = bug;
     let (other_transform, size, ext_impulse) = other;
     if ***size < config::GRAB_SIZE_THRESHOLD {
         return;
@@ -59,7 +60,8 @@ fn apply_grab(bug: &GrabbingBug, other: &mut (&Transform, &Size, Mut<ExternalImp
     let translation_between = other_transform.translation - bug_transform.translation;
     let angle_to_other = angle_between(&bug_transform.rotation, translation_between);
     if angle_to_other.abs() < ***grab_angle {
-        ext_impulse.impulse = -***grab_strength * translation_between.normalize().truncate();
+        ext_impulse.impulse =
+            -***grab_strength * ***age_efficiency * translation_between.normalize().truncate();
     }
 }
 
