@@ -18,6 +18,16 @@ struct EnergyStore(ecosystem::EnergyReserve);
 #[derive(Debug, Deref, DerefMut, Default, Reflect)]
 struct Health(ecosystem::EnergyReserve);
 
+#[derive(Component, Debug, Deref, DerefMut, Reflect, Default)]
+#[reflect(Component)]
+pub struct HealthEfficiency(pub f32);
+
+impl HealthEfficiency {
+    pub fn update(&mut self, health_reserve: &ecosystem::EnergyReserve) {
+        self.0 = (0.5 * health_reserve.proportion() + 0.5).clamp(0.0, 1.0)
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Deref, DerefMut, Default, Reflect)]
 pub struct CoreReserve(ecosystem::Energy);
 
@@ -127,6 +137,7 @@ impl bevy_app::Plugin for BodyComponentPlugin {
         app.register_type::<OriginalColor>()
             .register_type::<EnergyStore>()
             .register_type::<Health>()
+            .register_type::<HealthEfficiency>()
             .register_type::<CoreReserve>()
             .register_type::<Vitality>();
     }

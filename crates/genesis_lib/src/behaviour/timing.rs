@@ -2,12 +2,17 @@ use bevy::{
     prelude::{Query, Res, ResMut},
     time::Time,
 };
+use genesis_attributes::DeathAge;
 use genesis_components::{mind::MindOutput, time::*};
 use genesis_config as config;
 
-pub fn progress_age_system(time: Res<Time>, mut query: Query<&mut Age>) {
-    for mut age in query.iter_mut() {
+pub fn progress_age_system(
+    time: Res<Time>,
+    mut query: Query<(&mut Age, &mut AgeEfficiency, &DeathAge)>,
+) {
+    for (mut age, mut age_efficiency, death_age) in query.iter_mut() {
         age.tick(time.delta());
+        age_efficiency.update(&age, death_age);
     }
 }
 
