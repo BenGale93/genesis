@@ -22,3 +22,11 @@ pub fn energy_return_system(
         ecosystem.return_energy(burnt_energy.return_energy());
     }
 }
+
+pub fn update_health_efficiency_system(
+    mut bug_query: Query<(&mut body::HealthEfficiency, &body::Vitality)>,
+) {
+    for (mut health_efficiency, vitality) in bug_query.iter_mut() {
+        health_efficiency.update(vitality.health())
+    }
+}

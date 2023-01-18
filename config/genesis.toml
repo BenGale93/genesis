@@ -1,4 +1,4 @@
-start_num = 0
+start_num = 20
 minimum_number = 0
 energy_floor = 100000
 starting_synapses = [
