@@ -32,6 +32,7 @@ pub fn sensory_system(
         input[config::VISIBLE_BUGS_INDEX] = *vision.visible_bugs() as f32;
         input[config::BUG_ANGLE_SCORE_INDEX] = *vision.bug_angle_score();
         input[config::BUG_DIST_SCORE_INDEX] = *vision.bug_dist_score();
+        input[config::BUG_SPECIES_INDEX] = *vision.bug_species();
         input[config::VISIBLE_PLANT_INDEX] = *vision.visible_plant() as f32;
         input[config::PLANT_ANGLE_SCORE_INDEX] = *vision.plant_angle_score();
         input[config::PLANT_DIST_SCORE_INDEX] = *vision.plant_dist_score();

@@ -6,8 +6,9 @@ use derive_getters::Getters;
 #[reflect(Component)]
 pub struct Vision {
     visible_bugs: u32,
-    bug_angle_score: f32,
-    bug_dist_score: f32,
+    pub bug_angle_score: f32,
+    pub bug_dist_score: f32,
+    pub bug_species: f32,
     visible_plant: u32,
     plant_angle_score: f32,
     plant_dist_score: f32,
@@ -22,6 +23,7 @@ impl Vision {
             visible_bugs: 0,
             bug_angle_score: 0.0,
             bug_dist_score: 1.0,
+            bug_species: 0.0,
             visible_plant: 0,
             plant_angle_score: 0.0,
             plant_dist_score: 1.0,
@@ -32,15 +34,7 @@ impl Vision {
     }
 
     pub fn reset(&mut self) {
-        self.visible_bugs = 0;
-        self.bug_angle_score = 0.0;
-        self.bug_dist_score = 1.0;
-        self.visible_plant = 0;
-        self.plant_angle_score = 0.0;
-        self.plant_dist_score = 1.0;
-        self.visible_meat = 0;
-        self.meat_angle_score = 0.0;
-        self.meat_dist_score = 1.0;
+        *self = Self::new();
     }
 
     pub fn increment_bugs(&mut self) {
