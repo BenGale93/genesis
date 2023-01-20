@@ -4,15 +4,15 @@ energy_floor = 100000
 starting_synapses = [
     [
     0,
-    18,
-],
-    [
-    10,
     19,
 ],
     [
-    17,
-    25,
+    11,
+    20,
+],
+    [
+    18,
+    26,
 ],
 ]
 mutations = 3

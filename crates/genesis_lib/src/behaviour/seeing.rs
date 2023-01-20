@@ -22,14 +22,16 @@ pub fn process_sight_system(
         &EyeRange,
         &EyeAngle,
         &Transform,
+        &Mind,
         &mut Vision,
         &AgeEfficiency,
     )>,
-    bug_query: Query<&Transform, With<Mind>>,
+    bug_query: Query<(&Transform, &Mind)>,
     plant_query: Query<&Transform, With<Plant>>,
     meat_query: Query<&Transform, With<Meat>>,
 ) {
-    for (eye_range, eye_angle, transform, mut vision, age_efficiency) in eye_query.iter_mut() {
+    for (eye_range, eye_angle, transform, mind, mut vision, age_efficiency) in eye_query.iter_mut()
+    {
         let range = **eye_range * **age_efficiency;
         let cone = Cone::new(
             transform.translation,
@@ -41,15 +43,19 @@ pub fn process_sight_system(
 
         vision.reset();
 
-        for bug_transform in bug_query.iter() {
+        for (bug_transform, bug_mind) in bug_query.iter() {
             if transform.translation == bug_transform.translation {
                 continue;
             }
             if cone.is_within_cone(bug_transform.translation) {
                 vision.increment_bugs();
 
-                let scores = dist_angle_score(transform, bug_transform, range);
-                vision.set_bug_score(scores);
+                let bug_score = dist_angle_score(transform, bug_transform, range);
+                if vision.bug_dist_score > bug_score.0 {
+                    vision.bug_dist_score = bug_score.0;
+                    vision.bug_angle_score = bug_score.1;
+                    vision.bug_species = mind.compare(bug_mind);
+                }
             }
         }
 

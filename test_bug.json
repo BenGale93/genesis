@@ -92,6 +92,11 @@
         "bias": 0.0
       },
       {
+        "kind": "Input",
+        "activation": "Identity",
+        "bias": 0.0
+      },
+      {
         "kind": "Output",
         "activation": "Tanh",
         "bias": 0.3
@@ -150,55 +155,55 @@
     "synapses": [
         {
           "from": 0,
-          "to": 18,
+          "to": 19,
           "weight": 1.0,
           "active": true
         },
         {
           "from": 0,
-          "to": 25,
+          "to": 26,
+          "weight": 1.0,
+          "active": true
+        },
+        {
+          "from": 11,
+          "to": 20,
           "weight": 1.0,
           "active": true
         },
         {
           "from": 10,
-          "to": 19,
-          "weight": 1.0,
-          "active": true
-        },
-        {
-          "from": 9,
-          "to": 26,
-          "weight": -1.0,
-          "active": true
-        },
-        {
-          "from": 26,
           "to": 27,
-          "weight": 1.0,
+          "weight": -1.0,
           "active": true
         },
         {
           "from": 27,
-          "to": 19,
-          "weight": 0.05,
-          "active": true
-        },
-        {
-          "from": 11,
-          "to": 21,
-          "weight": -1.0,
-          "active": true
-        },
-        {
-          "from": 11,
           "to": 28,
           "weight": 1.0,
           "active": true
         },
         {
           "from": 28,
-          "to": 18,
+          "to": 20,
+          "weight": 0.05,
+          "active": true
+        },
+        {
+          "from": 12,
+          "to": 22,
+          "weight": -1.0,
+          "active": true
+        },
+        {
+          "from": 12,
+          "to": 29,
+          "weight": 1.0,
+          "active": true
+        },
+        {
+          "from": 29,
+          "to": 19,
           "weight": -1.0,
           "active": true
         }

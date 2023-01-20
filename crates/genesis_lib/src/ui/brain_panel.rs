@@ -3,7 +3,7 @@ use genesis_components::mind::*;
 
 pub(super) type BugBrainInfo<'a> = (&'a MindInput, &'a MindLayout, &'a MindOutput);
 
-const NEURON_NAMES: [&str; 26] = [
+const NEURON_NAMES: [&str; 27] = [
     "Constant",
     "Movement",
     "Rotation",
@@ -13,6 +13,7 @@ const NEURON_NAMES: [&str; 26] = [
     "Visible bugs",
     "Bug angle",
     "Bug distance",
+    "Bug species",
     "Visible plants",
     "Plant angle",
     "Plant distance",

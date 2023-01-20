@@ -13,6 +13,8 @@ mod graph;
 pub mod neuron;
 pub mod synapse;
 
+use std::collections::HashSet;
+
 pub use activation::ActivationFunctionKind;
 use bevy_reflect::Reflect;
 pub use brain_error::BrainError;
@@ -200,6 +202,25 @@ impl Brain {
             .filter(|s| s.active())
             .map(synapse::Synapse::innovation)
             .collect()
+    }
+
+    pub fn compare(&self, other: &Self) -> f32 {
+        let my_innovations: HashSet<usize> = self
+            .synapses
+            .iter()
+            .filter(|s| s.active())
+            .map(|s| s.innovation())
+            .collect();
+        let their_innovations: HashSet<usize> = other
+            .synapses
+            .iter()
+            .filter(|s| s.active())
+            .map(|s| s.innovation())
+            .collect();
+
+        let intersection: HashSet<_> = my_innovations.intersection(&their_innovations).collect();
+        let set_union: HashSet<_> = my_innovations.union(&their_innovations).collect();
+        intersection.len() as f32 / set_union.len() as f32
     }
 
     pub fn add_random_synapse(&mut self) {
@@ -969,5 +990,40 @@ mod tests {
         test_brain.add_synapse(1, 2, w).unwrap();
         test_brain.deactivate_synapse(2).unwrap();
         test_brain.add_synapse(0, 5, w).unwrap();
+    }
+
+    #[test]
+    fn identical_brain_comparison() {
+        let w = Weight::new(1.0).unwrap();
+
+        let mut test_brain_1 = super::Brain::new(2, 2);
+        test_brain_1.add_synapse(1, 2, w).unwrap();
+        test_brain_1.add_neuron(0).unwrap();
+        test_brain_1.add_synapse(0, 4, w).unwrap();
+
+        let mut test_brain_2 = super::Brain::new(2, 2);
+        test_brain_2.add_synapse(1, 2, w).unwrap();
+        test_brain_2.add_neuron(0).unwrap();
+        test_brain_2.add_synapse(0, 4, w).unwrap();
+
+        assert_eq!(test_brain_1.compare(&test_brain_2), 1.0);
+    }
+
+    #[test]
+    fn non_identical_brain_comparison() {
+        let w = Weight::new(1.0).unwrap();
+
+        let mut test_brain_1 = super::Brain::new(2, 2);
+        test_brain_1.add_synapse(1, 2, w).unwrap();
+        test_brain_1.add_neuron(0).unwrap();
+        test_brain_1.add_synapse(0, 4, w).unwrap();
+
+        let mut test_brain_2 = super::Brain::new(2, 2);
+        test_brain_2.add_synapse(1, 2, w).unwrap();
+        test_brain_2.add_neuron(0).unwrap();
+        test_brain_2.add_synapse(0, 4, w).unwrap();
+        test_brain_2.add_synapse(0, 3, w).unwrap();
+
+        assert_eq!(test_brain_1.compare(&test_brain_2), 0.75);
     }
 }
