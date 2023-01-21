@@ -30,3 +30,9 @@ pub fn update_health_efficiency_system(
         health_efficiency.update(vitality.health())
     }
 }
+
+pub fn heal_damage_system(mut bug_query: Query<&mut body::Vitality>) {
+    for mut vitality in bug_query.iter_mut() {
+        vitality.heal();
+    }
+}

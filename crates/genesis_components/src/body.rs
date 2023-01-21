@@ -128,6 +128,19 @@ impl Vitality {
         returning_energy = returning_energy + self.core_reserve.0.take_all_energy();
         returning_energy
     }
+
+    pub fn heal(&mut self) {
+        if self.health.proportion() == 1.0 {
+            return;
+        }
+        let leftover_energy = self.health.add_energy(self.energy_store.take_energy(10));
+        let excess_energy = self.energy_store.add_energy(leftover_energy);
+        assert_eq!(
+            excess_energy.amount(),
+            0,
+            "There should be no excess energy when healing."
+        );
+    }
 }
 
 pub struct BodyComponentPlugin;
