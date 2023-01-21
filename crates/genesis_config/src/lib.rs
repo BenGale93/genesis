@@ -19,7 +19,7 @@ pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
 pub const INPUT_NEURONS: usize = 19;
-pub const OUTPUT_NEURONS: usize = 8;
+pub const OUTPUT_NEURONS: usize = 9;
 pub const EATING_MULTIPLIER: f32 = 20.0;
 pub const CORE_MULTIPLIER: usize = 100;
 pub const HEALTH_MULTIPLIER: usize = 20;
@@ -41,6 +41,7 @@ pub const RESET_TIMER_INDEX: usize = 4;
 pub const WANT_TO_GROWN_INDEX: usize = 5;
 pub const WANT_TO_GRAB_INDEX: usize = 6;
 pub const DIGEST_FOOD_INDEX: usize = 7;
+pub const ATTACK_INDEX: usize = 8;
 
 // Inputs
 pub const CONSTANT_INDEX: usize = 0;
@@ -112,6 +113,7 @@ pub struct WorldConfig {
     pub unit_size_cost: f32,
     pub world_energy: usize,
     pub mutation_probability: f32,
+    pub healing_rate: usize,
     pub cost_of_thought: f32,
     pub cost_of_grab: f32,
     pub cost_of_lay: f32,
@@ -143,6 +145,7 @@ impl WorldConfig {
             validators::between(self.max_translation, 100.0, 1000.0, "max_translation"),
             validators::between(self.rotation_cost, 0.0, 10.0, "rotation_cost"),
             validators::between(self.translation_cost, 0.0, 10.0, "translation_cost"),
+            validators::between(self.healing_rate, 1, 100, "healing_rate"),
             validators::between(self.cost_of_thought, 0.0, 10.0, "cost_of_thought"),
             validators::between(self.cost_of_grab, 0.0, 10.0, "cost_of_grab"),
             validators::between(self.cost_of_lay, 0.0, 10.0, "cost_of_lay"),
@@ -186,6 +189,7 @@ impl Default for WorldConfig {
             unit_size_cost: 2.00,
             world_energy: 1000000,
             mutation_probability: 0.1,
+            healing_rate: 10,
             cost_of_thought: 0.8,
             cost_of_grab: 2.0,
             cost_of_lay: 5.0,

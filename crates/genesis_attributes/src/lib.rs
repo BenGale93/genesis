@@ -88,6 +88,7 @@ pub struct Genome {
     pub growth_rate: Chromosome,
     pub grab_angle: Chromosome,
     pub food_preference: Chromosome,
+    pub base_attack: Chromosome,
 }
 
 impl Genome {
@@ -111,7 +112,8 @@ impl Genome {
             max_size,
             growth_rate,
             grab_angle,
-            food_preference
+            food_preference,
+            base_attack
         );
         Self {
             hatch_age,
@@ -122,6 +124,7 @@ impl Genome {
             growth_rate,
             grab_angle,
             food_preference,
+            base_attack,
         }
     }
 
@@ -149,7 +152,8 @@ impl Genome {
             max_size,
             growth_rate,
             grab_angle,
-            food_preference
+            food_preference,
+            base_attack
         );
         output_dna
     }
@@ -178,6 +182,7 @@ pub struct Dna {
     pub growth_rate: f32,
     pub grab_angle: f32,
     pub food_preference: f32,
+    pub base_attack: f32,
 }
 
 impl Dna {
@@ -191,6 +196,7 @@ impl Dna {
             growth_rate: genome.growth_rate.random(rng),
             grab_angle: genome.grab_angle.random(rng),
             food_preference: genome.food_preference.random(rng),
+            base_attack: genome.base_attack.random(rng),
         }
     }
 
@@ -455,6 +461,33 @@ impl FoodPreference {
     }
 }
 
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
+pub struct BaseAttack(f32);
+
+impl BaseAttack {
+    pub const fn new(value: f32) -> Self {
+        Self(value)
+    }
+}
+
+#[derive(Component, Debug, Deref, AttributeDisplay, Default, Reflect)]
+#[reflect(Component)]
+pub struct BaseDefence(f32);
+
+impl BaseDefence {
+    pub fn new(base_attack: f32, ba_chromosome: &Chromosome) -> Self {
+        let (bd_min, bd_max) = config::WorldConfig::global()
+            .dependent_attributes
+            .base_defence_bounds;
+        let bd_range = bd_max - bd_min;
+        let value = ba_chromosome
+            .normalise(base_attack)
+            .mul_add(-bd_range, bd_max);
+        Self(value)
+    }
+}
+
 #[derive(Bundle, Debug)]
 pub struct AttributeBundle {
     pub hatch_age: HatchAge,
@@ -471,6 +504,8 @@ pub struct AttributeBundle {
     pub grab_angle: GrabAngle,
     pub grab_strength: GrabStrength,
     pub food_preference: FoodPreference,
+    pub base_attack: BaseAttack,
+    pub base_defence: BaseDefence,
 }
 
 impl AttributeBundle {
@@ -490,6 +525,8 @@ impl AttributeBundle {
             grab_angle: GrabAngle::new(dna.grab_angle),
             grab_strength: GrabStrength::new(dna.grab_angle, &genome.grab_angle),
             food_preference: FoodPreference::new(dna.food_preference),
+            base_attack: BaseAttack::new(dna.base_attack),
+            base_defence: BaseDefence::new(dna.base_attack, &genome.base_attack),
         }
     }
 }
@@ -513,6 +550,8 @@ impl Plugin for AttributesPlugin {
             .register_type::<GrabAngle>()
             .register_type::<GrabStrength>()
             .register_type::<FoodPreference>()
+            .register_type::<BaseAttack>()
+            .register_type::<BaseDefence>()
             .register_component_as::<dyn AttributeDisplay, HatchAge>()
             .register_component_as::<dyn AttributeDisplay, AdultAge>()
             .register_component_as::<dyn AttributeDisplay, DeathAge>()
@@ -526,6 +565,8 @@ impl Plugin for AttributesPlugin {
             .register_component_as::<dyn AttributeDisplay, GrowthRate>()
             .register_component_as::<dyn AttributeDisplay, GrabAngle>()
             .register_component_as::<dyn AttributeDisplay, GrabStrength>()
-            .register_component_as::<dyn AttributeDisplay, FoodPreference>();
+            .register_component_as::<dyn AttributeDisplay, FoodPreference>()
+            .register_component_as::<dyn AttributeDisplay, BaseAttack>()
+            .register_component_as::<dyn AttributeDisplay, BaseDefence>();
     }
 }

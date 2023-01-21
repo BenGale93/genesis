@@ -25,6 +25,7 @@ translation_cost = 1.5
 unit_size_cost = 2.0
 world_energy = 1000000
 mutation_probability = 0.1
+healing_rate = 10
 cost_of_thought = 0.8
 cost_of_grab = 2.0
 cost_of_lay = 5.0
@@ -97,6 +98,11 @@ food_preference = [
     1.0,
     100,
 ]
+base_attack = [
+    20.0,
+    200.0,
+    40,
+]
 
 [dependent_attributes]
 adult_age_bounds = [
@@ -122,6 +128,10 @@ hatch_size_bounds = [
 grab_strength_bounds = [
     0.01,
     0.05,
+]
+base_defence_bounds = [
+    0.3,
+    0.7,
 ]
 
 [brain_mutations]

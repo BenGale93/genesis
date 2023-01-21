@@ -13,6 +13,7 @@ struct AttributeConfigValidator {
     growth_rate: MinMax,
     grab_angle: MinMax,
     food_preference: MinMax,
+    base_attack: MinMax,
 }
 
 impl Default for AttributeConfigValidator {
@@ -26,6 +27,7 @@ impl Default for AttributeConfigValidator {
             growth_rate: (Some(0.0), Some(1.0)),
             grab_angle: (Some(20.0), Some(90.0)),
             food_preference: (Some(0.0), Some(1.0)),
+            base_attack: (Some(20.0), Some(200.0)),
         }
     }
 }
@@ -42,6 +44,7 @@ pub struct AttributeConfig {
     pub growth_rate: MinMaxLen,
     pub grab_angle: MinMaxLen,
     pub food_preference: MinMaxLen,
+    pub base_attack: MinMaxLen,
 }
 
 impl Default for AttributeConfig {
@@ -55,6 +58,7 @@ impl Default for AttributeConfig {
             growth_rate: (0.05, 0.1, 20),
             grab_angle: (30.0, 60.0, 10),
             food_preference: (0.0, 1.0, 100),
+            base_attack: (20.0, 200.0, 40),
         }
     }
 }
@@ -87,7 +91,8 @@ impl AttributeConfig {
             max_size,
             growth_rate,
             grab_angle,
-            food_preference
+            food_preference,
+            base_attack
         );
         messages
     }
@@ -100,6 +105,7 @@ struct DependentAttributeConfigValidator {
     mouth_width_bounds: MinMax,
     hatch_size_bounds: MinMax,
     grab_strength_bounds: MinMax,
+    base_defence_bounds: MinMax,
 }
 
 impl Default for DependentAttributeConfigValidator {
@@ -111,6 +117,7 @@ impl Default for DependentAttributeConfigValidator {
             mouth_width_bounds: (Some(20.0), Some(180.0)),
             hatch_size_bounds: (Some(10.0), Some(49.0)),
             grab_strength_bounds: (Some(0.0), Some(1.0)),
+            base_defence_bounds: (Some(0.2), Some(0.8)),
         }
     }
 }
@@ -123,6 +130,7 @@ pub struct DependentAttributeConfig {
     pub mouth_width_bounds: (f32, f32),
     pub hatch_size_bounds: (f32, f32),
     pub grab_strength_bounds: (f32, f32),
+    pub base_defence_bounds: (f32, f32),
 }
 
 impl Default for DependentAttributeConfig {
@@ -134,6 +142,7 @@ impl Default for DependentAttributeConfig {
             mouth_width_bounds: (30.0, 90.0),
             hatch_size_bounds: (20.0, 35.0),
             grab_strength_bounds: (0.01, 0.05),
+            base_defence_bounds: (0.3, 0.7),
         }
     }
 }
@@ -164,7 +173,8 @@ impl DependentAttributeConfig {
             eye_angle_bounds,
             mouth_width_bounds,
             hatch_size_bounds,
-            grab_strength_bounds
+            grab_strength_bounds,
+            base_defence_bounds
         );
         messages
     }
