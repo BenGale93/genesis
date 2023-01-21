@@ -114,7 +114,7 @@
       {
         "kind": "Output",
         "activation": "Tanh",
-        "bias": 0.1
+        "bias": -0.05
       },
       {
         "kind": "Output",
@@ -124,12 +124,12 @@
       {
         "kind": "Output",
         "activation": "Tanh",
-        "bias": 1.0
+        "bias": 0.0
       },
       {
         "kind": "Output",
         "activation": "Tanh",
-        "bias": 1.0
+        "bias": 0.0
       },
       {
         "kind": "Output",
@@ -150,11 +150,6 @@
         "kind": "Hidden",
         "activation": "Step",
         "bias": 0.0
-      },
-      {
-        "kind": "Hidden",
-        "activation": "Gaussian",
-        "bias": 0.75
       }
     ],
     "synapses": [
@@ -171,13 +166,19 @@
           "active": true
         },
         {
-          "from": 11,
+          "from": 0,
+          "to": 27,
+          "weight": 1.0,
+          "active": true
+        },
+        {
+          "from": 7,
           "to": 20,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 10,
+          "from": 6,
           "to": 28,
           "weight": -1.0,
           "active": true
@@ -191,37 +192,31 @@
         {
           "from": 29,
           "to": 20,
-          "weight": 0.05,
+          "weight": 0.1,
           "active": true
         },
         {
           "from": 12,
           "to": 22,
-          "weight": -1.0,
-          "active": true
-        },
-        {
-          "from": 12,
-          "to": 30,
           "weight": 1.0,
           "active": true
         },
         {
-          "from": 30,
-          "to": 19,
-          "weight": -1.0,
+          "from": 14,
+          "to": 20,
+          "weight": 1.0,
           "active": true
         }
     ]
   },
   "dna": {
     "hatch_age": 10.0,
-    "eye_range": 639.3939,
+    "eye_range": 558.5859,
     "cost_of_eating": 0.3,
     "offspring_energy": 0.5858586,
     "max_size": 80.0,
     "growth_rate": 0.1,
     "grab_angle": 40.0,
-    "food_preference": 0.0
+    "food_preference": 1.0
   }
 }

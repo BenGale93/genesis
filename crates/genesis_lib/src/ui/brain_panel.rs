@@ -3,7 +3,7 @@ use genesis_components::mind::*;
 
 pub(super) type BugBrainInfo<'a> = (&'a MindInput, &'a MindLayout, &'a MindOutput);
 
-const NEURON_NAMES: [&str; 27] = [
+const NEURON_NAMES: [&str; 28] = [
     "Constant",
     "Movement",
     "Rotation",
@@ -31,6 +31,7 @@ const NEURON_NAMES: [&str; 27] = [
     "Want to grow",
     "Want to grab",
     "Digest",
+    "Attack",
 ];
 
 fn paint_synapses(ui: &mut egui::Ui, synapses: &[PaintedSynapse]) {

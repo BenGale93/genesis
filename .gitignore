@@ -1,5 +1,5 @@
 /target
 .vscode
 *.json
-!test_bug.json
+!test_*_bug.json
 save/*

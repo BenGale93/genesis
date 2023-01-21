@@ -19,7 +19,7 @@ pub const ZOOM_SPEED: f32 = 0.1;
 
 // Bugs
 pub const INPUT_NEURONS: usize = 19;
-pub const OUTPUT_NEURONS: usize = 8;
+pub const OUTPUT_NEURONS: usize = 9;
 pub const EATING_MULTIPLIER: f32 = 20.0;
 pub const CORE_MULTIPLIER: usize = 100;
 pub const HEALTH_MULTIPLIER: usize = 20;
@@ -41,6 +41,7 @@ pub const RESET_TIMER_INDEX: usize = 4;
 pub const WANT_TO_GROWN_INDEX: usize = 5;
 pub const WANT_TO_GRAB_INDEX: usize = 6;
 pub const DIGEST_FOOD_INDEX: usize = 7;
+pub const ATTACK_INDEX: usize = 8;
 
 // Inputs
 pub const CONSTANT_INDEX: usize = 0;

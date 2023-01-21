@@ -5,6 +5,7 @@ use iyes_loopless::prelude::*;
 
 use crate::{conditions, SimState};
 
+pub mod attacking;
 pub mod eating;
 pub mod grabbing;
 pub mod growing;
@@ -73,6 +74,7 @@ pub fn other_behaviour_system_set() -> SystemSet {
         .with_system(growing::existence_system)
         .with_system(eating::eating_system)
         .with_system(grabbing::grabbing_system)
+        .with_system(attacking::attacking_system)
         .into()
 }
 
