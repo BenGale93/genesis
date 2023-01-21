@@ -18,7 +18,7 @@ starting_synapses = [
 mutations = 3
 start_energy = 10000
 lowest_energy_limit = 20000
-max_rotation = 15.0
+max_rotation = 30.0
 rotation_cost = 1.5
 max_translation = 400.0
 translation_cost = 1.5
@@ -97,6 +97,11 @@ food_preference = [
     1.0,
     100,
 ]
+base_attack = [
+    20.0,
+    200.0,
+    40,
+]
 
 [dependent_attributes]
 adult_age_bounds = [
@@ -122,6 +127,10 @@ hatch_size_bounds = [
 grab_strength_bounds = [
     0.01,
     0.05,
+]
+base_defence_bounds = [
+    0.3,
+    0.7,
 ]
 
 [brain_mutations]

@@ -217,6 +217,7 @@
     "max_size": 80.0,
     "growth_rate": 0.1,
     "grab_angle": 40.0,
-    "food_preference": 1.0
+    "food_preference": 1.0,
+    "base_attack": 200.0
   }
 }
