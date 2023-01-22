@@ -1,10 +1,12 @@
 use bevy::{
     prelude::{
-        AssetServer, Commands, DespawnRecursiveExt, Entity, Query, Res, ResMut, Transform, With,
+        AssetServer, Commands, DespawnRecursiveExt, Entity, EventReader, Query, Res, ResMut,
+        Transform, With,
     },
     sprite::Sprite,
 };
 use bevy_rapier2d::prelude::Collider;
+use ecosystem::EggEnergy;
 use genesis_attributes as attributes;
 use genesis_components::*;
 use genesis_config as config;
@@ -82,6 +84,27 @@ pub fn kill_bug_system(
             );
             family_tree.add_dead_relation(relation, attrs);
             commands.entity(entity).despawn_recursive();
+        }
+    }
+}
+
+pub fn kill_egg_system(
+    asset_server: Res<AssetServer>,
+    mut commands: Commands,
+    mut ev_egg: EventReader<DeadEggEvent>,
+    mut egg_query: Query<(Entity, &Transform, &mut EggEnergy)>,
+) {
+    for ev in ev_egg.iter() {
+        if let Ok(egg) = egg_query.get_mut(ev.0) {
+            let (egg_entity, egg_transform, mut egg_energy) = egg;
+            let meat_energy = egg_energy.move_all_energy();
+            spawning::spawn_meat(
+                &mut commands,
+                &asset_server,
+                meat_energy,
+                egg_transform.translation,
+            );
+            commands.entity(egg_entity).despawn_recursive();
         }
     }
 }
