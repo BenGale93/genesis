@@ -1,11 +1,11 @@
-use bevy::prelude::{Mut, Query, Res, ResMut, Transform};
+use bevy::prelude::{Entity, EventWriter, Mut, Query, Res, ResMut, Transform, With, Without};
 use bevy_rapier2d::prelude::RapierContext;
 use genesis_attributes::{BaseAttack, BaseDefence};
 use genesis_components::{
     body::{HealthEfficiency, Vitality},
     mind::MindOutput,
     time::AgeEfficiency,
-    Size,
+    DeadEggEvent, Egg, Size,
 };
 use genesis_config::ATTACK_INDEX;
 use genesis_ecosystem::Ecosystem;
@@ -61,7 +61,31 @@ fn attack_bug(
     ecosystem.return_energy(lost_energy);
 }
 
-pub fn attacking_system(
+pub fn attack_egg_system(
+    rapier_context: Res<RapierContext>,
+    mut ev_egg: EventWriter<DeadEggEvent>,
+    bug_query: Query<&MindOutput, Without<Egg>>,
+    egg_query: Query<Entity, With<Egg>>,
+) {
+    for contact_pair in rapier_context.contact_pairs() {
+        let (mind_out, other_collider) = match bug_query.get(contact_pair.collider1()) {
+            Ok(b) => (b, contact_pair.collider2()),
+            Err(_) => match bug_query.get(contact_pair.collider2()) {
+                Ok(b) => (b, contact_pair.collider1()),
+                Err(_) => continue,
+            },
+        };
+
+        if let Ok(egg) = egg_query.get(other_collider) {
+            let attack = mind_out[ATTACK_INDEX];
+            if attack > 0.0 {
+                ev_egg.send(DeadEggEvent(egg));
+            }
+        }
+    }
+}
+
+pub fn attack_bug_system(
     rapier_context: Res<RapierContext>,
     mut ecosystem: ResMut<Ecosystem>,
     bug_query: Query<AttackingBug>,

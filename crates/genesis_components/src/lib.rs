@@ -190,11 +190,15 @@ pub fn meat_as_food(energy: Energy) -> Food {
     Food::new(energy, meat_config.energy_density, meat_config.toughness)
 }
 
+#[derive(Debug)]
+pub struct DeadEggEvent(pub Entity);
+
 pub struct ComponentsPlugin;
 
 impl Plugin for ComponentsPlugin {
     fn build(&self, app: &mut bevy_app::App) {
         app.add_event::<eat::EatenEvent>()
+            .add_event::<DeadEggEvent>()
             .add_plugin(eat::EatComponentPlugin)
             .add_plugin(body::BodyComponentPlugin)
             .add_plugin(grab::GrabComponentPlugin)

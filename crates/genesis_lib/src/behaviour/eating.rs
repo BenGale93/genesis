@@ -94,17 +94,15 @@ pub fn eating_system(
     mut food_query: Query<EatenFood>,
 ) {
     for contact_pair in rapier_context.contact_pairs() {
-        if let (Ok(mut bug), Ok(mut food)) = (
-            bug_query.get_mut(contact_pair.collider1()),
-            food_query.get_mut(contact_pair.collider2()),
-        ) {
-            eat_food(&mut commands, &mut ev_eaten, &mut bug, &mut food);
-            continue;
-        }
-        if let (Ok(mut bug), Ok(mut food)) = (
-            bug_query.get_mut(contact_pair.collider2()),
-            food_query.get_mut(contact_pair.collider1()),
-        ) {
+        let (mut bug, other_collider) = match bug_query.get_mut(contact_pair.collider1()) {
+            Ok(b) => (b, contact_pair.collider2()),
+            Err(_) => match bug_query.get_mut(contact_pair.collider2()) {
+                Ok(b) => (b, contact_pair.collider1()),
+                Err(_) => continue,
+            },
+        };
+
+        if let Ok(mut food) = food_query.get_mut(other_collider) {
             eat_food(&mut commands, &mut ev_eaten, &mut bug, &mut food);
         }
     }
