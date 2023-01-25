@@ -6,9 +6,9 @@ use bevy_rapier2d::prelude::{ExternalImpulse, RapierContext};
 use genesis_attributes as attributes;
 use genesis_components::{body::HealthEfficiency, grab::*, mind, time::AgeEfficiency, Egg, Size};
 use genesis_config as config;
-use genesis_config::BEHAVIOUR_TICK;
 use genesis_maths::angle_between;
 use genesis_traits::BehaviourTracker;
+use iyes_loopless::prelude::FixedTimesteps;
 
 type GrabberTest<'a> = (Entity, &'a mind::MindOutput);
 
@@ -32,10 +32,15 @@ pub fn process_grabbers_system(
     }
 }
 
-pub fn attempted_to_grab_system(mut bug_query: Query<(&mut TryingToGrab, &mut GrabbingSum)>) {
+pub fn attempted_to_grab_system(
+    timesteps: Res<FixedTimesteps>,
+    mut bug_query: Query<(&mut TryingToGrab, &mut GrabbingSum)>,
+) {
     let grab_cost = config::WorldConfig::global().cost_of_grab;
+    let standard = timesteps.get("standard").unwrap();
+
     for (mut trying_to_grab, mut grow_sum) in bug_query.iter_mut() {
-        trying_to_grab.tick(BEHAVIOUR_TICK);
+        trying_to_grab.tick(standard.step);
         let time_spent = trying_to_grab.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             grow_sum.add_time(time_spent, grab_cost);

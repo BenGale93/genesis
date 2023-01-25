@@ -10,6 +10,7 @@ use genesis_ecosystem as ecosystem;
 use genesis_newtype::Probability;
 use genesis_spawners::Spawners;
 use genesis_traits::BehaviourTracker;
+use iyes_loopless::prelude::FixedTimesteps;
 
 use crate::{spawning, statistics};
 
@@ -35,10 +36,15 @@ pub fn process_layers_system(
     }
 }
 
-pub fn attempted_to_lay_system(mut bug_query: Query<(&mut TryingToLay, &mut LayingSum)>) {
+pub fn attempted_to_lay_system(
+    timesteps: Res<FixedTimesteps>,
+    mut bug_query: Query<(&mut TryingToLay, &mut LayingSum)>,
+) {
     let world_config = config::WorldConfig::global();
+    let standard = timesteps.get("standard").unwrap();
+
     for (mut trying_to_lay, mut laying_sum) in bug_query.iter_mut() {
-        trying_to_lay.tick(config::BEHAVIOUR_TICK);
+        trying_to_lay.tick(standard.step);
         let time_spent = trying_to_lay.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             laying_sum.add_time(time_spent, world_config.cost_of_lay);

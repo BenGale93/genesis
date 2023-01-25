@@ -1,5 +1,5 @@
 use bevy::{
-    prelude::{Commands, Entity, Query, With, Without},
+    prelude::{Commands, Entity, Query, Res, With, Without},
     sprite::Sprite,
     time::Stopwatch,
 };
@@ -8,6 +8,7 @@ use genesis_attributes as attributes;
 use genesis_components::{body, eat::Stomach, grow::*, mind, Egg, Size, SizeMultiplier};
 use genesis_config as config;
 use genesis_traits::BehaviourTracker;
+use iyes_loopless::prelude::FixedTimesteps;
 
 use crate::spawning;
 
@@ -34,10 +35,12 @@ pub fn process_growers_system(
 }
 
 pub fn attempted_to_grow_system(
+    timesteps: Res<FixedTimesteps>,
     mut bug_query: Query<(&mut TryingToGrow, &mut GrowingSum, &attributes::GrowthRate)>,
 ) {
+    let standard = timesteps.get("standard").unwrap();
     for (mut trying_to_grow, mut grow_sum, growth_rate) in bug_query.iter_mut() {
-        trying_to_grow.tick(config::BEHAVIOUR_TICK);
+        trying_to_grow.tick(standard.step);
         let time_spent = trying_to_grow.elapsed().as_secs_f32();
         if time_spent >= 1.0 {
             grow_sum.add_time(time_spent, **growth_rate);
@@ -88,12 +91,14 @@ pub fn grow_bug_system(
     }
 }
 
-pub fn existence_system(mut bug_query: Query<(&Size, &mut SizeSum)>) {
+pub fn existence_system(
+    timesteps: Res<FixedTimesteps>,
+    mut bug_query: Query<(&Size, &mut SizeSum)>,
+) {
     let unit_size_cost = config::WorldConfig::global().unit_size_cost;
+    let standard = timesteps.get("standard").unwrap();
+
     for (size, mut size_sum) in bug_query.iter_mut() {
-        size_sum.add_time(
-            config::BEHAVIOUR_TICK.as_secs_f32(),
-            **size * unit_size_cost,
-        );
+        size_sum.add_time(standard.step.as_secs_f32(), **size * unit_size_cost);
     }
 }

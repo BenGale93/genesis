@@ -1,7 +1,8 @@
-use bevy::prelude::{Query, Without};
+use bevy::prelude::{Query, Res, Without};
 use genesis_components::{body, eat, mind, see::Vision, time, Egg, ThinkingSum};
 use genesis_config as config;
 use genesis_traits::BehaviourTracker;
+use iyes_loopless::prelude::FixedTimesteps;
 
 const CONST: f32 = 1.0;
 
@@ -46,6 +47,7 @@ pub fn sensory_system(
 }
 
 pub fn thinking_system(
+    timesteps: Res<FixedTimesteps>,
     mut query: Query<(
         &mind::MindInput,
         &mind::Mind,
@@ -54,13 +56,15 @@ pub fn thinking_system(
     )>,
 ) {
     let cost = config::WorldConfig::global().cost_of_thought;
+    let standard = timesteps.get("standard").unwrap();
+
     for (input, bug_brain, mut output, mut thoughts) in query.iter_mut() {
         let mut result = bug_brain.activate(input).expect("Wrong length vector");
         result[config::MOVEMENT_INDEX] = result[config::MOVEMENT_INDEX].clamp(-1.0, 1.0);
         result[config::ROTATE_INDEX] = result[config::ROTATE_INDEX].clamp(-1.0, 1.0);
         output.0 = result;
         thoughts.add_time(
-            config::BEHAVIOUR_TICK.as_secs_f32(),
+            standard.step.as_secs_f32(),
             bug_brain.synapses().len() as f32 * cost,
         );
     }
@@ -72,6 +76,7 @@ mod tests {
     use genesis_components::mind::*;
     use genesis_config as config;
     use genesis_newtype::Weight;
+    use iyes_loopless::prelude::{AppLooplessFixedTimestepExt, FixedTimesteps};
 
     use super::*;
 
@@ -79,6 +84,8 @@ mod tests {
     fn mind_thinks() {
         config::initialize_configs(None);
         let mut app = App::new();
+        app.init_resource::<FixedTimesteps>()
+            .add_fixed_timestep(config::BEHAVIOUR_TICK, "standard");
 
         app.add_system(thinking_system);
 
@@ -107,6 +114,8 @@ mod tests {
         config::initialize_configs(None);
 
         let mut app = App::new();
+        app.init_resource::<FixedTimesteps>()
+            .add_fixed_timestep(config::BEHAVIOUR_TICK, "standard");
 
         app.add_system(thinking_system);
         let starting_synapses: &[(usize, usize)] = &[];

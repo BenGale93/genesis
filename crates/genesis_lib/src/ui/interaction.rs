@@ -179,7 +179,7 @@ pub fn game_time_system(
 ) {
     info!("Updating game time.");
     let very_slow = timesteps.get_mut("very_slow").unwrap();
-    very_slow.step = Duration::from_secs_f32(1.0 / speed.speed);
+    very_slow.step = Duration::from_secs_f32(config::VERY_SLOW_BEHAVIOUR_TICK_LENGTH / speed.speed);
     let slow = timesteps.get_mut("slow").unwrap();
     slow.step = Duration::from_secs_f32(config::SLOW_BEHAVIOUR_TICK_LENGTH / speed.speed);
     let standard = timesteps.get_mut("standard").unwrap();
@@ -206,7 +206,7 @@ pub fn game_speed_widget(
                 if ui.button(symbol).clicked() {
                     sim_speed.paused = !sim_speed.paused;
                 }
-                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=3.0).text("Game Speed"))
+                ui.add(egui::Slider::new(&mut speed_copy, 0.1..=8.0).text("Game Speed"))
             })
         });
 
