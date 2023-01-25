@@ -13,3 +13,4 @@ genesis_lib = {workspace= true}
 bevy = {workspace= true}
 bevy_egui = {workspace= true}
 bevy_rapier2d = {workspace = true}
+bevy_screen_diagnostics = {workspace = true}
