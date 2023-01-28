@@ -29,16 +29,20 @@ pub fn process_sight_system(
 
         vision.reset();
 
-        for (bug_transform, bug_mind) in bug_query.iter() {
+        let mut bug_index = usize::MAX;
+        for (i, (bug_transform, _)) in bug_query.iter().enumerate() {
             if let Some(bug_score) = cone.vision_scores(bug_transform.translation) {
                 vision.increment_bugs();
 
                 if vision.bug_dist_score > bug_score.0 {
                     vision.bug_dist_score = bug_score.0;
                     vision.bug_angle_score = bug_score.1;
-                    vision.bug_species = mind.compare(bug_mind);
+                    bug_index = i;
                 }
             }
+        }
+        if let Some((_, bug_mind)) = bug_query.iter().nth(bug_index) {
+            vision.bug_species = mind.compare(bug_mind);
         }
 
         for plant_transform in plant_query.iter() {
