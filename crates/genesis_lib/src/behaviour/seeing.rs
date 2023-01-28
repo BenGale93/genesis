@@ -30,9 +30,6 @@ pub fn process_sight_system(
         vision.reset();
 
         for (bug_transform, bug_mind) in bug_query.iter() {
-            if transform.translation == bug_transform.translation {
-                continue;
-            }
             if let Some(bug_score) = cone.vision_scores(bug_transform.translation) {
                 vision.increment_bugs();
 

@@ -112,8 +112,9 @@ impl Cone {
     #[must_use]
     pub fn vision_scores(&self, target: Vec3) -> Option<(f32, f32)> {
         let distance = target - self.point;
+        let length = distance.length();
 
-        if distance.length() > self.fov_length {
+        if length > self.fov_length || length == 0.0 {
             return None;
         }
         let angle = angle_between(&self.rotation, distance);
@@ -122,7 +123,7 @@ impl Cone {
             return None;
         }
 
-        let dist_score = distance.length() / self.fov_length;
+        let dist_score = length / self.fov_length;
         let angle_score = angle / PI;
 
         Some((dist_score, angle_score))
