@@ -218,9 +218,19 @@ impl Brain {
             .map(|s| s.innovation())
             .collect();
 
-        let intersection: HashSet<_> = my_innovations.intersection(&their_innovations).collect();
-        let set_union: HashSet<_> = my_innovations.union(&their_innovations).collect();
-        intersection.len() as f32 / set_union.len() as f32
+        let in_common = my_innovations
+            .intersection(&their_innovations)
+            .collect::<HashSet<_>>()
+            .len() as f32;
+        let in_total = my_innovations
+            .union(&their_innovations)
+            .collect::<HashSet<_>>()
+            .len() as f32;
+        if in_total == 0.0 {
+            1.0
+        } else {
+            in_common / in_total
+        }
     }
 
     pub fn add_random_synapse(&mut self) {
