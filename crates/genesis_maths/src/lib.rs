@@ -110,19 +110,22 @@ impl Cone {
     }
 
     #[must_use]
-    pub fn is_within_cone(&self, target: Vec3) -> bool {
+    pub fn vision_scores(&self, target: Vec3) -> Option<(f32, f32)> {
         let distance = target - self.point;
 
         if distance.length() > self.fov_length {
-            return false;
+            return None;
         }
         let angle = angle_between(&self.rotation, distance);
 
         if angle < -self.fov_angle / 2.0 || angle > self.fov_angle / 2.0 {
-            return false;
+            return None;
         }
 
-        true
+        let dist_score = distance.length() / self.fov_length;
+        let angle_score = angle / PI;
+
+        Some((dist_score, angle_score))
     }
 }
 
@@ -157,7 +160,7 @@ mod tests {
     }
 
     #[test]
-    fn is_within_cone_true() {
+    fn within_cone() {
         let me = Vec3::ZERO;
         let rotation = Quat::IDENTITY;
 
@@ -165,7 +168,7 @@ mod tests {
 
         let target = Vec3::new(3.0, 3.0, 0.0);
 
-        assert!(cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_some());
     }
 
     #[test]
@@ -177,7 +180,7 @@ mod tests {
 
         let target = Vec3::new(8.0, 8.0, 0.0);
 
-        assert!(!cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_none());
     }
 
     #[test]
@@ -189,7 +192,7 @@ mod tests {
 
         let target = Vec3::new(-1.0, -1.0, 0.0);
 
-        assert!(!cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_none());
     }
 
     #[test]
@@ -201,7 +204,7 @@ mod tests {
 
         let target = Vec3::new(3.0, -3.0, 0.0);
 
-        assert!(cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_some());
     }
     #[test]
     fn is_not_visible_rotated_cone() {
@@ -212,7 +215,7 @@ mod tests {
 
         let target = Vec3::new(3.0, -3.0, 0.0);
 
-        assert!(!cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_none());
     }
 
     #[test]
@@ -224,7 +227,7 @@ mod tests {
 
         let target = Vec3::new(3.0, 3.0, 0.0);
 
-        assert!(!cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_none());
     }
 
     #[test]
@@ -236,7 +239,7 @@ mod tests {
 
         let target = Vec3::new(3.0, 3.0, 0.0);
 
-        assert!(cone.is_within_cone(target));
+        assert!(cone.vision_scores(target).is_some());
     }
 
     #[test]
