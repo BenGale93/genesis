@@ -1,32 +1,58 @@
-use std::cmp::Ordering;
-
-use bevy::prelude::{Entity, Query, Res, Transform, With};
+use bevy::{
+    prelude::{Entity, Query, Res, Transform, With},
+    utils::HashMap,
+};
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use genesis_attributes::{EyeAngle, EyeRange};
 use genesis_components::{mind::Mind, see::Vision, time::AgeEfficiency, Meat, Plant};
-use genesis_maths::{angle_difference, cast_angles, point_from_angle, quat_to_angle};
+use genesis_maths::{
+    angle_difference, average_angle, cast_angles, point_from_angle, quat_to_angle,
+};
 
-struct RayHitResult {
-    entity: Entity,
-    toi: f32,
-    angle: f32,
+#[derive(Default)]
+struct RayData {
+    toi: Vec<f32>,
+    angles: Vec<f32>,
 }
 
-impl RayHitResult {
+impl RayData {
+    fn push_data(&mut self, data: (f32, f32)) {
+        self.toi.push(data.0);
+        self.angles.push(data.1);
+    }
     fn score(&self, range: f32) -> (f32, f32) {
-        (self.toi / range, self.angle)
+        let dist_score = self.average_toi() / range;
+        (dist_score, self.average_angle())
+    }
+
+    fn average_toi(&self) -> f32 {
+        self.toi.iter().sum::<f32>() / self.toi.len() as f32
+    }
+
+    fn average_angle(&self) -> f32 {
+        average_angle(&self.angles)
     }
 }
 
-impl PartialOrd for RayHitResult {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.toi.partial_cmp(&other.toi)
-    }
+#[derive(Default)]
+struct RayHits {
+    hits: HashMap<Entity, RayData>,
 }
 
-impl PartialEq for RayHitResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.entity == other.entity
+impl RayHits {
+    fn add_entity(&mut self, entity: Entity, data: (f32, f32)) {
+        match self.hits.get_mut(&entity) {
+            Some(x) => x.push_data(data),
+            None => {
+                self.hits.insert(
+                    entity,
+                    RayData {
+                        toi: vec![data.0],
+                        angles: vec![data.1],
+                    },
+                );
+            }
+        }
     }
 }
 
@@ -57,39 +83,34 @@ pub fn process_sight_system(
         let eye_angle_relative_to_y = quat_to_angle(&transform.rotation);
         let angles = cast_angles(eye_angle_relative_to_y, **eye_angle, FREQ);
 
-        let mut cast_hits = Vec::with_capacity(FREQ + 1);
+        let mut cast_hits = RayHits::default();
         for angle in angles {
             let ray_dir = point_from_angle(angle);
             if let Some(hit) = rapier_context.cast_ray(ray_pos, ray_dir, range, SOLID, filter) {
-                cast_hits.push(RayHitResult {
-                    entity: hit.0,
-                    toi: hit.1,
-                    angle: angle_difference(eye_angle_relative_to_y, angle),
-                })
+                let new_angle = angle_difference(eye_angle_relative_to_y, angle);
+                cast_hits.add_entity(hit.0, (hit.1, new_angle))
             }
         }
 
-        cast_hits.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
-        cast_hits.dedup();
         vision.reset();
 
-        let mut visible_bugs = Vec::with_capacity(cast_hits.len());
-        let mut visible_plants = Vec::with_capacity(cast_hits.len());
-        let mut visible_meat = Vec::with_capacity(cast_hits.len());
-        for result in cast_hits {
-            if let Ok(bug_mind) = bug_query.get(result.entity) {
+        let mut visible_bugs = vec![];
+        let mut visible_plants = vec![];
+        let mut visible_meat = vec![];
+        for (entity, ray_data) in cast_hits.hits.iter() {
+            if let Ok(bug_mind) = bug_query.get(*entity) {
                 vision.increment_bugs();
-                visible_bugs.push((result, bug_mind));
+                visible_bugs.push((ray_data, bug_mind));
                 continue;
             };
-            if plant_query.get(result.entity).is_ok() {
+            if plant_query.get(*entity).is_ok() {
                 vision.increment_plant();
-                visible_plants.push(result);
+                visible_plants.push(ray_data);
                 continue;
             };
-            if meat_query.get(result.entity).is_ok() {
+            if meat_query.get(*entity).is_ok() {
                 vision.increment_meat();
-                visible_meat.push(result);
+                visible_meat.push(ray_data);
             };
         }
         let mut bug_index = usize::MAX;
