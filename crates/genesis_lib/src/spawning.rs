@@ -258,11 +258,13 @@ pub fn food_sprite_bundle(
 }
 
 pub fn food_collider(size: &Size) -> Collider {
-    Collider::ball(**size / 2.0)
+    let min_size = (**size).max(3.0);
+    Collider::ball(min_size / 2.0)
 }
 
 pub fn food_sprite_size(size: &Size) -> Vec2 {
-    Vec2::splat(**size)
+    let min_size = (**size).max(3.0);
+    Vec2::splat(min_size)
 }
 
 fn spawn_plant(
