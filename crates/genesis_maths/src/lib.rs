@@ -68,15 +68,6 @@ pub fn angle_between(rotation: &Quat, translation: Vec3) -> f32 {
     wrap(angle, -PI, PI)
 }
 
-pub fn average_angle(angles: &[f32]) -> f32 {
-    let mut angle_sum = 0.0;
-    for angle in angles {
-        angle_sum = wrap(angle + angle_sum, -PI, PI);
-    }
-
-    angle_sum / angles.len() as f32
-}
-
 pub fn cast_angles(mid_angle: f32, fov_angle: f32, freq: usize) -> Vec<f32> {
     let left_angle = wrap(mid_angle + fov_angle, -PI, PI);
     let right_angle = wrap(mid_angle - fov_angle, -PI, PI);
@@ -91,12 +82,6 @@ pub fn cast_angles(mid_angle: f32, fov_angle: f32, freq: usize) -> Vec<f32> {
         angles.push(sub_angle);
     }
     angles
-}
-
-#[must_use]
-pub fn angle_difference(angle_to_self: f32, angle: f32) -> f32 {
-    let new_angle = angle - angle_to_self;
-    wrap(new_angle, -PI, PI)
 }
 
 #[must_use]

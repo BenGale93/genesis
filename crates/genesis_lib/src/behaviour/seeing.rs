@@ -1,59 +1,21 @@
 use bevy::{
     prelude::{Entity, Query, Res, Transform, With},
-    utils::HashMap,
+    utils::HashSet,
 };
 use bevy_rapier2d::prelude::{QueryFilter, RapierContext};
 use genesis_attributes::{EyeAngle, EyeRange};
 use genesis_components::{mind::Mind, see::Vision, time::AgeEfficiency, Meat, Plant};
-use genesis_maths::{
-    angle_difference, average_angle, cast_angles, point_from_angle, quat_to_angle,
-};
+use genesis_maths::{angle_between, cast_angles, point_from_angle, quat_to_angle};
 
-#[derive(Default)]
-struct RayData {
-    toi: Vec<f32>,
-    angles: Vec<f32>,
-}
-
-impl RayData {
-    fn push_data(&mut self, data: (f32, f32)) {
-        self.toi.push(data.0);
-        self.angles.push(data.1);
-    }
-    fn score(&self, range: f32) -> (f32, f32) {
-        let dist_score = self.average_toi() / range;
-        (dist_score, self.average_angle())
-    }
-
-    fn average_toi(&self) -> f32 {
-        self.toi.iter().sum::<f32>() / self.toi.len() as f32
-    }
-
-    fn average_angle(&self) -> f32 {
-        average_angle(&self.angles)
-    }
-}
-
-#[derive(Default)]
-struct RayHits {
-    hits: HashMap<Entity, RayData>,
-}
-
-impl RayHits {
-    fn add_entity(&mut self, entity: Entity, data: (f32, f32)) {
-        match self.hits.get_mut(&entity) {
-            Some(x) => x.push_data(data),
-            None => {
-                self.hits.insert(
-                    entity,
-                    RayData {
-                        toi: vec![data.0],
-                        angles: vec![data.1],
-                    },
-                );
-            }
-        }
-    }
+fn dist_angle_score(
+    transform: &Transform,
+    target_transform: &Transform,
+    eye_range: f32,
+) -> (f32, f32) {
+    let dist = target_transform.translation - transform.translation;
+    let dist_score = dist.length() / eye_range;
+    let angle = angle_between(&transform.rotation, dist);
+    (dist_score, angle)
 }
 
 pub fn process_sight_system(
@@ -67,9 +29,9 @@ pub fn process_sight_system(
         &mut Vision,
         &AgeEfficiency,
     )>,
-    bug_query: Query<&Mind>,
-    plant_query: Query<Entity, With<Plant>>,
-    meat_query: Query<Entity, With<Meat>>,
+    bug_query: Query<(&Transform, &Mind)>,
+    plant_query: Query<&Transform, With<Plant>>,
+    meat_query: Query<&Transform, With<Meat>>,
 ) {
     const SOLID: bool = false;
     const FREQ: usize = 20;
@@ -83,53 +45,46 @@ pub fn process_sight_system(
         let eye_angle_relative_to_y = quat_to_angle(&transform.rotation);
         let angles = cast_angles(eye_angle_relative_to_y, **eye_angle, FREQ);
 
-        let mut cast_hits = RayHits::default();
+        let mut cast_hits = HashSet::new();
         for angle in angles {
             let ray_dir = point_from_angle(angle);
             if let Some(hit) = rapier_context.cast_ray(ray_pos, ray_dir, range, SOLID, filter) {
-                let new_angle = angle_difference(eye_angle_relative_to_y, angle);
-                cast_hits.add_entity(hit.0, (hit.1, new_angle))
+                cast_hits.insert(hit.0);
             }
         }
 
         vision.reset();
 
         let mut visible_bugs = vec![];
-        let mut visible_plants = vec![];
-        let mut visible_meat = vec![];
-        for (entity, ray_data) in cast_hits.hits.iter() {
-            if let Ok(bug_mind) = bug_query.get(*entity) {
-                vision.increment_bugs();
-                visible_bugs.push((ray_data, bug_mind));
-                continue;
-            };
-            if plant_query.get(*entity).is_ok() {
+        for entity in cast_hits.iter() {
+            if let Ok(plant_transform) = plant_query.get(*entity) {
                 vision.increment_plant();
-                visible_plants.push(ray_data);
+                let scores = dist_angle_score(transform, plant_transform, range);
+                vision.set_plant_score(scores);
                 continue;
             };
-            if meat_query.get(*entity).is_ok() {
+            if let Ok(bug_data) = bug_query.get(*entity) {
+                vision.increment_bugs();
+                visible_bugs.push(bug_data);
+                continue;
+            };
+            if let Ok(meat_transform) = meat_query.get(*entity) {
                 vision.increment_meat();
-                visible_meat.push(ray_data);
+                let scores = dist_angle_score(transform, meat_transform, range);
+                vision.set_meat_score(scores)
             };
         }
         let mut bug_index = usize::MAX;
-        for (i, (result, _)) in visible_bugs.iter().enumerate() {
-            let score = result.score(range);
-            if vision.bug_dist_score > score.0 {
-                vision.bug_dist_score = score.0;
-                vision.bug_angle_score = score.1;
+        for (i, (bug_transform, _)) in visible_bugs.iter().enumerate() {
+            let scores = dist_angle_score(transform, bug_transform, range);
+            if vision.bug_dist_score > scores.0 {
+                vision.bug_dist_score = scores.0;
+                vision.bug_angle_score = scores.1;
                 bug_index = i;
             }
         }
         if let Some((_, bug_mind)) = visible_bugs.get(bug_index) {
             vision.bug_species = mind.compare(bug_mind);
-        }
-        for result in &visible_plants {
-            vision.set_plant_score(result.score(range))
-        }
-        for result in &visible_meat {
-            vision.set_meat_score(result.score(range))
         }
     }
 }
