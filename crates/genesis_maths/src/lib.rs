@@ -68,10 +68,12 @@ pub fn angle_between(rotation: &Quat, translation: Vec3) -> f32 {
     wrap(angle, -PI, PI)
 }
 
-pub fn cast_angles(mid_angle: f32, fov_angle: f32, freq: usize) -> Vec<f32> {
+pub fn cast_angles(mid_angle: f32, fov_angle: f32, resolution: f32) -> Vec<f32> {
     let left_angle = wrap(mid_angle + fov_angle, -PI, PI);
     let right_angle = wrap(mid_angle - fov_angle, -PI, PI);
     let angle_between = wrap(wrap(left_angle - right_angle + PI, -PI, PI) - PI, -PI, PI);
+    let freq = angle_between / resolution;
+    let freq = (freq.trunc() + (freq.trunc() + 1.0) % 2.0) as i32;
     let mut angles = vec![];
     for i in 0..=freq {
         let sub_angle = wrap(
@@ -106,9 +108,9 @@ mod tests {
     fn cast_angles_facing_forward() {
         let rot_z = Quat::from_rotation_z(f32::to_radians(0.0)).z;
         let fov_angle = f32::to_radians(30.0);
-        let freq = 9;
+        let resolution = f32::to_radians(7.0);
 
-        let angles = cast_angles(rot_z, fov_angle, freq);
+        let angles = cast_angles(rot_z, fov_angle, resolution);
         let expected = &[
             -0.523_598_8,
             -0.407_243_5,
@@ -130,9 +132,9 @@ mod tests {
         let rotation = Quat::from_rotation_z(f32::to_radians(90.0));
         let mid_angle = quat_to_angle(&rotation);
         let fov_angle = f32::to_radians(30.0);
-        let freq = 9;
+        let resolution = f32::to_radians(7.0);
 
-        let angles = cast_angles(mid_angle, fov_angle, freq);
+        let angles = cast_angles(mid_angle, fov_angle, resolution);
         let expected = &[
             1.047_197_5,
             1.163_552_8,

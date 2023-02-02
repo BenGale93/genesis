@@ -33,8 +33,7 @@ pub fn process_sight_system(
     plant_query: Query<&Transform, With<Plant>>,
     meat_query: Query<&Transform, With<Meat>>,
 ) {
-    const SOLID: bool = false;
-    const FREQ: usize = 20;
+    let resolution = f32::to_radians(5.0);
     for (entity, eye_range, eye_angle, transform, mind, mut vision, age_efficiency) in
         eye_query.iter_mut()
     {
@@ -43,12 +42,12 @@ pub fn process_sight_system(
         let ray_pos = transform.translation.truncate();
 
         let eye_angle_relative_to_y = quat_to_angle(&transform.rotation);
-        let angles = cast_angles(eye_angle_relative_to_y, **eye_angle, FREQ);
+        let angles = cast_angles(eye_angle_relative_to_y, **eye_angle, resolution);
 
         let mut cast_hits = HashSet::new();
         for angle in angles {
             let ray_dir = point_from_angle(angle);
-            if let Some(hit) = rapier_context.cast_ray(ray_pos, ray_dir, range, SOLID, filter) {
+            if let Some(hit) = rapier_context.cast_ray(ray_pos, ray_dir, range, false, filter) {
                 cast_hits.insert(hit.0);
             }
         }
