@@ -113,7 +113,7 @@ impl Default for DependentAttributeConfigValidator {
         Self {
             adult_age_bounds: (Some(20.0), Some(100.0)),
             death_age_bounds: (Some(350.0), Some(1000.0)),
-            eye_angle_bounds: (Some(40.0), Some(360.0)),
+            eye_angle_bounds: (Some(20.0), Some(180.0)),
             mouth_width_bounds: (Some(20.0), Some(180.0)),
             hatch_size_bounds: (Some(10.0), Some(49.0)),
             grab_strength_bounds: (Some(0.0), Some(1.0)),
@@ -138,7 +138,7 @@ impl Default for DependentAttributeConfig {
         Self {
             adult_age_bounds: (30.0, 60.0),
             death_age_bounds: (400.0, 600.0),
-            eye_angle_bounds: (60.0, 330.0),
+            eye_angle_bounds: (30.0, 160.0),
             mouth_width_bounds: (30.0, 90.0),
             hatch_size_bounds: (20.0, 35.0),
             grab_strength_bounds: (0.01, 0.05),

@@ -9,10 +9,11 @@
 #![allow(clippy::many_single_char_names)]
 #![allow(clippy::type_complexity)]
 #![allow(clippy::too_many_arguments)]
-
+#![feature(test)]
 use bevy::prelude::{App, Plugin};
 use iyes_loopless::prelude::*;
 use simulation::SimulationPlugin;
+extern crate test;
 
 mod behaviour;
 mod conditions;

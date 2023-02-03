@@ -1,7 +1,8 @@
 #![warn(clippy::all, clippy::nursery)]
+#![allow(clippy::approx_constant)]
 use std::{f32::consts::PI, iter::Sum, ops::Div};
 
-use glam::{Quat, Vec3};
+use glam::{Quat, Vec2, Vec3};
 use nalgebra::wrap;
 use num::{One, Unsigned};
 use thiserror::Error;
@@ -35,8 +36,23 @@ pub fn polars_to_cart(r: f32, theta: f32) -> (f32, f32) {
 }
 
 #[must_use]
+pub fn quat_to_angle(rotation: &Quat) -> f32 {
+    rotation.z.asin() * 2.0
+}
+
+#[must_use]
 pub fn angle_to_point(diff: Vec3) -> f32 {
     diff.y.atan2(diff.x)
+}
+
+#[must_use]
+pub fn point_from_angle(y_angle: f32) -> Vec2 {
+    let (y, x) = y_angle_to_x(y_angle).sin_cos();
+    Vec2::new(x, y)
+}
+
+pub fn y_angle_to_x(angle: f32) -> f32 {
+    wrap(angle + PI / 2.0, -PI, PI)
 }
 
 #[must_use]
@@ -47,9 +63,27 @@ pub fn rebased_angle(angle_from_x: f32, angle_from_y: f32) -> f32 {
 #[must_use]
 pub fn angle_between(rotation: &Quat, translation: Vec3) -> f32 {
     let angle_to_target = angle_to_point(translation);
-    let angle_to_self = rotation.z.asin() * 2.0;
+    let angle_to_self = quat_to_angle(rotation);
     let angle = rebased_angle(angle_to_target, angle_to_self);
     wrap(angle, -PI, PI)
+}
+
+pub fn cast_angles(mid_angle: f32, fov_angle: f32, resolution: f32) -> Vec<f32> {
+    let left_angle = wrap(mid_angle + fov_angle, -PI, PI);
+    let right_angle = wrap(mid_angle - fov_angle, -PI, PI);
+    let angle_between = wrap(wrap(left_angle - right_angle + PI, -PI, PI) - PI, -PI, PI);
+    let freq = angle_between / resolution;
+    let freq = (freq.trunc() + (freq.trunc() + 1.0) % 2.0) as i32;
+    let mut angles = vec![];
+    for i in 0..=freq {
+        let sub_angle = wrap(
+            angle_between.mul_add(i as f32 / freq as f32, right_angle),
+            -PI,
+            PI,
+        );
+        angles.push(sub_angle);
+    }
+    angles
 }
 
 #[must_use]
@@ -63,74 +97,59 @@ pub fn cantor_pairing<T: Unsigned + One + Copy>(x: T, y: T) -> T {
     (z / (T::one() + T::one())) + y
 }
 
-#[derive(Debug)]
-pub struct Cone {
-    point: Vec3,
-    rotation: Quat,
-    fov_angle: f32,
-    fov_length: f32,
-}
-
-impl Cone {
-    pub fn new(
-        point: Vec3,
-        rotation: Quat,
-        angle: f32,
-        length: f32,
-    ) -> Result<Self, GenesisMathsError> {
-        if length <= 0.0 {
-            return Err(GenesisMathsError::LengthError);
-        }
-
-        if angle <= 0.0 || angle > f32::to_radians(360.0) {
-            return Err(GenesisMathsError::AngleError);
-        }
-
-        Ok(Self {
-            point,
-            rotation,
-            fov_angle: angle,
-            fov_length: length,
-        })
-    }
-
-    #[must_use]
-    pub const fn point(&self) -> Vec3 {
-        self.point
-    }
-
-    #[must_use]
-    pub const fn angle(&self) -> f32 {
-        self.fov_angle
-    }
-
-    #[must_use]
-    pub const fn length(&self) -> f32 {
-        self.fov_length
-    }
-
-    #[must_use]
-    pub fn is_within_cone(&self, target: Vec3) -> bool {
-        let distance = target - self.point;
-
-        if distance.length() > self.fov_length {
-            return false;
-        }
-        let angle = angle_between(&self.rotation, distance);
-
-        if angle < -self.fov_angle / 2.0 || angle > self.fov_angle / 2.0 {
-            return false;
-        }
-
-        true
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use glam::{Quat, Vec3};
 
-    use super::{angle_to_point, rebased_angle, Cone};
+    use super::{angle_to_point, cast_angles, rebased_angle};
+    use crate::quat_to_angle;
+
+    #[test]
+    fn cast_angles_facing_forward() {
+        let rot_z = Quat::from_rotation_z(f32::to_radians(0.0)).z;
+        let fov_angle = f32::to_radians(30.0);
+        let resolution = f32::to_radians(7.0);
+
+        let angles = cast_angles(rot_z, fov_angle, resolution);
+        let expected = &[
+            -0.523_598_8,
+            -0.407_243_5,
+            -0.29088816,
+            -0.174_532_85,
+            -0.058_177_534,
+            0.058_177_803,
+            0.174_533_11,
+            0.290_888_43,
+            0.407_243_73,
+            0.523_599,
+        ];
+
+        assert_eq!(angles, expected);
+    }
+
+    #[test]
+    fn cast_angles_facing_left() {
+        let rotation = Quat::from_rotation_z(f32::to_radians(90.0));
+        let mid_angle = quat_to_angle(&rotation);
+        let fov_angle = f32::to_radians(30.0);
+        let resolution = f32::to_radians(7.0);
+
+        let angles = cast_angles(mid_angle, fov_angle, resolution);
+        let expected = &[
+            1.047_197_5,
+            1.163_552_8,
+            1.279_908_1,
+            1.396_263_4,
+            1.512_618_7,
+            1.628_974_1,
+            1.745_329_4,
+            1.861_684_7,
+            1.978_04,
+            2.094_395_2,
+        ];
+
+        assert_eq!(angles, expected);
+    }
 
     #[test]
     fn angle_between_from_origin() {
@@ -154,89 +173,6 @@ mod tests {
         let them = Vec3::new(5.0, 4.0, 0.0);
 
         assert_eq!(angle_to_point(them - me), 0.0);
-    }
-
-    #[test]
-    fn is_within_cone_true() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::IDENTITY;
-
-        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
-
-        let target = Vec3::new(3.0, 3.0, 0.0);
-
-        assert!(cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn is_not_within_cone_to_far_away() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::IDENTITY;
-
-        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
-
-        let target = Vec3::new(8.0, 8.0, 0.0);
-
-        assert!(!cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn is_not_within_cone_behind_me() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::IDENTITY;
-
-        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
-
-        let target = Vec3::new(-1.0, -1.0, 0.0);
-
-        assert!(!cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn is_visible_rotated_cone() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
-
-        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
-
-        let target = Vec3::new(3.0, -3.0, 0.0);
-
-        assert!(cone.is_within_cone(target));
-    }
-    #[test]
-    fn is_not_visible_rotated_cone() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::from_rotation_z(f32::to_radians(90.0));
-
-        let cone = Cone::new(me, rotation, f32::to_radians(180.0), 10.0).unwrap();
-
-        let target = Vec3::new(3.0, -3.0, 0.0);
-
-        assert!(!cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn is_not_visible_rotated_cone_smaller_fov() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
-
-        let cone = Cone::new(me, rotation, f32::to_radians(89.0), 10.0).unwrap();
-
-        let target = Vec3::new(3.0, 3.0, 0.0);
-
-        assert!(!cone.is_within_cone(target));
-    }
-
-    #[test]
-    fn is_visible_rotated_cone_smaller_fov() {
-        let me = Vec3::ZERO;
-        let rotation = Quat::from_rotation_z(f32::to_radians(-90.0));
-
-        let cone = Cone::new(me, rotation, f32::to_radians(100.0), 10.0).unwrap();
-
-        let target = Vec3::new(3.0, 3.0, 0.0);
-
-        assert!(cone.is_within_cone(target));
     }
 
     #[test]

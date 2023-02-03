@@ -114,8 +114,8 @@ death_age_bounds = [
     600.0,
 ]
 eye_angle_bounds = [
-    60.0,
-    330.0,
+    30.0,
+    160.0,
 ]
 mouth_width_bounds = [
     30.0,

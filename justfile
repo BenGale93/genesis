@@ -16,3 +16,6 @@ clean:
 
 udeps:
     @cargo +nightly udeps
+
+bench:
+    @cargo bench bench --package genesis_lib
