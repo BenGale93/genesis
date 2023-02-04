@@ -16,7 +16,7 @@ pub fn interaction_system_set() -> SystemSet {
         .with_system(interaction::camera_zooming_system)
         .with_system(interaction::pause_key_system)
         .with_system(interaction::pause_system)
-        .with_system(interaction::game_speed_widget)
+        .with_system(interaction::game_controls_widget)
         .with_system(interaction::bug_serde_widget)
         .with_system(interaction::bug_spawner_widget)
         .with_system(interaction::kill_selected_system)

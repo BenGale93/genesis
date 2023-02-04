@@ -22,7 +22,7 @@ use genesis_config as config;
 use genesis_ecosystem::Ecosystem;
 use iyes_loopless::prelude::*;
 
-use crate::{genesis_serde, simulation::SimulationSpeed, spawning};
+use crate::{genesis_serde, simulation::SimulationSpeed, spawning, statistics};
 
 pub fn move_camera_system(
     kb_input: Res<Input<KeyCode>>,
@@ -193,9 +193,10 @@ pub fn game_time_system(
     time.set_relative_speed(speed.speed);
 }
 
-pub fn game_speed_widget(
+pub fn game_controls_widget(
     mut egui_ctx: ResMut<EguiContext>,
     mut sim_speed: ResMut<SimulationSpeed>,
+    mut save_stats: EventWriter<statistics::SaveStatsEvent>,
 ) {
     let symbol = if sim_speed.paused { "⏵" } else { "⏸" };
     let mut speed_copy = sim_speed.speed;
@@ -207,6 +208,11 @@ pub fn game_speed_widget(
                     sim_speed.paused = !sim_speed.paused;
                 }
                 ui.add(egui::Slider::new(&mut speed_copy, 0.1..=8.0).text("Game Speed"))
+            });
+            ui.horizontal(|ui| {
+                if ui.button("Save Stats").clicked() {
+                    save_stats.send(statistics::SaveStatsEvent);
+                }
             })
         });
 
