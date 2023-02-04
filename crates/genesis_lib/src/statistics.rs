@@ -232,59 +232,30 @@ impl<'a> RunInfo<'a> {
     }
 }
 
-fn save_stats(
-    time: &Res<Time>,
-    count_stats: &Res<CountStats>,
-    energy_stats: &Res<EnergyStats>,
-    performance_stats: &Res<BugPerformance>,
-    family_tree: &Res<FamilyTree>,
-) {
-    let time = time.elapsed_seconds();
-    let run_info = RunInfo::new(
-        &time,
-        WorldConfig::global(),
-        count_stats,
-        energy_stats,
-        performance_stats,
-        family_tree,
-    );
-    let j = serde_json::to_string_pretty(&run_info).unwrap();
-    fs::write("./run_data.json", j).expect("Unable to write file.");
-}
+pub struct SaveStatsEvent;
 
-pub fn save_on_close(
-    events: EventReader<AppExit>,
+pub fn save_stats(
+    exit_event: EventReader<AppExit>,
+    save_stats: EventReader<SaveStatsEvent>,
     time: Res<Time>,
     count_stats: Res<CountStats>,
     energy_stats: Res<EnergyStats>,
     performance_stats: Res<BugPerformance>,
     family_tree: Res<FamilyTree>,
 ) {
-    if !events.is_empty() {
-        save_stats(
+    if !exit_event.is_empty() || !save_stats.is_empty() {
+        let time = time.elapsed_seconds();
+        let run_info = RunInfo::new(
             &time,
+            WorldConfig::global(),
             &count_stats,
             &energy_stats,
             &performance_stats,
             &family_tree,
         );
+        let j = serde_json::to_string_pretty(&run_info).unwrap();
+        fs::write("./run_data.json", j).expect("Unable to write file.");
     }
-}
-
-pub fn regular_saver(
-    time: Res<Time>,
-    count_stats: Res<CountStats>,
-    energy_stats: Res<EnergyStats>,
-    performance_stats: Res<BugPerformance>,
-    family_tree: Res<FamilyTree>,
-) {
-    save_stats(
-        &time,
-        &count_stats,
-        &energy_stats,
-        &performance_stats,
-        &family_tree,
-    );
 }
 
 pub fn global_statistics_system_set() -> SystemSet {
@@ -297,11 +268,11 @@ pub fn global_statistics_system_set() -> SystemSet {
         .into()
 }
 
-pub fn save_on_close_set() -> SystemSet {
+pub fn save_stats_system_set() -> SystemSet {
     ConditionSet::new()
         .run_in_state(SimState::Simulation)
         .run_if_not(conditions::is_paused)
-        .with_system(save_on_close)
+        .with_system(save_stats)
         .into()
 }
 
@@ -309,10 +280,9 @@ pub struct GenesisStatsPlugin;
 
 impl Plugin for GenesisStatsPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_fixed_timestep(Duration::from_millis(100), "stats")
-            .add_fixed_timestep(Duration::from_secs(60), "regular_saver")
-            .add_fixed_timestep_system("regular_saver", 0, regular_saver)
+        app.add_event::<SaveStatsEvent>()
+            .add_fixed_timestep(Duration::from_secs(1), "stats")
             .add_fixed_timestep_system_set("stats", 0, global_statistics_system_set())
-            .add_system_set_to_stage(CoreStage::Last, save_on_close_set());
+            .add_system_set_to_stage(CoreStage::Last, save_stats_system_set());
     }
 }
