@@ -153,7 +153,9 @@ fn serialize_simulation(world: &World) -> String {
 
 pub fn save_simulation_system(world: &World) {
     let type_registry = world.resource::<AppTypeRegistry>();
-    let scene = DynamicScene::from_world(world, type_registry);
+    let mut scene = DynamicScene::from_world(world, type_registry);
+    // Removes FPS counter from the scene
+    scene.entities.remove(0);
     let serialized_scene = scene.serialize_ron(type_registry).unwrap();
     let serialized_sim = serialize_simulation(world);
     let path = std::env::current_dir().unwrap();
