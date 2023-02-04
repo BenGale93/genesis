@@ -58,10 +58,10 @@ pub fn sim_setup_system_set() -> SystemSet {
 
 fn load_simulation_system(world: &mut World) {
     let path = std::env::current_dir().unwrap();
-    let res = rfd::FileDialog::new()
-        .set_directory(path)
-        .pick_folder()
-        .unwrap();
+    let Some(res) = rfd::FileDialog::new().set_directory(path).pick_folder() else {
+        world.insert_resource(NextState(SimState::MainMenu));
+        return;
+    };
     info!("Loading simulation.");
 
     let serialize_simulation = fs::read(res.join("resources.ron")).unwrap();
