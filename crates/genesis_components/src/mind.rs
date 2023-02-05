@@ -250,8 +250,12 @@ impl MindLayout {
             let pos = if layer_index == impossible_layer {
                 None
             } else {
+                let x = match neuron.kind() {
+                    NeuronKind::Hidden => f32::NAN,
+                    _ => (*offset as f32).mul_add(2.0f32.mul_add(radius, spacing), start.0),
+                };
                 Some(egui::pos2(
-                    (*offset as f32).mul_add(2.0f32.mul_add(radius, spacing), start.0),
+                    x,
                     (layer_index as f32).mul_add(2.0f32.mul_add(radius, spacing), start.1),
                 ))
             };
@@ -265,6 +269,38 @@ impl MindLayout {
             });
 
             *offset += 1;
+        }
+        for (k, neuron) in neurons.iter().enumerate() {
+            if neuron.kind() != &NeuronKind::Hidden {
+                continue;
+            }
+
+            let mut connected_neurons: Vec<usize> = synapses
+                .iter()
+                .filter(|syn| syn.to() == k && syn.active())
+                .map(|syn| syn.from())
+                .collect();
+            let mut connected_out_neurons: Vec<usize> = synapses
+                .iter()
+                .filter(|syn| syn.from() == k && syn.active())
+                .map(|syn| syn.to())
+                .collect();
+            connected_neurons.append(&mut connected_out_neurons);
+            let mut sum = 0.0;
+            let mut count = 0;
+            for i in connected_neurons {
+                let value = positions[i].pos.unwrap().x;
+                if value.is_nan() {
+                    continue;
+                }
+                sum += value;
+                count += 1;
+            }
+            let average = sum / count as f32;
+            positions[k].pos.as_mut().map(|p| {
+                p.x = average;
+                p
+            });
         }
         positions
     }
