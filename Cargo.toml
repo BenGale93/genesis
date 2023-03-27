@@ -52,4 +52,4 @@ cached = "0.42.0"
 rfd = "0.10.0"
 quote = "1.0.23"
 syn = { version = "1.0.107", features = ["full"]}
-proc-macro2 = "1.0.50"
+proc-macro2 = "1.0.54"
